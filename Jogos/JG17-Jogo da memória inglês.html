@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Memória em Inglês</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Poppins, sans-serif; background:var(--bg); color:var(--text);
+      min-height:100vh; display:flex; flex-direction:column;
+    }
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .container{width:min(1200px, 92%); margin-inline:auto}
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.3rem; color:var(--accent)}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.55rem 1rem; border-radius:999px; border:1px solid transparent; transition:.2s ease; font-weight:600}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.primary:hover{background:var(--accent-700)}
+    .voltar {
+      padding: 12px 17px;
+     border-radius: 999px;
+     border: none;
+     background: #ff8a00;
+     color: #1e1130;
+     font-size: 1rem;
+     font-weight: 600;
+     cursor: pointer;
+     box-shadow: 0 0 10px rgba(0,0,0,0.3);
+     transition: background 0.3s, transform 0.2s;
+    }
+
+    main{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem}
+
+    h1{color:var(--accent); margin:1rem 0 .5rem; display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap;}
+    .rules-box{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.1);
+      padding:1rem;
+      border-radius:10px;
+      font-size:.9rem;
+      max-width:280px;
+      color:var(--muted);
+    }
+    .rules-box h3{margin:0 0 .5rem; color:var(--accent); font-size:1rem;}
+
+    .fase{font-size:1.2rem; margin:.5rem; font-weight:700; color:var(--accent)}
+    .score{margin:1rem; font-size:1.2rem;}
+
+    .fase-selector{
+      display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin:1rem 0;
+    }
+    .fase-selector button{
+      background:var(--card); color:var(--text); border:none;
+      padding:.5rem 1rem; border-radius:8px; font-weight:700; cursor:pointer;
+    }
+    .fase-selector button.active{background:var(--accent); color:#000;}
+
+    .game-board{display:grid; gap:1rem; margin:2rem auto;}
+    .card{
+      width:110px; height:140px; background:var(--card); border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:1.15rem; cursor:pointer; position:relative;
+      transform-style:preserve-3d; transition:transform .45s;
+      user-select:none;
+    }
+    .card.flip{transform:rotateY(180deg);}
+    .front, .back{
+      position:absolute; width:100%; height:100%; backface-visibility:hidden;
+      display:flex; align-items:center; justify-content:center; border-radius:12px; padding:8px; text-align:center;
+    }
+    .front{background:var(--card); color:var(--text);}
+    .back{background:var(--accent); color:#000; transform:rotateY(180deg);}
+    .matched{visibility:hidden;}
+
+    .overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,0.7);
+      display:flex; align-items:center; justify-content:center;
+      visibility:hidden; opacity:0; transition:.25s;
+    }
+    .overlay.show{visibility:visible; opacity:1;}
+    .overlay .box{
+      background:var(--card); padding:2rem; border-radius:14px; text-align:center;
+    }
+
+  .info-box {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin: 1rem auto 2rem;
+  max-width: 1100px;
+  width: 100%;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.header-center h1 {
+  color: var(--accent);
+  margin: 0 0 .5rem;
+}
+
+.header-center p {
+  color: var(--muted);
+  margin: 0 0 1rem;
+}
+
+.status {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.title-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap; /* permite quebrar em telas pequenas */
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.title-row h1 {
+  margin: 0;
+  color: var(--accent);
+}
+
+.title-row p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+
+
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="../Logo.png" alt="Logo ScalForce" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+      <nav class="nav-actions">
+        <a style="text-decoration: none;"  class="voltar" href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+<main>
+  <div class="info-box">
+    <div class="header-row">
+      <div class="header-center">
+        <div class="title-row">
+  <h1>Jogo da memória em Inglês</h1>
+  <p>Encontre os pares: Palavra em Inglês ➝ Tradução</p>
+</div>
+
+
+        <div class="status">
+          <div class="fase">Fase: <span id="faseAtual">1</span>/5</div>
+          <div class="score">Pontos: <span id="pontos">0</span></div>
+        </div>
+
+        <div class="fase-selector" id="faseSelector" aria-label="Escolher fase"></div>
+      </div>
+
+      <div class="rules-box">
+        <h3>🎮 Controles</h3>
+        <p>Navegar pelas cartas ⬅️➡️⬆️⬇️ (Analógico esquerdo)</p>
+        <p>🎚️ Scroll da página (Analógico direito)</p>
+        <p>🅰 Selecionar carta / Continuar</p>
+        <p>LB/RB Trocar de fase</p>
+        <p>🅱 Voltar</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-board" id="tabuleiro" role="grid" aria-live="polite"></div>
+</main>
+
+
+
+
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+    <div class="box">
+      <h2 id="mensagem"></h2>
+      <div style="margin-top:1rem">
+        <button class="btn primary" id="continuarBtn" onclick="proximaFase()">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---- lista estendida de operações (adição, subtração, multiplicação, divisão)
+     const todasOperacoes = [
+    // Cores
+  {op:"RED", res:"VERMELHO"}, {op:"BLUE", res:"AZUL"}, {op:"GREEN", res:"VERDE"}, 
+  {op:"WHITE", res:"BRANCO"}, {op:"BLACK", res:"PRETO"}, {op:"YELLOW", res:"AMARELO"}, 
+  {op:"PURPLE", res:"ROXO"}, {op:"ORANGE", res:"LARANJA"}, {op:"PINK", res:"ROSA"}, 
+  {op:"BROWN", res:"MARROM"}, {op:"GRAY", res:"CINZA"}, {op:"GOLD", res:"DOURADO"},
+
+  // Animais
+  {op:"DOG", res:"CACHORRO"}, {op:"CAT", res:"GATO"}, {op:"BIRD", res:"PÁSSARO"}, 
+  {op:"HORSE", res:"CAVALO"}, {op:"FISH", res:"PEIXE"}, {op:"COW", res:"VACA"}, 
+  {op:"DUCK", res:"PATO"}, {op:"PIG", res:"PORCO"}, {op:"TIGER", res:"TIGRE"}, 
+  {op:"LION", res:"LEÃO"}, {op:"BEAR", res:"URSO"}, {op:"MONKEY", res:"MACACO"},
+
+  // Objetos
+  {op:"BOOK", res:"LIVRO"}, {op:"TABLE", res:"MESA"}, {op:"CHAIR", res:"CADEIRA"}, 
+  {op:"HOUSE", res:"CASA"}, {op:"CAR", res:"CARRO"}, {op:"BALL", res:"BOLA"}, 
+  {op:"TREE", res:"ÁRVORE"}, {op:"PHONE", res:"TELEFONE"}, {op:"BAG", res:"BOLSA"}, 
+  {op:"PEN", res:"CANETA"}, {op:"SHOE", res:"SAPATO"}, {op:"CLOCK", res:"RELÓGIO"},
+
+  // Alimentos
+  {op:"MILK", res:"LEITE"}, {op:"BREAD", res:"PÃO"}, {op:"APPLE", res:"MAÇÃ"}, 
+  {op:"BANANA", res:"BANANA"}, {op:"RICE", res:"ARROZ"}, {op:"MEAT", res:"CARNE"}, 
+  {op:"CHEESE", res:"QUEIJO"}, {op:"EGG", res:"OVO"}, {op:"FISH", res:"PEIXE"}, 
+  {op:"WATER", res:"ÁGUA"}, {op:"JUICE", res:"SUCO"}, {op:"CAKE", res:"BOLO"}
+];
+
+
+    // configuração das fases
+    const fasesConfig = {
+      1: {cols:3, rows:2, pares:3},
+      2: {cols:4, rows:3, pares:6},
+      3: {cols:6, rows:3, pares:9},
+      4: {cols:8, rows:3, pares:12},
+      5: {cols:10, rows:3, pares:15},
+    };
+
+    let fase = 1;
+    let pontos = 0;
+    let primeira = null;
+    let travado = false;
+    const tabuleiro = document.getElementById("tabuleiro");
+    const pontosEl = document.getElementById("pontos");
+    const faseEl = document.getElementById("faseAtual");
+    const overlay = document.getElementById("overlay");
+    const mensagem = document.getElementById("mensagem");
+    const faseSelector = document.getElementById("faseSelector");
+    const continuarBtn = document.getElementById("continuarBtn");
+
+    // --- util ---
+    function shuffle(a){
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function sampleOperacoes(numPares){
+      const copy = todasOperacoes.slice();
+      shuffle(copy);
+      return copy.slice(0, numPares);
+    }
+    function criarCartas(numPares){
+      const escolhidas = sampleOperacoes(numPares);
+      let pares = [];
+      escolhidas.forEach(o=>{
+        pares.push({texto:o.op, tipo:"op"});
+        pares.push({texto:o.res, tipo:"res"});
+      });
+      return shuffle(pares);
+    }
+
+    // --- render ---
+    function highlightCursor(){
+      const cards = Array.from(document.querySelectorAll(".card:not(.matched)"));
+      cards.forEach(c => c.style.outline = "");
+      if (cards.length > 0 && cards[cursorIndex]) {
+        cards[cursorIndex].style.outline = "3px solid var(--accent)";
+      }
+    }
+
+    function montarJogo(){
+      cursorIndex = 0;
+      prevButtons = [];
+      primeira = null;
+      travado = false;
+      overlay.classList.remove("show");
+      continuarBtn.style.display = "inline-block";
+      tabuleiro.innerHTML = "";
+
+      const config = fasesConfig[fase];
+      const cartas = criarCartas(config.pares);
+
+      tabuleiro.style.gridTemplateColumns = `repeat(${config.cols}, 110px)`;
+
+      cartas.forEach((c) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.setAttribute("role","button");
+        card.setAttribute("tabindex","0");
+        card.dataset.texto = c.texto;
+        card.dataset.tipo = c.tipo;
+        card.innerHTML = `<div class="front"></div><div class="back">${c.texto}</div>`;
+        card.addEventListener("click", ()=>virar(card));
+        card.addEventListener("keydown", (e)=>{
+          if(e.key === "Enter" || e.key === " ") { e.preventDefault(); virar(card); }
+        });
+        tabuleiro.appendChild(card);
+      });
+
+      requestAnimationFrame(highlightCursor);
+    }
+
+    function virar(card){
+      if(travado || card.classList.contains("flip") || card.classList.contains("matched")) return;
+      card.classList.add("flip");
+
+      if(!primeira){
+        primeira = card;
+      } else {
+        travado = true;
+        setTimeout(()=>{
+          const par = verificarPar(primeira, card);
+          if(par){
+            primeira.classList.add("matched");
+            card.classList.add("matched");
+            pontos++;
+            pontosEl.textContent = pontos;
+            if(document.querySelectorAll(".card:not(.matched)").length === 0){
+              if(fase < 5){
+                mensagem.textContent = `Parabéns! Você completou a fase ${fase}.`;
+                overlay.classList.add("show");
+                continuarBtn.style.display = "inline-block";
+              } else {
+                mensagem.textContent = `🏆 Você venceu todas as fases! Pontos: ${pontos}`;
+                overlay.classList.add("show");
+                continuarBtn.style.display = "none";
+              }
+            }
+          } else {
+            primeira.classList.remove("flip");
+            card.classList.remove("flip");
+          }
+          primeira = null;
+          travado = false;
+          requestAnimationFrame(highlightCursor);
+        }, 700);
+      }
+    }
+
+    function verificarPar(c1, c2){
+      return todasOperacoes.find(o =>
+        (c1.dataset.texto === o.op && c2.dataset.texto === o.res) ||
+        (c1.dataset.texto === o.res && c2.dataset.texto === o.op)
+      );
+    }
+
+    function proximaFase(){
+      if(fase < 5) {
+        fase++;
+      } else {
+        fase = 1;
+        pontos = 0;
+        pontosEl.textContent = pontos;
+      }
+      faseEl.textContent = fase;
+      montarJogo();
+      atualizarSelector();
+    }
+
+    function atualizarSelector(){
+      faseSelector.innerHTML = "";
+      for(let i=1;i<=5;i++){
+        const btn = document.createElement("button");
+        btn.textContent = "Fase " + i;
+        if(i === fase) btn.classList.add("active");
+        btn.addEventListener("click", ()=>{
+          fase = i;
+          faseEl.textContent = fase;
+          montarJogo();
+          atualizarSelector();
+        });
+        faseSelector.appendChild(btn);
+      }
+    }
+
+    // ==============================
+    // CONTROLE XBOX 360
+    // ==============================
+    let gamepadIndex = null;
+    let cursorIndex = 0;
+    let lastMove = 0;
+    const moveDelay = 200;
+    let prevButtons = [];
+    let gamepadLoopId = null;
+    const lbRbDelay = 350;
+    let lastLB = 0, lastRB = 0;
+    const aDelay = 180;
+    let lastA = 0;
+
+    function startGamepadLoop(){
+      if (!gamepadLoopId) gamepadLoopId = requestAnimationFrame(updateGamepad);
+    }
+    function updateGamepad(timestamp){
+      timestamp = timestamp || performance.now();
+      const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+      let gp = gamepads[gamepadIndex ?? 0];
+      if (!gp) {
+        for (let i = 0; i < gamepads.length; i++) {
+          if (gamepads[i]) { gamepadIndex = i; gp = gamepads[i]; break; }
+        }
+      }
+      const cards = Array.from(document.querySelectorAll(".card:not(.matched)"));
+
+      if (gp) {
+        const hor = gp.axes[0] ?? 0;
+        const ver = gp.axes[1] ?? 0;
+        if ((Math.abs(hor) > 0.5 || Math.abs(ver) > 0.5) && (timestamp - lastMove > moveDelay)) {
+          const cols = fasesConfig[fase].cols;
+          if (hor > 0.5) cursorIndex++;
+          if (hor < -0.5) cursorIndex--;
+          if (ver > 0.5) cursorIndex += cols;
+          if (ver < -0.5) cursorIndex -= cols;
+          if (cursorIndex < 0) cursorIndex = 0;
+          if (cards.length > 0 && cursorIndex >= cards.length) cursorIndex = cards.length - 1;
+          lastMove = timestamp;
+        }
+        const scrollAxis = gp.axes[3] ?? 0;
+        if (Math.abs(scrollAxis) > 0.05) window.scrollBy(0, scrollAxis * 12);
+        const buttons = gp.buttons.map(b => b.pressed);
+        if (buttons[0] && !prevButtons[0] && (timestamp - lastA > aDelay)) {
+          if (overlay.classList.contains("show")) continuarBtn.click();
+          else if (cards[cursorIndex]) cards[cursorIndex].click();
+          lastA = timestamp;
+        }
+        if (buttons[1] && !prevButtons[1]) document.querySelector(".voltar").click();
+        if (buttons[4] && !prevButtons[4] && (timestamp - lastLB > lbRbDelay)) {
+          if (fase > 1) { fase--; faseEl.textContent = fase; montarJogo(); atualizarSelector(); }
+          lastLB = timestamp;
+        }
+        if (buttons[5] && !prevButtons[5] && (timestamp - lastRB > lbRbDelay)) {
+          if (fase < 5) { fase++; faseEl.textContent = fase; montarJogo(); atualizarSelector(); }
+          lastRB = timestamp;
+        }
+        prevButtons = buttons;
+      } else prevButtons = [];
+      highlightCursor();
+      gamepadLoopId = requestAnimationFrame(updateGamepad);
+    }
+
+    window.addEventListener("gamepadconnected", (e) => { gamepadIndex = e.gamepad.index; prevButtons = []; startGamepadLoop(); });
+    window.addEventListener("gamepaddisconnected", (e) => { if (e.gamepad.index === gamepadIndex) { cancelAnimationFrame(gamepadLoopId); gamepadLoopId=null; gamepadIndex=null; prevButtons=[]; } });
+    (function tryStart(){ const gps = navigator.getGamepads ? navigator.getGamepads() : []; for (let i=0;i<gps.length;i++){ if (gps[i]){ gamepadIndex=i; startGamepadLoop(); break; } } })();
+
+    // --- inicializa ---
+    atualizarSelector();
+    montarJogo();
+  </script>
+</body>
+</html>

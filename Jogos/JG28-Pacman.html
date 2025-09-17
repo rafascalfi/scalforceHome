@@ -1,0 +1,232 @@
+<html>
+<head>
+	<script src="//www.google.com/jsapi"></script>
+	<script>
+		window.parent.maeExportApis_();
+	</script>
+
+	<style>
+		body {
+			overflow: hidden;
+			background: #000000;
+			margin-top: 0;
+			margin-left: 0;
+			color: #000000;
+		}
+
+		#startButton {
+			display: block;
+			width: 160px;
+			height: 40px;
+			background-color: #4CAF50;
+			color: white;
+			text-align: center;
+			text-decoration: none;
+			font-size: 16px;
+			margin: 20px auto;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			font-family: 'Press Start 2P', cursive;
+			box-shadow: 0px 0px 10px 2px #000000;
+		}
+
+		/* Botão de voltar */
+		#back-button {
+			position: fixed;
+			top: 10px;
+			left: 10px;
+			background-color: #ff8a00;
+			color: #fff;
+			border: none;
+			padding: 12px 20px;
+			font-size: 14px;
+			border-radius: 8px;
+			cursor: pointer;
+			font-family: 'Press Start 2P', cursive;
+			box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
+			z-index: 9999;
+		}
+
+		#button {
+			display: none;
+		}
+
+		.imgb_vis {
+			animation: imgb-animation 7s linear;
+		}
+
+		@keyframes imgb-animation {
+			10% { transform: translateX(0); }
+			20% { transform: translateX(100px); }
+			90% { transform: translateX(100px); }
+			100% { transform: translateX(0); }
+		}
+	</style>
+	<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet">
+</head>
+
+<body>
+	<!-- Botão de voltar para ScalForce -->
+	<button id="back-button" onclick="window.location.href='JG28-Menu.html'">Voltar</button>
+
+	<div style="width: 100vw; height: 100vh; max-width:100%">
+		<div id="game" style="display: none;"></div>
+		<button id="startButton">PLAY</button>
+	</div>
+
+	<script>
+		document.getElementById("game").style.display = "none";
+
+		function startGame() {
+			document.getElementById("game").style.display = "block";
+			document.getElementById("startButton").style.display = "none";
+			EJS_player = "#game";
+			EJS_core = "nes";
+			EJS_color = "#000000";
+			EJS_startOnLoaded = true;
+			EJS_pathtodata = "https://cdn.jsdelivr.net/gh/a456pur/seraph@81f551ca0aa8e3d6018d32d8ac5904ac9bc78f76/storage/emulatorjs/data";
+			EJS_gameUrl = "https://cdn.jsdelivr.net/gh/bubbls/UGS-file-encryption@287710a4fac80d3ea9187e9d27c8358034b2639b/Pac-Man%20(Europe).zip";
+			loadGame(); 
+		}
+
+		document.getElementById("startButton").addEventListener("click", startGame);
+
+		function loadGame() {
+			var script = document.createElement("script");
+			script.src = "https://cdn.jsdelivr.net/gh/a456pur/seraph@81f551ca0aa8e3d6018d32d8ac5904ac9bc78f76/storage/emulatorjs/data/loader.js";
+			document.body.appendChild(script);
+
+			var script = document.createElement("script");
+			script.src = "https://cdn.jsdelivr.net/gh/a456pur/seraph@ae2fcc6d6a9cd051654fcc0519080db1f79cf2a7/storage/js/cloak.js";
+			document.body.appendChild(script);
+		}
+	</script>
+	<script>
+		(function(){
+			let gpIndex = null;
+			const state = {up:false,down:false,left:false,right:false,a:false};
+			const DEADZONE = 0.35; // sensibilidade do analógico
+
+			function connectHandler(e){
+				gpIndex = e.gamepad.index;
+				console.log('Gamepad conectado:', e.gamepad.id, 'index', gpIndex);
+				requestAnimationFrame(pollGamepad);
+			}
+
+			function disconnectHandler(e){
+				console.log('Gamepad desconectado', e.gamepad.index);
+				if(gpIndex === e.gamepad.index) gpIndex = null;
+			}
+
+			window.addEventListener('gamepadconnected', connectHandler);
+			window.addEventListener('gamepaddisconnected', disconnectHandler);
+
+			// Se já há gamepads conectados quando a página carrega
+			function scanExistingGamepads(){
+				const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+				for(let i=0;i<gps.length;i++){
+					if(gps[i]){ gpIndex = gps[i].index; console.log('Encontrado gamepad no index', gpIndex); break; }
+				}
+				if(gpIndex !== null) requestAnimationFrame(pollGamepad);
+			}
+			scanExistingGamepads();
+
+			function dispatchKey(type, key){
+				// Dispatch para a window — muitos emuladores respondem a keydown/keyup
+				const ev = new KeyboardEvent(type, {key: key, code: key, bubbles: true});
+				window.dispatchEvent(ev);
+				// também disparar para o document
+				document.dispatchEvent(ev);
+			}
+
+			function pressKeyOnce(key){
+				dispatchKey('keydown', key);
+				// pequena janela para o keyup
+				setTimeout(()=> dispatchKey('keyup', key), 80);
+			}
+
+			function updateState(name, pressed, onPressKey){
+				if(pressed && !state[name]){
+					state[name] = true;
+					onPressKey && pressKeyOnce(onPressKey);
+				} else if(!pressed && state[name]){
+					state[name] = false;
+					// envia keyup para casos que esperem holding
+					dispatchKey('keyup', onPressKey || mapNameToKey(name));
+				}
+			}
+
+			function mapNameToKey(name){
+				switch(name){
+					case 'up': return 'ArrowUp';
+					case 'down': return 'ArrowDown';
+					case 'left': return 'ArrowLeft';
+					case 'right': return 'ArrowRight';
+					case 'a': return 'Enter';
+					default: return '';
+				}
+			}
+
+			function updateAxisAxis(value, negativeName, positiveName, invert){
+				if(Math.abs(value) < DEADZONE){
+					// neutro
+					updateState(negativeName, false);
+					updateState(positiveName, false);
+					return;
+				}
+				const v = invert ? -value : value;
+				if(v > 0){
+					updateState(positiveName, true, mapNameToKey(positiveName));
+					updateState(negativeName, false);
+				}else{
+					updateState(negativeName, true, mapNameToKey(negativeName));
+					updateState(positiveName, false);
+				}
+			}
+
+			function pollGamepad(){
+				if(gpIndex === null){
+					// tenta localizar qualquer gamepad conectado
+					const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+					for(let i=0;i<gps.length;i++) if(gps[i]) { gpIndex = gps[i].index; break; }
+					if(gpIndex === null) { requestAnimationFrame(pollGamepad); return; }
+				}
+
+				const gp = navigator.getGamepads()[gpIndex];
+				if(!gp){ requestAnimationFrame(pollGamepad); return; }
+
+				// Axes: 0 = left stick X, 1 = left stick Y
+				updateAxisAxis(gp.axes[0], 'left', 'right', false);
+				updateAxisAxis(gp.axes[1], 'up', 'down', true); // eixo Y normalmente é invertido
+
+				// D-pad (botões 12..15) — tratar como preferencial (digital)
+				updateState('up', gp.buttons[12] && gp.buttons[12].pressed, 'ArrowUp');
+				updateState('down', gp.buttons[13] && gp.buttons[13].pressed, 'ArrowDown');
+				updateState('left', gp.buttons[14] && gp.buttons[14].pressed, 'ArrowLeft');
+				updateState('right', gp.buttons[15] && gp.buttons[15].pressed, 'ArrowRight');
+
+				// Botão A = buttons[0] (Xbox controller)
+				const aPressed = gp.buttons[0] && gp.buttons[0].pressed;
+				if(aPressed && !state.a){
+					state.a = true;
+					pressKeyOnce('Enter'); // selecionar -> Enter
+				}else if(!aPressed && state.a){
+					state.a = false;
+					dispatchKey('keyup','Enter');
+				}
+
+				// Repetir loop
+				requestAnimationFrame(pollGamepad);
+			}
+		})();
+
+		// Dica: também habilitamos controle via teclado naturalmente — se quiser testar
+		// sem gamepad, use as setas e Enter.
+	</script>
+</body>
+</html>
+
+</body>
+</html>

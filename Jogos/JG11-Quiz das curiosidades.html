@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz das Curiosidades — Geografia | ScalForce (Versão Dinâmica v2)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a; --primary:#5E2497; --accent:#ff8a00; --text:#ffffff; --muted:#cfc6d9; --card:#2b1943;
+    }
+    body{margin:0;font-family:Poppins,Arial;color:var(--text);background:linear-gradient(180deg,#1a0f26 100%,var(--bg) 100%);padding-bottom:48px;}
+    .container{width:min(1200px,92%);margin-inline:auto}
+     header{
+      position:sticky; top:0; z-index:30; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.6rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.1rem; color:var(--accent)}
+    .hero{background:linear-gradient(145deg,var(--card),#1a0f2a);padding:18px;border-radius:12px;margin-top:12px}
+    .card{background:var(--card);padding:18px;border-radius:12px;margin-top:12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+    .question{font-size:1.1rem;font-weight:700;margin-bottom:14px}
+    .options{display:grid;gap:10px}
+    .option{background:#170c23;border:1px solid #361a53;padding:12px;border-radius:10px;cursor:pointer;font-weight:600;color:var(--text);text-align:left}
+    .option.correct{border-color:#36c38d;background:linear-gradient(90deg, rgba(54,195,141,0.12), #170c23)}
+    .option.wrong{border-color:#ff6b6b;background:linear-gradient(90deg, rgba(255,107,107,0.06), #170c23)}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+    .btn{padding:.6rem 1rem;border-radius:999px;border:0;cursor:pointer;font-weight:700}
+    .btn.primary{background:var(--accent);color:#1b0d27}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--text)}
+    .progress{height:12px;background:#170c23;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.03);width:100%}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#cc6d00);width:0%}
+    .score{font-weight:800;font-size:1.1rem;color:var(--accent)}
+    .explain{margin-top:10px;color:var(--muted);font-size:.95rem}
+    .bars{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
+    .barWrap{flex:1;min-width:180px}
+    .hpLabel{font-size:.9rem;color:var(--muted);margin-bottom:6px}
+    .small{font-size:.9rem;color:var(--muted)}
+    .lifelines{display:flex;gap:8px;align-items:center}
+    .powerlist{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    #endCard{text-align:center}
+    #levelCard{text-align:center}
+    .status{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    .badge{background:#23102b;padding:6px 10px;border-radius:999px;font-weight:700;color:var(--muted)}
+
+    /* Modal / popup for power-ups */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:40;display:none}
+    .popup{background:linear-gradient(180deg,#1f1430,#120718);padding:18px;border-radius:12px;min-width:280px;max-width:420px;border:1px solid rgba(255,255,255,0.04)}
+    .popup h3{margin:0 0 8px 0}
+    .popup p{color:var(--muted);margin:0 0 12px 0}
+    .popup .row{display:flex;gap:8px;justify-content:flex-end}
+    .badgePower{background:#2b1638;padding:6px 8px;border-radius:8px;font-weight:800;color:var(--accent);margin-right:auto}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="../Logo.png" alt="Logo ScalForce" onerror="this.style.display='none'">
+        <span style="color: #ff8a00;">ScalForce</span>
+      </a>
+      <nav>
+        <a style="text-decoration: none;" class="btn primary" href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" id="main">
+    <!-- Escolha de nível -->
+    <section class="card" id="levelCard">
+      <h2>Escolha o nível</h2>
+      <p style="color:var(--muted)">Agora o quiz virou um duelo: você vs um inimigo. Responda certo para causar dano; errou e você perde vida. Use lifelines e power-ups estrategicamente!</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px">
+        <button class="btn primary" onclick="startGame(1)">Nível 1 — Fácil</button>
+        <button class="btn primary" onclick="startGame(2)">Nível 2 — Médio</button>
+        <button class="btn primary" onclick="startGame(3)">Nível 3 — Difícil</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="hero" id="heroCard" style="display:none">
+      <h1 id="titleLevel">Quiz das curiosidades</h1>
+      <div class="status">
+        <div class="badge">Pontuação: <span class="score" id="score">0</span></div>
+        <div class="badge">Streak: <span id="streak">0</span></div>
+        <div class="badge">Multiplicador: x<span id="mult">1.0</span></div>
+      </div>
+      <div class="bars">
+        <div class="barWrap">
+          <div class="hpLabel">Sua Vida <span id="playerHPtxt" class="small">100/100</span></div>
+          <div class="progress"><i id="playerHP"></i></div>
+        </div>
+        <div class="barWrap">
+          <div class="hpLabel">Vida do Inimigo <span id="enemyHPtxt" class="small">100/100</span></div>
+          <div class="progress"><i id="enemyHP"></i></div>
+        </div>
+      </div>
+      <div style="margin-top:8px" class="lifelines">
+        <button id="btn5050" class="btn ghost">50/50 (1x)</button>
+        <button id="btnSkip" class="btn ghost">Pular (1x)</button>
+      </div>
+      <div style="margin-top:8px" class="powerlist" id="powerList"></div>
+    </section>
+    <br>
+    <article class="card" id="quizCard" style="display:none">
+      <div class="question" id="questionText">Carregando pergunta...</div>
+      <div class="options" id="options"></div>
+      <div class="explain" id="explain"></div>
+      <div class="controls">
+        <button id="nextBtn" class="btn primary" disabled>Próxima</button>
+        <button id="restartBtn" class="btn ghost">Reiniciar</button>
+      </div>
+    </article>
+
+    <!-- Fim -->
+    <section class="card" id="endCard" style="display:none">
+      <h2 id="endTitle">Fim do Quiz 🎉</h2>
+      <p id="endSub">Resultado final:</p>
+      <div style="font-size:2rem;font-weight:800" id="finalScore">0</div>
+      <p id="finalMsg"></p>
+      <button id="playAgain" class="btn primary">Jogar de novo</button>
+      <a style=" text-decoration: none;"  href="../ScalForce.html" class="btn ghost" style="margin-left:8px">Voltar ao site</a>
+    </section>
+  </main>
+
+  <!-- Power-up modal -->
+  <div class="overlay" id="powerModal" aria-hidden="true">
+    <div class="popup" role="dialog" aria-modal="true">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="badgePower" id="powerBadge">POWER</div>
+        <h3 id="powerTitle">Você ganhou um Power-up!</h3>
+      </div>
+      <p id="powerDesc">Descrição do power-up aqui.</p>
+      <div class="row">
+        <button id="usePowerNow" class="btn primary">Usar agora</button>
+        <button id="storePower" class="btn ghost">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Base: perguntas por nível --- (mesmas perguntas do arquivo anterior)
+    const LEVELS = {1:[],2:[],3:[]};
+    LEVELS[1] = [
+        {q:"Qual é a capital do Brasil?", opts:["Brasília","São Paulo","Rio de Janeiro","Salvador"], a:0, explain:"A capital é Brasília."},
+        {q:"Onde fica a Torre Eiffel?", opts:["Paris","Roma","Londres","Berlim"], a:0, explain:"A Torre Eiffel fica em Paris."},
+        {q:"Onde o sol nasce?", opts:["Leste","Oeste","Norte","Sul"], a:0, explain:"O sol nasce no leste."},
+        {q:"Qual animal é símbolo da Austrália?", opts:["Canguru","Elefante","Leão","Girafa"], a:0, explain:"O canguru é símbolo da Austrália."},
+        {q:"Qual é a floresta famosa do Brasil?", opts:["Amazônia","Mata Atlântica","Cerrado","Caatinga"], a:0, explain:"A Amazônia é a mais famosa."},
+        {q:"Qual país é chamado de 'Terra do Sol Nascente'?", opts:["Japão","China","Índia","Coreia"], a:0, explain:"O Japão é chamado assim."},
+        {q:"Qual é o deserto mais famoso da África?", opts:["Saara","Atacama","Gobi","Kalahari"], a:0, explain:"O Saara é o mais famoso."},
+        {q:"Qual continente tem mais países?", opts:["África","Europa","América","Ásia"], a:0, explain:"A África tem mais de 50 países."},
+        {q:"Qual é a capital da Argentina?", opts:["Buenos Aires","Santiago","Lima","Montevidéu"], a:0, explain:"A capital é Buenos Aires."},
+        {q:"Qual é a capital de Portugal?", opts:["Lisboa","Madri","Roma","Paris"], a:0, explain:"A capital de Portugal é Lisboa."},
+        {q:"Qual é a capital da França?", opts:["Paris","Londres","Roma","Berlim"], a:0, explain:"A capital da França é Paris."},
+        {q:"Qual continente tem o Brasil?", opts:["América do Sul","África","Europa","Ásia"], a:0, explain:"O Brasil fica na América do Sul."},
+        {q:"Qual país tem o Cristo Redentor?", opts:["Brasil","Chile","Portugal","Espanha"], a:0, explain:"O Cristo Redentor fica no Brasil."},
+        {q:"Qual é a capital da Itália?", opts:["Roma","Milão","Veneza","Florença"], a:0, explain:"A capital é Roma."},
+        {q:"Qual é a capital da Espanha?", opts:["Madri","Barcelona","Sevilha","Valência"], a:0, explain:"A capital da Espanha é Madri."}
+    ];
+    LEVELS[2] = [
+        {q:"Qual é o maior rio do Brasil?", opts:["Amazonas","São Francisco","Paraná","Madeira"], a:0, explain:"O Amazonas é o maior rio."},
+        {q:"Qual é o maior país da América do Sul?", opts:["Brasil","Argentina","Chile","Peru"], a:0, explain:"O Brasil é o maior país."},
+        {q:"Qual é o maior oceano?", opts:["Pacífico","Atlântico","Índico","Ártico"], a:0, explain:"O Pacífico é o maior."},
+        {q:"Qual cidade é conhecida pelos canais?", opts:["Veneza","Roma","Nova York","Cairo"], a:0, explain:"Veneza é famosa pelos canais."},
+        {q:"Qual é o menor país do mundo?", opts:["Vaticano","Mônaco","San Marino","Malta"], a:0, explain:"O Vaticano é o menor."},
+        {q:"Qual continente tem o deserto da Antártida?", opts:["Antártida","África","Ásia","Europa"], a:0, explain:"A Antártida é um deserto gelado."},
+        {q:"Qual é a capital dos Estados Unidos?", opts:["Washington D.C.","Nova York","Los Angeles","Chicago"], a:0, explain:"A capital é Washington D.C."},
+        {q:"Qual é a capital do Japão?", opts:["Tóquio","Pequim","Seul","Bangcoc"], a:0, explain:"A capital do Japão é Tóquio."},
+        {q:"Qual é a capital da Alemanha?", opts:["Berlim","Munique","Frankfurt","Hamburgo"], a:0, explain:"A capital da Alemanha é Berlim."},
+        {q:"Qual é a capital do México?", opts:["Cidade do México","Cancún","Guadalajara","Tijuana"], a:0, explain:"É a Cidade do México."},
+        {q:"Qual é a capital do Canadá?", opts:["Ottawa","Toronto","Vancouver","Montreal"], a:0, explain:"É Ottawa."},
+        {q:"Qual é a capital do Chile?", opts:["Santiago","Buenos Aires","Lima","La Paz"], a:0, explain:"É Santiago."},
+        {q:"Qual é a capital da Inglaterra?", opts:["Londres","Manchester","Liverpool","Bristol"], a:0, explain:"É Londres."},
+        {q:"Qual é a capital da China?", opts:["Pequim","Xangai","Hong Kong","Cantão"], a:0, explain:"É Pequim."},
+        {q:"Qual é a capital da Índia?", opts:["Nova Délhi","Bombaim","Calcutá","Goa"], a:0, explain:"É Nova Délhi."}
+    ];
+    LEVELS[3] = [
+        {q:"Qual é a maior montanha do mundo?", opts:["Everest","K2","Kilimanjaro","Aconcágua"], a:0, explain:"O Everest é o mais alto."},
+        {q:"Qual continente é chamado de 'berço da humanidade'?", opts:["África","Ásia","Europa","América"], a:0, explain:"A África é considerada o berço da humanidade."},
+        {q:"Qual oceano fica entre África e Austrália?", opts:["Índico","Atlântico","Pacífico","Ártico"], a:0, explain:"O Oceano Índico fica lá."},
+        {q:"Qual país é famoso pelas pirâmides?", opts:["Egito","México","Peru","China"], a:0, explain:"O Egito é famoso pelas pirâmides."},
+        {q:"Qual país tem mais fusos horários?", opts:["França","Rússia","EUA","China"], a:0, explain:"A França, por causa dos territórios ultramarinos."},
+        {q:"Qual lago é o mais profundo do mundo?", opts:["Baikal","Tanganica","Cáspio","Superior"], a:0, explain:"O Lago Baikal é o mais profundo."},
+        {q:"Qual é o maior deserto do planeta?", opts:["Antártida","Saara","Gobi","Atacama"], a:0, explain:"A Antártida é o maior deserto."},
+        {q:"Qual país tem a cidade de Istambul?", opts:["Turquia","Grécia","Egito","Itália"], a:0, explain:"Istambul fica na Turquia."},
+        {q:"Qual é a capital da Rússia?", opts:["Moscou","São Petersburgo","Kiev","Varsóvia"], a:0, explain:"É Moscou."},
+        {q:"Qual é a capital da Austrália?", opts:["Camberra","Sydney","Melbourne","Brisbane"], a:0, explain:"É Camberra."},
+        {q:"Qual é a capital da Coreia do Sul?", opts:["Seul","Pequim","Tóquio","Bangcoc"], a:0, explain:"É Seul."},
+        {q:"Qual é a capital da África do Sul?", opts:["Pretória","Cidade do Cabo","Joanesburgo","Durban"], a:0, explain:"É Pretória."},
+        {q:"Qual é a capital da Grécia?", opts:["Atenas","Roma","Istambul","Belgrado"], a:0, explain:"É Atenas."},
+        {q:"Qual é a capital da Turquia?", opts:["Ancara","Istambul","Esmirna","Antália"], a:0, explain:"É Ancara."},
+        {q:"Qual é a capital da Suécia?", opts:["Estocolmo","Oslo","Helsinque","Copenhague"], a:0, explain:"É Estocolmo."}
+    ];
+
+    // --- State ---
+    let index=0, score=0, answered=false, currentQuestions=[];
+    let playerHP=100, enemyHP=100, streak=0, multiplier=1.0;
+    let lifeline5050=true, lifelineSkip=true;
+    let powerUps = { doubleDamage:0, heal:0 }; // stored counts
+    let useDoubleNext = false; // flag to apply double to next correct
+    let pendingPower = null; // temp pending power when modal open
+
+    const qText=document.getElementById('questionText');
+    const optionsEl=document.getElementById('options');
+    const scoreEl=document.getElementById('score');
+    const explainEl=document.getElementById('explain');
+    const nextBtn=document.getElementById('nextBtn');
+    const restartBtn=document.getElementById('restartBtn');
+    const endCard=document.getElementById('endCard');
+    const finalScore=document.getElementById('finalScore');
+    const finalMsg=document.getElementById('finalMsg');
+    const playAgain=document.getElementById('playAgain');
+    const quizCard=document.getElementById('quizCard');
+    const heroCard=document.getElementById('heroCard');
+    const levelCard=document.getElementById('levelCard');
+    const titleLevel=document.getElementById('titleLevel');
+    const playerHPbar=document.getElementById('playerHP');
+    const enemyHPbar=document.getElementById('enemyHP');
+    const playerHPtxt=document.getElementById('playerHPtxt');
+    const enemyHPtxt=document.getElementById('enemyHPtxt');
+    const streakTxt=document.getElementById('streak');
+    const multTxt=document.getElementById('mult');
+    const btn5050=document.getElementById('btn5050');
+    const btnSkip=document.getElementById('btnSkip');
+    const powerList=document.getElementById('powerList');
+
+    const powerModal = document.getElementById('powerModal');
+    const powerTitle = document.getElementById('powerTitle');
+    const powerDesc = document.getElementById('powerDesc');
+    const powerBadge = document.getElementById('powerBadge');
+    const usePowerNowBtn = document.getElementById('usePowerNow');
+    const storePowerBtn = document.getElementById('storePower');
+
+    function shuffle(array){ for(let i=array.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [array[i],array[j]]=[array[j],array[i]]; } return array; }
+
+    function startGame(level){
+      levelCard.style.display="none";
+      heroCard.style.display="block";
+      quizCard.style.display="block";
+      titleLevel.textContent="Quiz das curiosidades — Nível "+level;
+      currentQuestions = shuffle(LEVELS[level].slice()); // copy & shuffle
+      index=0;score=0; playerHP=100; enemyHP=100; streak=0; multiplier=1.0;
+      lifeline5050=true; lifelineSkip=true; powerUps={doubleDamage:0, heal:0};
+      useDoubleNext=false; pendingPower=null;
+      updateHUD(); renderQuestion();
+    }
+
+    function updateHUD(){
+      scoreEl.textContent=score;
+      playerHPbar.style.width = Math.max(0,playerHP)+'%';
+      enemyHPbar.style.width = Math.max(0,enemyHP)+'%';
+      playerHPtxt.textContent = Math.max(0,playerHP)+"/100";
+      enemyHPtxt.textContent = Math.max(0,enemyHP)+"/100";
+      streakTxt.textContent = streak;
+      multTxt.textContent = multiplier.toFixed(1);
+      btn5050.disabled = !lifeline5050;
+      btnSkip.disabled = !lifelineSkip;
+      btn5050.textContent = lifeline5050 ? "50/50 (1x)" : "50/50 (usado)";
+      btnSkip.textContent = lifelineSkip ? "Pular (1x)" : "Pular (usado)";
+      renderPowerList();
+    }
+
+    function renderPowerList(){
+      powerList.innerHTML='';
+      if(powerUps.doubleDamage>0){
+        const b = document.createElement('button');
+        b.className='btn ghost'; b.textContent = "Double Damage x"+powerUps.doubleDamage;
+        b.onclick = ()=>{ useStoredPower('double'); };
+        powerList.appendChild(b);
+      }
+      if(powerUps.heal>0){
+        const b = document.createElement('button');
+        b.className='btn ghost'; b.textContent = "Curar x"+powerUps.heal;
+        b.onclick = ()=>{ useStoredPower('heal'); };
+        powerList.appendChild(b);
+      }
+      if(useDoubleNext){
+        const tag = document.createElement('div'); tag.className='badge'; tag.textContent='Double ativo (próximo acerto)'; powerList.appendChild(tag);
+      }
+    }
+
+    function useStoredPower(which){
+      if(which==='double' && powerUps.doubleDamage>0){
+        powerUps.doubleDamage--;
+        useDoubleNext = true;
+        explainEl.textContent = "⚡ Double Damage aplicado: seu próximo acerto fará dano dobrado.";
+      }
+      if(which==='heal' && powerUps.heal>0){
+        powerUps.heal--;
+        playerHP = Math.min(100, playerHP + 25);
+        explainEl.textContent = "✨ Você usou Curar e recuperou 25 de vida.";
+      }
+      updateHUD();
+    }
+
+    function renderQuestion(){
+      const item=currentQuestions[index];
+      qText.textContent=item.q;
+      optionsEl.innerHTML='';
+      explainEl.textContent='';
+      nextBtn.disabled=true;
+      answered=false;
+
+      let opts=item.opts.map((o,i)=>({txt:o,correct:i===item.a}));
+      shuffle(opts);
+
+      opts.forEach((opt,idx)=>{
+        const btn=document.createElement('button');
+        btn.className='option';
+        btn.textContent=opt.txt;
+        btn.onclick=()=>select(opt.correct,btn,item);
+        optionsEl.appendChild(btn);
+      });
+
+      updateHUD();
+    }
+
+    function select(correct,btn,item){
+      if(answered) return;
+      answered=true;
+
+      // calculate multiplier from streak
+      multiplier = 1 + Math.floor(streak/3)*0.5;
+      if(correct){
+        btn.classList.add('correct');
+        // damage calculation
+        let baseDamage = 20;
+        let dmg = baseDamage * multiplier;
+        // apply double if active (from using stored or choosing 'usar agora' for double)
+        if(useDoubleNext){
+          dmg *= 2;
+          useDoubleNext = false;
+          explainEl.textContent = "⚡ Double Damage ativado! ";
+        }
+        dmg = Math.round(dmg);
+        enemyHP -= dmg;
+        score += 10 + Math.round(5*(multiplier-1));
+        streak++;
+        explainEl.textContent += "✅ Correto! "+item.explain+" Você causou "+dmg+" de dano.";
+      } else {
+        btn.classList.add('wrong');
+        // reveal correct
+        Array.from(optionsEl.children).forEach(b=>{
+          const text=b.textContent;
+          if(text===item.opts[item.a]) b.classList.add('correct');
+        });
+        // penalty to player
+        let hit = 15;
+        playerHP -= hit;
+        score = Math.max(0, score - 5);
+        streak = 0; // reset streak on mistake
+        explainEl.textContent="❌ Ops! "+item.explain+" Você recebeu "+hit+" de dano.";
+      }
+
+      // random chance to drop power-up on correct (every 3 streak gives reward)
+      if(correct && streak>0 && streak%3===0 && Math.random()<0.9){
+        // choose power-up type
+        const type = Math.random()<0.6 ? 'double' : 'heal';
+        showPowerModal(type);
+      }
+
+      updateHUD();
+      // check win/lose
+      if(enemyHP<=0){ win(); return; }
+      if(playerHP<=0){ lose(); return; }
+
+      nextBtn.disabled=false;
+    }
+
+    // Modal handlers
+    function showPowerModal(type){
+      pendingPower = type;
+      if(type==='double'){
+        powerBadge.textContent = "DOUBLE";
+        powerTitle.textContent = "Você ganhou: Double Damage";
+        powerDesc.textContent = "Seu próximo acerto causará dano em dobro. Deseja usar agora ou guardar para depois?";
+      } else {
+        powerBadge.textContent = "CURAR";
+        powerTitle.textContent = "Você ganhou: Curar";
+        powerDesc.textContent = "Recupere 25 de vida imediatamente se optar por usar agora. Ou guarde para usar depois.";
+      }
+      powerModal.style.display='flex';
+      powerModal.setAttribute('aria-hidden','false');
+    }
+
+    usePowerNowBtn.onclick = ()=>{
+      if(!pendingPower) return;
+      if(pendingPower==='double'){
+        // activate for next hit
+        useDoubleNext = true;
+        explainEl.textContent = "⚡ Você ativou Double Damage: próximo acerto causará dano dobrado.";
+      } else if(pendingPower==='heal'){
+        playerHP = Math.min(100, playerHP + 25);
+        explainEl.textContent = "✨ Você usou Curar e recuperou 25 de vida.";
+      }
+      pendingPower = null;
+      powerModal.style.display='none';
+      powerModal.setAttribute('aria-hidden','true');
+      updateHUD();
+    };
+
+    storePowerBtn.onclick = ()=>{
+      if(!pendingPower) return;
+      if(pendingPower==='double') powerUps.doubleDamage++;
+      else if(pendingPower==='heal') powerUps.heal++;
+      explainEl.textContent = "🧰 Power-up guardado para o momento certo.";
+      pendingPower = null;
+      powerModal.style.display='none';
+      powerModal.setAttribute('aria-hidden','true');
+      updateHUD();
+    };
+
+    nextBtn.onclick=()=>{
+      index++;
+      if(index>=currentQuestions.length){ endByQuestions(); }
+      else{ renderQuestion(); }
+    };
+
+    // lifelines
+    btn5050.onclick = ()=>{
+      if(!lifeline5050) return;
+      const item = currentQuestions[index];
+      const buttons = Array.from(optionsEl.children);
+      const incorrectButtons = buttons.filter(b=>b.textContent !== item.opts[item.a]);
+      shuffle(incorrectButtons);
+      for(let i=0;i<2 && i<incorrectButtons.length;i++){
+        incorrectButtons[i].disabled=true;
+        incorrectButtons[i].style.visibility='hidden';
+      }
+      lifeline5050=false; updateHUD();
+    };
+
+    btnSkip.onclick = ()=>{
+      if(!lifelineSkip) return;
+      lifelineSkip=false; updateHUD();
+      explainEl.textContent = "➡️ Você pulou a pergunta sem penalidade.";
+      nextBtn.disabled=false;
+      answered=true;
+    };
+
+    function win(){
+      quizCard.style.display="none"; heroCard.style.display="none"; endCard.style.display="block";
+      document.getElementById('endTitle').textContent = "Vitória! 🏆";
+      finalScore.textContent = score;
+      finalMsg.textContent = "Você derrotou o inimigo! Streak máximo: "+streak+".";
+    }
+
+    function lose(){
+      quizCard.style.display="none"; heroCard.style.display="none"; endCard.style.display="block";
+      document.getElementById('endTitle').textContent = "Derrota 💥";
+      finalScore.textContent = score;
+      finalMsg.textContent = "Sua vida chegou a zero. Tente novamente e use as lifelines com sabedoria!";
+    }
+
+    function endByQuestions(){
+      quizCard.style.display="none"; heroCard.style.display="none"; endCard.style.display="block";
+      finalScore.textContent = score;
+      if(enemyHP<=playerHP){
+        document.getElementById('endTitle').textContent = "Vitória por pontos! 🎯";
+        finalMsg.textContent = "O inimigo tinha menos ou igual HP ao final das perguntas.";
+      } else {
+        document.getElementById('endTitle').textContent = "Fim do Quiz";
+        finalMsg.textContent = "O inimigo sobreviveu. Melhore sua estratégia!";
+      }
+    }
+
+    restartBtn.onclick=()=>resetGame();
+    playAgain.onclick=()=>resetGame();
+
+    function resetGame(){
+      index=0;score=0;
+      endCard.style.display="none";
+      heroCard.style.display="none";
+      quizCard.style.display="none";
+      levelCard.style.display="block";
+    }
+
+    // Inicialização suave
+    updateHUD();
+  </script>
+</body>
+</html>

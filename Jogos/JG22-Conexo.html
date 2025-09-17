@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conexo de Palavras — ScalForce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --accent:#ff8a00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Poppins,system-ui,Segoe UI,Roboto,Arial;color:var(--text);
+      background:linear-gradient(180deg,#1a0f26 0%,#140a1a 100%);
+    }
+
+    /* Header / Nav (do JG1) */
+    header{position:sticky;top:0;z-index:10;background:#140a1a}
+    .container{width:min(1100px,94%);margin:18px auto}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800;text-decoration:none;color:var(--text);}
+    .brand img{height:48px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.1rem;color:var(--accent);}
+
+    .btn-back {
+      padding: 0.6rem 1rem;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #1e1130;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      transition: background 0.3s, transform 0.2s;
+    }
+    .btn-back:hover {
+      background: darkorange;
+      transform: scale(1.03);
+    }
+
+    /* Resto do layout do jogo (adaptado do JG22) */
+    .game{display:grid;grid-template-columns:1fr 1.1fr;gap:1.25rem;align-items:start}
+    .card{background:linear-gradient(145deg,var(--card),#1a0f2a);border-radius:14px;padding:16px;border:3px solid rgba(255,255,255,0.04)}
+    h1{margin:0 0 8px;font-size:1.6rem}
+    p{color:var(--muted);margin:.25rem 0 10px}
+
+    .controls{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:10px}
+    .btn{background:var(--accent);color:#1b0d27;padding:.6rem .9rem;border-radius:999px;border:none;font-weight:700;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+    select{padding:.5rem;border-radius:8px;border:none;font-weight:600;background:var(--card);color:var(--text)}
+
+    .words-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:12px}
+    .word{padding:.7rem .6rem;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.02);cursor:grab;text-align:center}
+    .word[draggable="true"]:active{cursor:grabbing}
+
+    .dropzones{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:6px}
+    .drop{min-height:80px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:8px;border:2px dashed rgba(255,255,255,0.04);}
+    .drop h3{margin:0 0 .4rem;font-size:.95rem}
+    .drop .slot{padding:.35rem .5rem;border-radius:8px;background:rgba(0,0,0,0.2);margin:.3rem 0}
+
+    .status{margin-top:10px;color:var(--muted)}
+
+    @media (max-width:960px){
+      .game{grid-template-columns:1fr}
+      .dropzones{grid-template-columns:repeat(2,1fr)}
+      .words-grid{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header importado do JG1 -->
+    <header>
+      <div class="nav">
+        <a class="brand">
+          <!-- se você tiver o arquivo Logo.png na mesma pasta, ele aparecerá; senão, remova ou ajuste o src -->
+          <img src="Logo.png" alt="Logo SCALFORCE" style="height:42px">
+          <span>ScalForce</span>
+        </a>
+
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="color:var(--muted);font-weight:700">
+            <label for="level-select" style="margin-right:8px">Fase:</label>
+            <select id="level-select"></select>
+          </div>
+          <button class="btn-back" onclick="window.location.href='../ScalForce.html'">Voltar</button>
+        </div>
+      </div>
+    </header>
+<br>
+    <main class="game" role="main" class="container-main">
+      <section class="card">
+        <h1>Como jogar</h1>
+        <p>Arraste cada palavra até a caixa que representa o grupo ao qual ela pertence. Existem 4 grupos com 4 palavras cada.</p>
+        <div class="controls">
+          <button class="btn" id="btn-check">Checar respostas</button>
+          <button class="btn ghost" id="btn-shuffle">Embaralhar</button>
+          <button class="btn ghost" id="btn-reset">Reiniciar</button>
+        </div>
+
+        <div class="status" id="status">Arraste as palavras para os grupos e clique em <strong>Checar respostas</strong>.</div>
+      </section>
+
+      <section class="card" aria-live="polite">
+        <h1>Palavras</h1>
+        <div class="words-grid" id="words"></div>
+
+        <h1 style="margin-top:8px">Grupos</h1>
+        <div class="dropzones" id="drops"></div>
+      </section>
+    </main>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn" id="btn-next" style="display:none">Próxima Fase</button>
+    </div>
+  </div>
+
+  <script>
+    const LEVELS = [
+      { groups: {
+          A: {title: 'Animais', items: ['cachorro','gato','cavalo','peixe']},
+          B: {title: 'Frutas', items: ['maçã','banana','laranja','uva']},
+          C: {title: 'Transportes', items: ['carro','bicicleta','avião','barco']},
+          D: {title: 'Materiais escolares', items: ['lápis','caderno','borracha','mochila']}
+        }},
+      { groups: {
+          A: {title: 'Cores', items: ['azul','vermelho','verde','amarelo']},
+          B: {title: 'Países', items: ['brasil','argentina','frança','japão']},
+          C: {title: 'Esportes', items: ['futebol','basquete','tênis','natação']},
+          D: {title: 'Profissões', items: ['médico','professor','engenheiro','artista']}
+        }},
+      { groups: {
+          A: {title: 'Partes do corpo', items: ['cabeça','braço','perna','mão']},
+          B: {title: 'Bebidas', items: ['água','suco','refrigerante','café']},
+          C: {title: 'Objetos de casa', items: ['sofá','mesa','cadeira','cama']},
+          D: {title: 'Tecnologias', items: ['computador','celular','tablet','internet']}
+        }},
+      { groups: {
+          A: {title: 'Instrumentos musicais', items: ['violão','piano','bateria','flauta']},
+          B: {title: 'Emoções', items: ['felicidade','tristeza','raiva','medo']},
+          C: {title: 'Planetas', items: ['terra','marte','júpiter','saturno']},
+          D: {title: 'Roupas', items: ['camisa','calça','saia','casaco']}
+        }},
+      { groups: {
+          A: {title: 'Comidas', items: ['arroz','feijão','pão','pizza']},
+          B: {title: 'Ferramentas', items: ['martelo','chave','serrote','alicate']},
+          C: {title: 'Lugares', items: ['praia','montanha','floresta','cidade']},
+          D: {title: 'Insetos', items: ['formiga','abelha','borboleta','grilo']}
+        }},
+      { groups: {
+          A: {title: 'Marcas famosas', items: ['nike','coca-cola','apple','samsung']},
+          B: {title: 'Elementos químicos', items: ['hidrogênio','oxigênio','ferro','ouro']},
+          C: {title: 'Filmes', items: ['titanic','avatar','matrix','inception']},
+          D: {title: 'Jogos', items: ['xadrez','futebol','poker','minecraft']}
+        }}
+    ];
+
+    let currentLevel = 0;
+    let GROUPS = LEVELS[currentLevel].groups;
+    let WORDS = [];
+
+    const wordsEl = document.getElementById('words');
+    const dropsEl = document.getElementById('drops');
+    const status = document.getElementById('status');
+    const levelSelect = document.getElementById('level-select');
+    const nextBtn = document.getElementById('btn-next');
+
+    function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } }
+
+    function loadLevel(levelIndex){
+      currentLevel = levelIndex;
+      GROUPS = LEVELS[levelIndex].groups;
+      WORDS = Object.values(GROUPS).flatMap(g => g.items.map(w=>({word:w,group:Object.keys(GROUPS).find(k=>GROUPS[k].items.includes(w))})));
+      shuffleArray(WORDS);
+      renderWords();
+      renderDrops();
+      status.textContent = 'Arraste as palavras para os grupos e clique em Checar respostas.';
+      nextBtn.style.display = "none";
+      levelSelect.value = levelIndex;
+    }
+
+    function renderWords(){
+      wordsEl.innerHTML='';
+      WORDS.forEach(w=>{
+        const d = document.createElement('div');
+        d.className='word';
+        d.draggable=true;
+        d.id = 'word-'+btoa(w.word).replace(/=/g,'');
+        d.textContent = w.word;
+        d.dataset.group = w.group;
+        d.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', d.id);
+          setTimeout(()=> d.style.visibility='hidden',50);
+        });
+        d.addEventListener('dragend', e => d.style.visibility='visible');
+        wordsEl.appendChild(d);
+      })
+    }
+
+    function renderDrops(){
+      dropsEl.innerHTML='';
+      Object.keys(GROUPS).forEach(k=>{
+        const box = document.createElement('div');
+        box.className='drop';
+        box.dataset.group = k;
+        box.innerHTML = `<h3>${GROUPS[k].title}</h3><div class="slot" aria-live="polite" data-count="0">(vazio)</div>`;
+
+        box.addEventListener('dragover', e=> e.preventDefault());
+        box.addEventListener('drop', e=>{
+          e.preventDefault();
+          const id = e.dataTransfer.getData('text/plain');
+          const el = document.getElementById(id);
+          if(!el) return;
+          let slot = box.querySelector('.slot');
+          if(slot.textContent.trim()==='(vazio)') slot.textContent='';
+
+          const pill = document.createElement('div');
+          pill.className='word';
+          pill.style.margin='6px 0';
+          pill.style.cursor='default';
+          pill.draggable=false;
+          pill.textContent = el.textContent;
+          pill.dataset.group = el.dataset.group;
+
+          pill.addEventListener('click', ()=>{
+            wordsEl.appendChild(el);
+            el.style.visibility='visible';
+            pill.remove();
+            if(!box.querySelector('.word')) box.querySelector('.slot').textContent='(vazio)';
+          });
+
+          if(Array.from(box.querySelectorAll('.word')).some(x=>x.textContent===el.textContent)){
+            el.style.visibility='visible';
+            return;
+          }
+
+          el.remove();
+          box.querySelector('.slot').appendChild(pill);
+        });
+
+        dropsEl.appendChild(box);
+      })
+    }
+
+    function checkAnswers(){
+      let correct=0; let total=0;
+      Object.keys(GROUPS).forEach(k=>{
+        const box = dropsEl.querySelector(`[data-group="${k}"]`);
+        const placed = Array.from(box.querySelectorAll('.word')).map(x=>x.textContent.trim());
+        total += GROUPS[k].items.length;
+        placed.forEach(w=>{ if(GROUPS[k].items.includes(w)) correct++; });
+      });
+      status.textContent = `Acertos: ${correct} de ${total}.`;
+      if(correct===total){
+        status.textContent += ' Parabéns — todas corretas!';
+        if(currentLevel < LEVELS.length-1){
+          nextBtn.style.display = "inline-block";
+        } else {
+          status.textContent += ' Você completou todas as fases!';
+        }
+      }
+    }
+
+    function resetGame(){
+      WORDS = Object.values(GROUPS).flatMap(g => g.items.map(w=>({word:w,group:Object.keys(GROUPS).find(k=>GROUPS[k].items.includes(w))})));
+      shuffleArray(WORDS);
+      renderWords();
+      renderDrops();
+      status.textContent='Arraste as palavras para os grupos e clique em Checar respostas.';
+    }
+
+    document.getElementById('btn-check').addEventListener('click', checkAnswers);
+    document.getElementById('btn-shuffle').addEventListener('click', ()=>{ shuffleArray(WORDS); renderWords(); });
+    document.getElementById('btn-reset').addEventListener('click', resetGame);
+    document.getElementById('btn-next').addEventListener('click', ()=> loadLevel(currentLevel+1));
+    levelSelect.addEventListener('change', ()=> loadLevel(parseInt(levelSelect.value)));
+
+    // preencher seletor
+    LEVELS.forEach((_,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = "Fase " + (i+1);
+      levelSelect.appendChild(opt);
+    });
+
+    // inicialização
+    loadLevel(0);
+  </script>
+</body>
+</html>

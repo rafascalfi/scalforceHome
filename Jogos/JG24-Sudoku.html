@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SCALFORCE — Sudoku Tradicional</title>
+  <meta name="description" content="Sudoku tradicional — jogo 9x9 seguindo o design ScalForce" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+      --cell-size:48px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: linear-gradient(180deg, #1a0f26 100%, #140a1a 100%);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1100px, 94%); margin-inline:auto}
+
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.95), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.9rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:36px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.1rem; color:var(--accent)}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.55rem .9rem; border-radius:999px; border:1px solid transparent; transition:.15s ease; font-weight:600; cursor:pointer}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.ghost{border-color:#2c1847; background:#170c25; color:var(--muted)}
+
+    main{padding:1.2rem 0 3rem}
+    .hero{display:flex; gap:1rem; align-items:center; justify-content:space-between; padding:1rem 0}
+    .hero h1{font-size:1.6rem; margin:0}
+    .hero p{margin:0; color:var(--muted); font-size:.95rem}
+
+    .game-area{display:grid; grid-template-columns: 1fr 320px; gap:1.2rem; margin-top:1.2rem}
+    .card{
+      background:linear-gradient(145deg, var(--card), #1a0f2a);
+      border:3px solid rgba(255,255,255,.04);
+      padding:1rem;
+      border-radius:18px;
+      box-shadow:0 12px 40px rgba(0,0,0,.45);
+    }
+
+    /* Sudoku grid */
+    .sudoku {
+      display:grid;
+      grid-template-columns: repeat(9, var(--cell-size));
+      gap:6px;
+      justify-content:center;
+      padding:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;
+      width: calc(var(--cell-size) * 9 + 6px*8 + 24px);
+    }
+    .cell {
+      width:var(--cell-size);
+      height:var(--cell-size);
+      display:grid;
+      place-items:center;
+      font-weight:700;
+      font-size:1.05rem;
+      color:var(--text);
+      background:rgba(255,255,255,0.02);
+      border-radius:6px;
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+    }
+    .cell.given{color:#190b1b; background:linear-gradient(180deg,#ffefdd,#fff6e8); font-weight:800}
+    .cell input{
+      width:100%; height:100%; border:0; background:transparent; color:inherit; font-weight:700; font-size:1.05rem; text-align:center;
+      outline:none;
+    }
+    /* thicker borders for 3x3 blocks */
+    .cell.col-2, .cell.col-5 { border-right:3px solid rgba(255,255,255,0.06); }
+    .cell.col-3, .cell.col-6 { border-left:3px solid rgba(255,255,255,0.06); }
+    .cell.row-2, .cell.row-5 { border-bottom:3px solid rgba(255,255,255,0.06); }
+    .cell.row-3, .cell.row-6 { border-top:3px solid rgba(255,255,255,0.06); }
+
+    .cell.selected{box-shadow:0 0 0 2px rgba(255,138,0,0.14) inset, 0 6px 18px rgba(0,0,0,0.5); background:linear-gradient(180deg, rgba(255,138,0,0.06), rgba(255,138,0,0.02));}
+    .cell.same{background:rgba(255,255,255,0.03)}
+    .cell.invalid{background:linear-gradient(180deg,#4b0000,#2b0000); color:#fff6f6}
+
+    .controls{display:flex; flex-direction:column; gap:.8rem}
+    .pad-wrapper{padding:10px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.55); display:inline-block;}
+    .pad{display:grid; grid-template-columns:repeat(3, minmax(56px,1fr)); gap:10px; width:100%;}
+    .pad-btn{padding:.85rem 0; border-radius:12px; font-weight:800; border:0; cursor:pointer; background:#201028; color:var(--muted); font-size:1.05rem; box-shadow: 0 6px 18px rgba(0,0,0,0.55); transition:transform .12s ease, box-shadow .12s ease, background .12s, opacity .12s;}
+    .pad-btn:active{transform:translateY(2px) scale(.99); opacity:0.98;}
+    .pad-btn:hover{box-shadow: 0 12px 28px rgba(0,0,0,0.6); transform:translateY(-2px); }
+    .pad-btn.num{background:linear-gradient(180deg,#ff8a00,#cc6d00); color:#1b0d27; box-shadow: 0 10px 28px rgba(255,138,0,0.12); }
+    @media (max-width:480px){
+      .pad{gap:8px; grid-template-columns:repeat(3, minmax(46px,1fr));}
+      .pad-btn{padding:.6rem 0; font-size:0.95rem; border-radius:10px;}
+    }
+    .row {display:flex; gap:.6rem}
+    .small{font-size:.85rem; color:var(--muted)}
+
+    .meta {display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px}
+    .meta .left{display:flex; gap:.6rem; align-items:center}
+    .meta .right{display:flex; gap:.6rem; align-items:center}
+
+    .status{margin-top:.6rem; color:var(--muted); font-weight:600}
+
+    footer{padding:2.5rem 0 3rem; color:var(--muted); margin-top:1.2rem}
+    footer .brand span{color:var(--accent)}
+
+    @media (max-width:980px){
+      .game-area{grid-template-columns:1fr}
+      .sudoku{transform:scale(.95)}
+    }
+    @media (max-width:480px){
+      :root{--cell-size:40px}
+      .sudoku{gap:4px}
+    }
+
+    /* pencil notes */
+    .pencil {
+      position:absolute;
+      inset:4px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      grid-auto-rows:1fr;
+      gap:0;
+      font-size:0.55rem; font-weight:600; color:var(--muted);
+      align-items:center; justify-items:center;
+      opacity:0.95;
+      pointer-events:none;
+    }
+    .pencil div{width:100%; height:100%; display:grid; place-items:center}
+  
+    .cell.block-invalid { background: linear-gradient(180deg, rgba(139,0,0,0.14), rgba(139,0,0,0.08)); }
+    .cell.block-invalid.given { background: linear-gradient(180deg, rgba(255,200,200,0.7), rgba(255,230,230,0.9)); color:#190b1b; }
+
+</style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="#">
+        <img src="Logo.png" alt="Logo SCALFORCE" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+      <nav class="nav-actions">
+        <a class="btn primary" href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <h1>Sudoku Tradicional</h1>
+        <p>Preencha a grade 9x9 com números de 1 a 9: cada linha, coluna e bloco 3x3 deve conter todos os dígitos sem repetição.</p>
+      </div>
+      <div style="text-align:right">
+        <div class="small">Tempo: <span id="timer">00:00</span></div>
+      </div>
+    </section>
+
+    <div class="game-area">
+      <div class="card">
+        <div class="meta">
+          <div class="left">
+            <label for="difficulty" class="small">Dificuldade</label>
+            <select id="difficulty" class="btn ghost" style="padding:.45rem .6rem;border-radius:10px">
+              <option value="easy">Fácil</option>
+              <option value="medium" selected>Médio</option>
+              <option value="hard">Difícil</option>
+            </select>
+            <button class="btn primary" id="newBtn">Novo</button>
+            <button class="btn ghost" id="resetBtn">Recomeçar</button>
+          </div>
+          <div class="right">
+            <button class="btn ghost" id="hintBtn">Dica</button>
+            <button class="btn ghost" id="checkBtn">Verificar</button>
+            <button class="btn ghost" id="solveBtn">Resolver</button>
+          </div>
+        </div>
+
+        <div id="sudoku" class="sudoku" aria-label="Grade Sudoku"></div>
+
+        <div class="status" id="status">Preencha as células vazias. Clique em uma célula e use o teclado ou o teclado abaixo.</div>
+      </div>
+
+      <div class="card controls">
+        <div class="small">Teclado</div>
+        <div class="pad-wrapper"><div class="pad" id="pad">
+          <button class="pad-btn num" data-num="1">1</button>
+          <button class="pad-btn num" data-num="2">2</button>
+          <button class="pad-btn num" data-num="3">3</button>
+          <button class="pad-btn num" data-num="4">4</button>
+          <button class="pad-btn num" data-num="5">5</button>
+          <button class="pad-btn num" data-num="6">6</button>
+          <button class="pad-btn num" data-num="7">7</button>
+          <button class="pad-btn num" data-num="8">8</button>
+          <button class="pad-btn num" data-num="9">9</button>
+        </div></div>
+
+        <div style="display:flex; gap:.6rem; margin-top:.8rem">
+          <button class="btn ghost" id="eraseBtn">Apagar</button>
+          <button class="btn ghost" id="pencilBtn">Lápis</button>
+          <button class="btn ghost" id="saveBtn">Salvar</button>
+        </div>
+
+        <div style="margin-top:.8rem">
+          <div class="small">Progresso</div>
+          <div id="progress" style="font-weight:800; margin-top:.3rem">0 / 81</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footgrid">
+      <div>
+        <a class="brand" href="#"><img src="Logo SCALFORCE.png" alt="Logo" onerror="this.style.display='none'"><span>SCALFORCE</span></a>
+        <p style="margin:.8rem 0 0">Sudoku tradicional — desenvolvido para a plataforma ScalForce.</p>
+      </div>
+      <div>
+        <h4>Contato</h4>
+        <a href="#">suporte@scalforce.edu</a>
+      </div>
+    </div>
+  </footer>
+
+<script>
+/* Sudoku engine: generator + solver (backtracking).
+   - Generates a full solved grid, then removes cells while ensuring uniqueness.
+   - Provides UI interactions: selection, input, pencil mode, hint, check, solve, save/load.
+*/
+
+const sudokuEl = document.getElementById('sudoku');
+const difficultyEl = document.getElementById('difficulty');
+const newBtn = document.getElementById('newBtn');
+const resetBtn = document.getElementById('resetBtn');
+const hintBtn = document.getElementById('hintBtn');
+const checkBtn = document.getElementById('checkBtn');
+const solveBtn = document.getElementById('solveBtn');
+const timerEl = document.getElementById('timer');
+const statusEl = document.getElementById('status');
+const pad = document.getElementById('pad');
+const eraseBtn = document.getElementById('eraseBtn');
+const pencilBtn = document.getElementById('pencilBtn');
+const saveBtn = document.getElementById('saveBtn');
+const progressEl = document.getElementById('progress');
+
+let solution = []; // 9x9 full solution
+let puzzle = [];   // 9x9 puzzle (0 for empty)
+let givens = [];   // boolean 9x9
+let selected = null;
+let pencilMode = false;
+let notes = {}; // key "r-c" -> Set of numbers
+let timerInterval = null;
+let startTime = null;
+
+// helpers
+function deepCopyGrid(g){ return g.map(r => r.slice()); }
+
+function rnd(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function range(n){ return [...Array(n).keys()]; }
+
+// generate a full valid grid using backtracking
+function generateFull(){
+  let grid = Array.from({length:9},()=>Array(9).fill(0));
+  const nums = [1,2,3,4,5,6,7,8,9];
+  function canPlace(r,c,v){
+    for(let i=0;i<9;i++){
+      if(grid[r][i]===v || grid[i][c]===v) return false;
+    }
+    const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++) if(grid[br+i][bc+j]===v) return false;
+    return true;
+  }
+  function backtrack(pos=0){
+    if(pos===81) return true;
+    const r = Math.floor(pos/9), c = pos%9;
+    let order = nums.slice().sort(()=>Math.random()-0.5);
+    for(let v of order){
+      if(canPlace(r,c,v)){
+        grid[r][c]=v;
+        if(backtrack(pos+1)) return true;
+      }
+    }
+    grid[r][c]=0;
+    return false;
+  }
+  backtrack(0);
+  return grid;
+}
+
+// solver that counts solutions up to limit (for uniqueness check)
+function countSolutions(grid, limit=2){
+  let count = 0;
+  const g = deepCopyGrid(grid);
+  function findEmpty(){
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(g[r][c]===0) return [r,c];
+    return null;
+  }
+  function canPlace(r,c,v){
+    for(let i=0;i<9;i++) if(g[r][i]===v || g[i][c]===v) return false;
+    const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++) if(g[br+i][bc+j]===v) return false;
+    return true;
+  }
+  function dfs(){
+    if(count>=limit) return;
+    const pos = findEmpty();
+    if(!pos){ count++; return; }
+    const [r,c] = pos;
+    for(let v=1;v<=9;v++){
+      if(canPlace(r,c,v)){
+        g[r][c]=v;
+        dfs();
+        g[r][c]=0;
+        if(count>=limit) return;
+      }
+    }
+  }
+  dfs();
+  return count;
+}
+
+// solve and return one solution or null
+function solve(grid){
+  const g = deepCopyGrid(grid);
+  function findEmpty(){
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(g[r][c]===0) return [r,c];
+    return null;
+  }
+  function canPlace(r,c,v){
+    for(let i=0;i<9;i++) if(g[r][i]===v || g[i][c]===v) return false;
+    const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++) if(g[br+i][bc+j]===v) return false;
+    return true;
+  }
+  function dfs(){
+    const pos = findEmpty();
+    if(!pos) return true;
+    const [r,c] = pos;
+    for(let v=1;v<=9;v++){
+      if(canPlace(r,c,v)){
+        g[r][c]=v;
+        if(dfs()) return true;
+        g[r][c]=0;
+      }
+    }
+    return false;
+  }
+  return dfs() ? g : null;
+}
+
+// remove cells while keeping unique solution
+function makePuzzle(full, cluesTarget){
+  // start with full copy
+  let grid = deepCopyGrid(full);
+  let positions = range(81).sort(()=>Math.random()-0.5);
+  let removals = 81 - cluesTarget;
+  for(let pos of positions){
+    if(removals<=0) break;
+    const r = Math.floor(pos/9), c = pos%9;
+    if(grid[r][c]===0) continue;
+    const backup = grid[r][c];
+    grid[r][c]=0;
+    const count = countSolutions(grid,2);
+    if(count!==1){
+      grid[r][c]=backup; // revert
+    } else {
+      removals--;
+    }
+  }
+  return grid;
+}
+
+// UI render
+function buildGridElements(){
+  sudokuEl.innerHTML='';
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      const div = document.createElement('div');
+      div.className = 'cell';
+      // for thicker visual separators around 3x3
+      if(c===2||c===5) div.classList.add('col-2');
+      if(c===3||c===6) div.classList.add('col-3');
+      if(r===2||r===5) div.classList.add('row-2');
+      if(r===3||r===6) div.classList.add('row-3');
+      div.dataset.r = r; div.dataset.c = c;
+      const input = document.createElement('input');
+      input.type='text';
+      input.maxLength=1;
+      input.inputMode='numeric';
+      input.autocomplete='off';
+      input.spellcheck=false;
+      input.addEventListener('focus',(e)=>selectCell(div));
+      input.addEventListener('keydown',handleKeydown);
+      input.addEventListener('input',handleInput);
+      div.appendChild(input);
+
+      const pencil = document.createElement('div');
+      pencil.className='pencil';
+      pencil.style.display='none';
+      for(let i=1;i<=9;i++){ const n=document.createElement('div'); n.innerText=''; pencil.appendChild(n); }
+      div.appendChild(pencil);
+
+      div.addEventListener('click',()=>{ input.focus(); });
+      sudokuEl.appendChild(div);
+    }
+  }
+}
+
+// render values from puzzle state
+function renderGrid(){
+  const cells = sudokuEl.querySelectorAll('.cell');
+  cells.forEach(div=>{
+    const r = +div.dataset.r, c = +div.dataset.c;
+    const input = div.querySelector('input');
+    const pencil = div.querySelector('.pencil');
+    const val = puzzle[r][c];
+    if(givens[r][c]){
+      div.classList.add('given');
+      input.value = val || '';
+      input.readOnly = true;
+      pencil.style.display='none';
+    } else {
+      div.classList.remove('given');
+      input.readOnly = false;
+      if(val){
+        input.value = val;
+        pencil.style.display='none';
+      } else {
+        input.value = '';
+        const key = r+'-'+c;
+        const s = notes[key];
+        if(s && s.size>0){
+          pencil.style.display='grid';
+          const slots = pencil.querySelectorAll('div');
+          slots.forEach((slot,i)=>{ slot.innerText = s.has(i+1)? String(i+1):''; });
+        } else {
+          pencil.style.display='none';
+        }
+      }
+    }
+    div.classList.remove('selected','same','invalid');
+  });
+  updateProgress();
+}
+
+// selection and highlighting
+function selectCell(div){
+  selected = div;
+  const r = +div.dataset.r, c = +div.dataset.c;
+  sudokuEl.querySelectorAll('.cell').forEach(d=>d.classList.remove('selected','same'));
+  div.classList.add('selected');
+  // highlight same row/col/block and same numbers
+  sudokuEl.querySelectorAll('.cell').forEach(d=>{
+    const rr = +d.dataset.r, cc = +d.dataset.c;
+    if(rr===r||cc===c || (Math.floor(rr/3)===Math.floor(r/3) && Math.floor(cc/3)===Math.floor(c/3))){
+      if(!d.classList.contains('selected')) d.classList.add('same');
+    }
+  });
+}
+
+// input handlers
+function handleInput(e){
+  const input = e.target;
+  const div = input.parentElement;
+  const r = +div.dataset.r, c = +div.dataset.c;
+  const v = input.value.replace(/[^1-9]/g,'').slice(0,1);
+  if(v===''){
+    puzzle[r][c]=0;
+    // clear pencil when direct erase
+    delete notes[r+'-'+c];
+  } else {
+    if(pencilMode){
+      // toggle note
+      const key = r+'-'+c;
+      notes[key] = notes[key] || new Set();
+      const num = Number(v);
+      if(notes[key].has(num)) notes[key].delete(num);
+      else notes[key].add(num);
+      input.value='';
+    } else {
+      puzzle[r][c]=Number(v);
+      // when user types a number, clear notes
+      delete notes[r+'-'+c];
+      // auto-validate and mark invalids
+      validateAndMark();
+    }
+  }
+  renderGrid();
+}
+
+function handleKeydown(e){
+  if(e.key==='Backspace' || e.key==='Delete'){ e.target.value=''; e.preventDefault(); e.target.dispatchEvent(new Event('input')); return; }
+  if(/^[1-9]$/.test(e.key)){ /* allow */ return; }
+  if(e.key==='ArrowLeft') moveSelection(0,-1), e.preventDefault();
+  if(e.key==='ArrowRight') moveSelection(0,1), e.preventDefault();
+  if(e.key==='ArrowUp') moveSelection(-1,0), e.preventDefault();
+  if(e.key==='ArrowDown') moveSelection(1,0), e.preventDefault();
+  if(e.key==='Enter'){ // move to next
+    moveSelection(0,1);
+    e.preventDefault();
+  }
+  // block other input
+  if(!/^[0-9]$/.test(e.key)) e.preventDefault();
+}
+
+function moveSelection(dr,dc){
+  if(!selected) return;
+  const r = +selected.dataset.r, c = +selected.dataset.c;
+  const nr = (r+dr+9)%9, nc = (c+dc+9)%9;
+  const next = Array.from(sudokuEl.children).find(d => +d.dataset.r===nr && +d.dataset.c===nc);
+  if(next) next.querySelector('input').focus();
+}
+
+// pad buttons
+pad.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  const num = btn.dataset.num;
+  if(!selected) return;
+  const input = selected.querySelector('input');
+  input.value = num;
+  input.dispatchEvent(new Event('input'));
+});
+
+// erase
+eraseBtn.addEventListener('click', ()=>{
+  if(!selected) return;
+  const input = selected.querySelector('input');
+  input.value = '';
+  input.dispatchEvent(new Event('input'));
+});
+
+// pencil toggle
+pencilBtn.addEventListener('click', ()=>{
+  pencilMode = !pencilMode;
+  pencilBtn.classList.toggle('primary', pencilMode);
+  pencilBtn.style.background = pencilMode ? 'linear-gradient(180deg,#ff8a00,#cc6d00)' : '';
+});
+
+
+// save button (manual save)
+saveBtn.addEventListener('click', ()=>{
+  try{
+    const state = {puzzle, solution, givens, notes, difficulty: difficultyEl.value, timestamp: Date.now()};
+    localStorage.setItem('sudoku_scalforce_saved', JSON.stringify(state));
+    }catch(e){
+    console.error('Erro ao salvar progresso:', e);
+    }
+});
+
+// hint: fill one empty cell with correct number
+hintBtn.addEventListener('click', ()=>{
+  // find an empty non-given cell
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      if(!givens[r][c] && puzzle[r][c]===0){
+        puzzle[r][c] = solution[r][c];
+        renderGrid();
+        validateAndMark();
+        return;
+      }
+    }
+  }
+});
+
+// check correctness (mark invalids)
+checkBtn.addEventListener('click', ()=>{
+// when user clicks Verificar: compute wrong cells, mark them and highlight blocks
+  const wrongSet = computeWrongCells();
+  // apply invalid class to wrong cells and remove from others
+  sudokuEl.querySelectorAll('.cell').forEach(div=>{
+    const key = div.dataset.r+'-'+div.dataset.c;
+    if(wrongSet.has(key)) div.classList.add('invalid'); else div.classList.remove('invalid');
+  });
+  // highlight blocks
+  if(wrongSet.size>0){
+    highlightWrongBlocks(wrongSet);
+    statusEl.textContent = `Encontrados ${wrongSet.size} célula(s) em conflito. Os blocos afetados foram destacados.`;
+  } else {
+    // remove block highlights
+    sudokuEl.querySelectorAll('.cell').forEach(d => d.classList.remove('block-invalid'));
+    statusEl.textContent = isComplete() ? 'Parabéns — puzzle resolvido corretamente!' : 'Nenhum conflito encontrado.';
+  }
+});
+// solve: fill puzzle with solution
+solveBtn.addEventListener('click', ()=>{
+  showSolveModal(function(){
+    puzzle = deepCopyGrid(solution);
+    renderGrid();
+    validateAndMark();
+  });
+});
+
+// reset: restore puzzle from givens
+resetBtn.addEventListener('click', ()=>{
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(!givens[r][c]) puzzle[r][c]=0;
+  notes = {}; renderGrid(); validateAndMark();
+});
+
+// new puzzle
+newBtn.addEventListener('click', ()=>{ startNew(); });
+
+// save/load
+// Salvamento manual foi removido desta versão.
+// utility: count filled
+function updateProgress(){
+  let filled=0;
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(puzzle[r][c] && puzzle[r][c]!==0) filled++;
+  progressEl.textContent = `${filled} / 81`;
+}
+
+// check duplicates and mark invalid cells; if onlyCount true, just return count of wrong cells
+
+// computeWrongCells: returns a Set of keys "r-c" that are wrong (duplicates) in rows, cols or blocks
+function computeWrongCells(){
+  const wrongCells = new Set();
+  // rows
+  for(let r=0;r<9;r++){
+    const seen = {};
+    for(let c=0;c<9;c++){
+      const v = puzzle[r][c];
+      if(v && v!==0){
+        if(seen[v]){ wrongCells.add(r+'-'+c); wrongCells.add(r+'-'+seen[v]); }
+        else seen[v]=c;
+      }
+    }
+  }
+  // cols
+  for(let c=0;c<9;c++){
+    const seen = {};
+    for(let r=0;r<9;r++){
+      const v = puzzle[r][c];
+      if(v && v!==0){
+        if(seen[v]){ wrongCells.add(r+'-'+c); wrongCells.add(seen[v]+'-'+c); }
+        else seen[v]=r;
+      }
+    }
+  }
+  // blocks
+  for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){
+    const seen = {};
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++){
+      const r = br*3+i, c = bc*3+j;
+      const v = puzzle[r][c];
+      if(v && v!==0){
+        if(seen[v]){ wrongCells.add(r+'-'+c); wrongCells.add(seen[v]); }
+        else seen[v]=r+'-'+c;
+      }
+    }
+  }
+  return wrongCells;
+}
+
+// highlight whole 3x3 blocks that contain any wrong cell (adds class 'block-invalid' to all cells in that block)
+function highlightWrongBlocks(wrongCells){
+  // remove previous block-invalid
+  sudokuEl.querySelectorAll('.cell').forEach(d => d.classList.remove('block-invalid'));
+  const blocks = new Set();
+  wrongCells.forEach(key => {
+    const [r,c] = key.split('-').map(Number);
+    const br = Math.floor(r/3), bc = Math.floor(c/3);
+    blocks.add(br+'-'+bc);
+  });
+  // add class to all cells in those blocks
+  blocks.forEach(bk => {
+    const [br,bc] = bk.split('-').map(Number);
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++){
+      const r = br*3 + i, c = bc*3 + j;
+      const cell = Array.from(sudokuEl.children).find(d=>+d.dataset.r===r && +d.dataset.c===c);
+      if(cell) cell.classList.add('block-invalid');
+    }
+  });
+}
+function validateAndMark(onlyCount=false){
+  const wrongCells = new Set();
+  // rows
+  for(let r=0;r<9;r++){
+    const seen = {};
+    for(let c=0;c<9;c++){
+      const v = puzzle[r][c];
+      if(v && v!==0){
+        if(seen[v]){ wrongCells.add(r+'-'+c); wrongCells.add(r+'-'+seen[v]); }
+        else seen[v]=c;
+      }
+    }
+  }
+  // cols
+  for(let c=0;c<9;c++){
+    const seen = {};
+    for(let r=0;r<9;r++){
+      const v = puzzle[r][c];
+      if(v && v!==0){
+        if(seen[v]){ wrongCells.add(r+'-'+c); wrongCells.add(seen[v]+'-'+c); }
+        else seen[v]=r;
+      }
+    }
+  }
+  // blocks
+  for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){
+    const seen = {};
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++){
+      const r = br*3+i, c = bc*3+j;
+      const v = puzzle[r][c];
+      if(v && v!==0){
+        if(seen[v]){ wrongCells.add(r+'-'+c); wrongCells.add(seen[v]); }
+        else seen[v]=r+'-'+c;
+      }
+    }
+  }
+  // apply classes
+  sudokuEl.querySelectorAll('.cell').forEach(div=>{
+    const key = div.dataset.r+'-'+div.dataset.c;
+    if(wrongCells.has(key)) div.classList.add('invalid'); else div.classList.remove('invalid');
+  });
+  if(onlyCount) return wrongCells.size;
+  return 0;
+}
+
+// check completion
+function isComplete(){
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(!puzzle[r][c] || puzzle[r][c]===0) return false;
+  // and valid
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(puzzle[r][c]!==solution[r][c]) return false;
+  return true;
+}
+
+// timer
+function startTimer(resume=false){
+  clearInterval(timerInterval);
+  if(!resume) startTime = Date.now();
+  else {
+    // if previous started (try to recover from localStorage)
+    const s = localStorage.getItem('sudoku_scalforce_time');
+    if(s) startTime = Date.now() - Number(s);
+    else startTime = Date.now();
+  }
+  timerInterval = setInterval(()=>{
+    const diff = Date.now() - startTime;
+    localStorage.setItem('sudoku_scalforce_time', String(diff));
+    const sec = Math.floor(diff/1000)%60;
+    const min = Math.floor(diff/60000);
+    timerEl.textContent = String(min).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+  }, 500);
+}
+
+// start new puzzle
+function startNew(){
+  statusEl.textContent = 'Gerando puzzle — aguarde um momento...';
+  // stop timer
+  clearInterval(timerInterval);
+  setTimeout(()=>{
+    // generate full solution
+    let full = generateFull();
+    // choose clues based on difficulty
+    const diff = difficultyEl.value;
+    let clues = 30;
+    if(diff==='easy') clues = 36;
+    if(diff==='medium') clues = 30;
+    if(diff==='hard') clues = 24;
+    // attempt to make puzzle with unique solution
+    let attempts=0;
+    let p;
+    while(attempts<6){
+      p = makePuzzle(full, clues);
+      // if the puzzle has at least the right number of clues, accept. else try regenerating full grid once in a while
+      const present = p.flat().filter(x=>x!==0).length;
+      if(present>=clues) break;
+      full = generateFull();
+      attempts++;
+    }
+    solution = full;
+    puzzle = p;
+    givens = Array.from({length:9},()=>Array(9).fill(false));
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(puzzle[r][c]!==0) givens[r][c]=true;
+    notes = {};
+    buildGridElements();
+    renderGrid();
+    validateAndMark();
+    startTimer();
+    statusEl.textContent = 'Jogar Sudoku exige atenção, paciência e lógica!';
+  }, 60);
+}
+
+// initialize on load
+
+/* --- Modal restore dialog (custom) --- */
+// modal styles
+const _modalStyle = document.createElement('style');
+_modalStyle.textContent = `
+  .sf-modal-overlay{position:fixed;inset:0;background:rgba(10,6,12,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;}
+  .sf-modal{width:min(520px,94%);background:linear-gradient(180deg,#1b1024,#14081a);border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(0,0,0,0.6);color:var(--muted);font-family:Poppins,system-ui,Segoe UI,Roboto,-apple-system, sans-serif;}
+  .sf-modal h3{margin:0 0 6px 0;color:var(--accent);font-size:1.05rem;font-weight:800}
+  .sf-modal p{margin:0 0 12px 0;color:var(--muted);line-height:1.35}
+  .sf-modal .sf-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+  .sf-modal .btn{padding:.5rem .9rem;border-radius:10px;font-weight:700;cursor:pointer;min-width:88px;text-align:center}
+  .sf-modal .btn.primary{background:var(--accent);color:#1b0d27;border:0}
+  .sf-modal .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+`;
+document.head.appendChild(_modalStyle);
+
+// create modal element (hidden by default)
+function createRestoreModal(){
+  if(document.getElementById('sf-restore-modal')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'sf-restore-modal';
+  overlay.className = 'sf-modal-overlay';
+  overlay.style.display='none';
+  const box = document.createElement('div');
+  box.className = 'sf-modal card';
+  box.innerHTML = `
+    <h3>Progresso encontrado</h3>
+    <p id="sf-restore-msg">Encontramos um progresso salvo deste jogo. Deseja restaurá-lo?</p>
+    <div class="sf-actions">
+      <button class="btn ghost" id="sf-restore-no">Não</button>
+      <button class="btn primary" id="sf-restore-yes">Sim</button>
+    </div>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  // wire buttons
+  document.getElementById('sf-restore-no').addEventListener('click', ()=>{
+    overlay.style.display='none';
+  });
+  // 'yes' handler will be attached dynamically when calling showRestoreModal to capture the state
+}
+
+// show modal with custom formatted date and handlers
+function showRestoreModal(state, onYes){
+  createRestoreModal();
+  const overlay = document.getElementById('sf-restore-modal');
+  const msg = document.getElementById('sf-restore-msg');
+  // format timestamp to readable date/time
+  let when='';
+  try{
+    const d = new Date(state.timestamp || Date.now());
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const min = String(d.getMinutes()).padStart(2,'0');
+    when = `${dd}/${mm}/${yy} às ${hh}:${min}`;
+  }catch(e){
+    when = 'um momento anterior';
+  }
+  msg.innerHTML = `Encontramos um progresso salvo em <strong>${when}</strong>.<br>Deseja restaurar seu progresso e continuar de onde parou?`;
+  overlay.style.display='flex';
+  // remove previous listener if any, then attach
+  const yesBtn = document.getElementById('sf-restore-yes');
+  const newYes = () => { overlay.style.display='none'; onYes(); };
+  // clone to remove prior listeners safely
+  const yesClone = yesBtn.cloneNode(true);
+  yesBtn.parentNode.replaceChild(yesClone, yesBtn);
+  yesClone.addEventListener('click', newYes);
+}
+
+
+
+/* --- Modal for 'solve' confirmation --- */
+const _solveModalStyle = document.createElement('style');
+_solveModalStyle.textContent = `
+  .sf-solve-overlay{position:fixed;inset:0;background:rgba(10,6,12,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;}
+  .sf-solve{width:min(520px,94%);background:linear-gradient(180deg,#1b1126,#120517);border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(0,0,0,0.6);color:var(--muted);font-family:Poppins,system-ui,Segoe UI,Roboto,-apple-system, sans-serif;}
+  .sf-solve h3{margin:0 0 6px 0;color:var(--accent);font-size:1.05rem;font-weight:800}
+  .sf-solve p{margin:0 0 12px 0;color:var(--muted);line-height:1.35}
+  .sf-solve .sf-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+  .sf-solve .btn{padding:.5rem .9rem;border-radius:10px;font-weight:700;cursor:pointer;min-width:88px;text-align:center}
+  .sf-solve .btn.primary{background:var(--accent);color:#1b0d27;border:0}
+  .sf-solve .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+`;
+document.head.appendChild(_solveModalStyle);
+
+// create solve modal element (hidden by default)
+function createSolveModal(){
+  if(document.getElementById('sf-solve-modal')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'sf-solve-modal';
+  overlay.className = 'sf-solve-overlay';
+  overlay.style.display='none';
+  const box = document.createElement('div');
+  box.className = 'sf-solve card';
+  box.innerHTML = `
+    <h3>Preencher com a solução?</h3>
+    <p id="sf-solve-msg">Você tem certeza que deseja preencher todo o tabuleiro com a solução completa? Esta ação substituirá seu progresso atual.</p>
+    <div class="sf-actions">
+      <button class="btn ghost" id="sf-solve-no">Não</button>
+      <button class="btn primary" id="sf-solve-yes">Sim</button>
+    </div>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  document.getElementById('sf-solve-no').addEventListener('click', ()=>{
+    overlay.style.display='none';
+  });
+}
+
+// show solve modal and attach action for 'yes'
+function showSolveModal(onYes){
+  createSolveModal();
+  const overlay = document.getElementById('sf-solve-modal');
+  overlay.style.display='flex';
+  const yesBtn = document.getElementById('sf-solve-yes');
+  // replace handler safely
+  const yesClone = yesBtn.cloneNode(true);
+  yesBtn.parentNode.replaceChild(yesClone, yesBtn);
+  yesClone.addEventListener('click', ()=>{
+    overlay.style.display='none';
+    try{ onYes(); }catch(e){ console.error(e); }
+  });
+}
+
+
+(function init(){
+  buildGridElements();
+  // try load saved state
+  const s = localStorage.getItem('sudoku_scalforce_saved');
+  if(s){
+    const state = JSON.parse(s);
+    // if saved less than 7 days ago, offer to restore
+    if(Date.now() - state.timestamp < 1000*60*60*24*7){
+      showRestoreModal(state, function(){
+        puzzle = state.puzzle; solution = state.solution; givens = state.givens; notes = state.notes || {};
+        buildGridElements(); renderGrid(); validateAndMark(); startTimer(true);
+        return;
+      });
+    }
+  }
+  startNew();
+})();
+
+// keyboard global input
+window.addEventListener('keydown', (e)=>{
+  if(document.activeElement && document.activeElement.tagName==='INPUT') return;
+  if(!selected) return;
+  if(/^[1-9]$/.test(e.key)){
+    const input = selected.querySelector('input');
+    input.value = e.key;
+    input.dispatchEvent(new Event('input'));
+  } else if(e.key==='Backspace' || e.key==='Delete'){
+    const input = selected.querySelector('input');
+    input.value=''; input.dispatchEvent(new Event('input'));
+  } else if(e.key==='p' || e.key==='P'){
+    pencilMode = !pencilMode;
+    pencilBtn.classList.toggle('primary', pencilMode);
+  } else if(e.key==='h' || e.key==='H'){
+    hintBtn.click();
+  } else if(e.key==='s' || e.key==='S'){
+    checkBtn.click();
+  }
+});
+</script>
+</body>
+</html>

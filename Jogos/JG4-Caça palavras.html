@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Caça-Palavras — ScalForce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --accent:#ff8a00;
+      --card:#2b1943;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(180deg, #1a0f26 100%, var(--bg) 100%);}
+
+    /* header from ScalForce adapted (back button instead of login) */
+    header{position:sticky;top:0;z-index:20;backdrop-filter:saturate(140%) blur(6px);background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6));border-bottom:1px solid rgba(255,255,255,.04)}
+    .container{width:min(1300px,100%);margin-inline:auto}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.9rem 0}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800}
+    .brand img{height:40px;filter:drop-shadow(0 2px 8px rgba(255,138,0,.12))}
+    .brand span{color:var(--accent)}
+    .nav-actions{display:flex;gap:.6rem;align-items:center}
+    .btn{display:inline-flex;align-items:center;gap:.6rem;padding:.6rem .9rem;border-radius:999px;border:1px solid transparent;font-weight:700;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#1b0d27}
+    .btn.ghost{background:#ff8a00;border:1px solid rgba(255,255,255,.04)}
+
+    main{padding:2rem 0}
+    .game-wrap{display:grid;grid-template-columns:380px 1fr;gap:1.4rem;align-items:start}
+
+    /* left panel */
+    .panel{background:linear-gradient(145deg,var(--card),#1a0f2a);border:2px solid rgba(255,255,255,.04);padding:1rem;border-radius:14px}
+    .panel h2{margin:0 0 .6rem}
+    .phase-list{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem}
+    .phase-btn{padding:.5rem .7rem;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:var(--accent);color:#14070a;font-weight:700;cursor:pointer}
+    .phase-btn:hover{filter:brightness(.95)}
+    .phase-btn.active{background:#e56800;border-color:#bf5000;color:#14070a}
+    .phase-btn.active{background:var(--primary);border-color:#6d36b0}
+    .words-list{margin-top:.6rem}
+    .words-list li{padding:.35rem .5rem;border-radius:8px;background:rgba(0,0,0,.15);margin-bottom:.35rem;display:flex;justify-content:space-between;align-items:center}
+    .words-list li.found{opacity:.5;text-decoration:line-through;background:linear-gradient(90deg, rgba(255,138,0,.06), transparent)}
+
+    /* board */
+    .board-wrap{display:flex;flex-direction:column;align-items:center;gap:.8rem}
+    .board{display:grid;grid-template-columns:repeat(12,36px);grid-auto-rows:36px;gap:4px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);border:1px solid rgba(255,255,255,.03)}
+    .cell{width:36px;height:36px;display:grid;place-items:center;background:#12061a;border-radius:8px;font-weight:700;user-select:none;cursor:pointer}
+    .cell span{pointer-events:none}
+    .cell.selected{background:var(--accent);color:#14070a}
+    .cell.highlight{outline:2px solid rgba(255,138,0,.25);box-shadow:0 4px 12px rgba(255,138,0,.06)}
+    .cell.found{background:linear-gradient(90deg, rgba(54,195,141,.12), rgba(54,195,141,.06));color:var(--text)}
+
+    .controls{display:flex;gap:.6rem;align-items:center}
+    .hint{font-size:.95rem;color:var(--muted)}
+    .status{margin-top:.4rem;color:var(--muted)}
+
+    footer{margin-top:1.2rem;color:var(--muted)}
+
+    @media (max-width:980px){.game-wrap{grid-template-columns:1fr;}.board{grid-template-columns:repeat(12,30px);grid-auto-rows:30px}.cell{width:30px;height:30px}}
+  </style>
+  <style>
+  /* nova box de comandos */
+  .panel-commands {
+    background: linear-gradient(145deg, var(--card), #1a0f2a);
+    border: 2px solid rgba(255,255,255,.04);
+    padding: 1rem;
+    border-radius: 14px;
+    margin-left: 1rem;
+    align-self: flex-start;
+    min-width: 220px;
+  }
+  .panel-commands h2 {
+    margin-top: 0;
+    margin-bottom: .6rem;
+    color: var(--accent);
+    font-size: 1.1rem;
+  }
+  .panel-commands ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .panel-commands li {
+    padding: .35rem .5rem;
+    margin-bottom: .35rem;
+    border-radius: 8px;
+    background: rgba(0,0,0,.15);
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="Logo.png" alt="Logo" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+      <div class="nav-actions">
+        <button class="btn ghost" onclick="goBack()">Voltar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="game-wrap">
+      <aside class="panel">
+        <h2>Caça-Palavras — Fases</h2>
+        <div class="phase-list" id="phaseList"></div>
+        <div style="margin-top:.6rem">
+          <div class="controls">
+            <button id="restartBtn" class="btn ghost" onclick="restartLevel()">Reiniciar Fase</button>
+            <button id="shuffleBtn" class="btn ghost" onclick="shuffleLevel()">Embaralhar</button>
+            <button id="autoFillBtn" class="btn ghost" onclick="toggleHints()">Dica: Mostrar palavras</button>
+          </div>
+          <div class="status" id="status">Selecione as palavras encontradas clicando e arrastando no tabuleiro.</div>
+        </div>
+
+        <h3 style="margin-top:.8rem">Palavras desta fase</h3>
+        <ul class="words-list" id="wordsList"></ul>
+        <footer>
+          <small>Fase atual salva automaticamente.</small>
+        </footer>
+        
+      </aside>
+
+      <section class="board-wrap" style="flex-direction:row; align-items:flex-start">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:.8rem">
+    <div style="display:flex;gap:1rem;align-items:center">
+      <h2 id="levelTitle">Fase 1</h2>
+      <div class="hint" id="progress">0 / 5 encontrados</div>
+    </div>
+    <div id="board" class="board" tabindex="0" aria-label="Tabuleiro de letras"></div>
+    <div style="display:flex;gap:1rem;align-items:center;margin-top:.6rem">
+      <button class="btn primary" id="nextBtn" onclick="nextLevel()" disabled>Próxima Fase</button>
+    </div>
+  </div>
+
+  <!-- nova box ao lado da grade -->
+  <aside class="panel-commands">
+    <h2>Comandos do Controle</h2>
+    <ul>
+      <li><span>Analógico Esquerdo</span>-<span>Navegar tabuleiro</span></li>
+      <li><span>Botão A</span>------------<span>Selecionar célula</span></li>
+      <li><span>Analógico Direito</span>----<span>Scroll do mouse</span></li>
+      <li><span>Setas</span>-------------<span>Navegar no menu</span></li>
+      <li><span>Botão X</span>-----------------<span>Ativar botão</span></li>
+      <li><span>Start</span>-------------------<span>Próxima fase</span></li>
+    </ul>
+  </aside>
+</section>
+    </div>
+  </main>
+
+  <script>
+    // --- Configurações e palavras das fases (todas em maiúsculas sem acentos para facilitar) ---
+    const PHASES = [
+      // fase 1: 5 palavras
+      ['CASA','SOL','LUA','MAR','RIO'],
+      // fase 2: 7 palavras
+      ['ESCOLA','LIVRO','PROFESSOR','LINGUA','ALUNO','AULA','PROVA'],
+      // fase 3: 9 palavras
+      ['MATEMATICA','HISTORIA','CIENCIAS','GEOGRAFIA','BIOLOGIA','QUIMICA','FISICA','FILOSOFIA','SOCIOLOGIA'],
+      // fase 4: 11 palavras
+      ['COMPUTADOR','PROGRAMACAO','INTERNET','TECNOLOGIA','ALGORITMO','DADOS','ROBOTICA','REDES','SOFTWARE','HARDWARE','APLICATIVO'],
+      // fase 5: 13 palavras
+      ['PALAVRA','DESAFIO','CONQUISTA','VITORIA','APRENDER','JOGAR','MEMORIA','ATENCAO','RACIOCINIO','ESTRATEGIA','CRIATIVIDADE','CONCENTRACAO','COLABORAR']
+    ];
+
+    const GRID_SIZE = 12; // 12x12 quadro (suficiente para fase 5)
+
+    // state
+    let currentPhase = Number(localStorage.getItem('caca_currentPhase')) || 0; // 0-indexed
+    let board = []; // 2d array
+    let placedWords = []; // {word,x,y,dx,dy,cells,found,color}
+    let showWords = false;
+    let selectedSeq = []; // ordered array of {x,y}
+
+    const COLORS = ['#ff7a18','#6a2dd6','#2dd66a','#d62d6a','#2db6d6','#ffd62d','#ff2d2d','#8a44ff'];
+
+    const boardEl = document.getElementById('board');
+    const phaseListEl = document.getElementById('phaseList');
+    const wordsListEl = document.getElementById('wordsList');
+    const levelTitle = document.getElementById('levelTitle');
+    const progressEl = document.getElementById('progress');
+    const nextBtn = document.getElementById('nextBtn');
+    const statusEl = document.getElementById('status');
+    const autoFillBtn = document.getElementById('autoFillBtn');
+
+    function goBack(){ window.history.back(); }
+
+    // --- Phase buttons ---
+    function renderPhaseButtons(){
+      phaseListEl.innerHTML = '';
+      PHASES.forEach((p,i)=>{
+        const b = document.createElement('button');
+        b.className = 'phase-btn' + (i===currentPhase? ' active' : '');
+        b.textContent = `Fase ${i+1}`;
+        b.onclick = ()=>{ 
+  currentPhase = i; 
+  savePhase(); 
+  startLevel(); 
+  renderPhaseButtons(); 
+};
+
+        phaseListEl.appendChild(b);
+      });
+    }
+
+    function savePhase(){ localStorage.setItem('caca_currentPhase', String(currentPhase)); }
+
+    // --- Grid helpers ---
+    function emptyGrid(){ board = Array.from({length:GRID_SIZE}, ()=>Array.from({length:GRID_SIZE}, ()=>'')); }
+
+    function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+    // directions: dx,dy pairs (8 directions)
+    const DIRS = [
+      [1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]
+    ];
+
+    function tryPlaceWord(word){
+      const maxAttempts = 200;
+      for(let attempt=0; attempt<maxAttempts; attempt++){
+        const dir = DIRS[randInt(0,DIRS.length-1)];
+        const dx = dir[0], dy = dir[1];
+        const len = word.length;
+        const minX = dx===1? 0 : (dx===-1? len-1 : 0);
+        const maxX = dx===1? GRID_SIZE - len : (dx===-1? GRID_SIZE-1 : GRID_SIZE-1);
+        const minY = dy===1? 0 : (dy===-1? len-1 : 0);
+        const maxY = dy===1? GRID_SIZE - len : (dy===-1? GRID_SIZE-1 : GRID_SIZE-1);
+        const x = randInt(minX, maxX);
+        const y = randInt(minY, maxY);
+        // check fit
+        let ok=true;
+        let cells=[];
+        for(let k=0;k<len;k++){
+          const cx = x + dx*k, cy = y + dy*k;
+          const ch = board[cy][cx];
+          if(ch!=='' && ch!==word[k]){ ok=false; break; }
+          cells.push([cx,cy]);
+        }
+        if(!ok) continue;
+        // place
+        for(let k=0;k<len;k++){
+          const cx = x + dx*k, cy = y + dy*k;
+          board[cy][cx] = word[k];
+        }
+        return {word,x,y,dx,dy,cells,found:false,color:null};
+      }
+      return null;
+    }
+
+    function placeAllWords(words){
+      emptyGrid();
+      placedWords = [];
+      // shuffle words by longest first to improve fit
+      const order = words.slice().sort((a,b)=>b.length-a.length);
+      for(const w of order){
+        const placed = tryPlaceWord(w);
+        if(!placed){
+          // failed; fallback: try different insertion strategy
+          emptyGrid();
+          placedWords = [];
+          const shuffled = words.slice().sort(()=>Math.random()-0.5);
+          for(const w2 of shuffled){
+            const p2 = tryPlaceWord(w2) || {word:w2,x:0,y:0,dx:1,dy:0,cells:[]};
+            placedWords.push(p2);
+          }
+          break;
+        }
+        placedWords.push(placed);
+      }
+      // assign colors
+      placedWords.forEach((p,i)=> p.color = COLORS[i % COLORS.length]);
+      // fill blanks
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      for(let y=0;y<GRID_SIZE;y++){
+        for(let x=0;x<GRID_SIZE;x++){
+          if(!board[y][x] || board[y][x]==='') board[y][x] = letters[randInt(0,letters.length-1)];
+        }
+      }
+    }
+
+    // --- Render board ---
+    function renderBoard(){
+      boardEl.innerHTML = '';
+      boardEl.style.gridTemplateColumns = `repeat(${GRID_SIZE}, minmax(28px, 1fr))`;
+      for(let y=0;y<GRID_SIZE;y++){
+        for(let x=0;x<GRID_SIZE;x++){
+          const idx = y*GRID_SIZE + x;
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.x = x; cell.dataset.y = y;
+          cell.innerHTML = `<span>${board[y][x]}</span>`;
+          if(showWords && isCellInAnyWord(x,y)) cell.classList.add('highlight');
+          if(isCellSelected(x,y)) cell.classList.add('selected');
+          if(isCellFound(x,y)) cell.classList.add('found');
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function isCellInAnyWord(x,y){
+      return placedWords.some(p=>p.cells && p.cells.some(c=>c[0]===x && c[1]===y));
+    }
+    function isCellSelected(x,y){
+      return selectedSeq.some(c=>c.x===x && c.y===y);
+    }
+    function isCellFound(x,y){
+      return placedWords.some(p => p.found && p.cells && p.cells.some(c=>c[0]===x && c[1]===y));
+    }
+
+    // --- Words list render ---
+    function renderWordsList(){
+      wordsListEl.innerHTML = '';
+      placedWords.forEach(p=>{
+        const li = document.createElement('li');
+        li.textContent = p.word;
+        li.id = 'word-'+p.word;
+        if(p.found) li.classList.add('found');
+        wordsListEl.appendChild(li);
+      });
+      updateProgress();
+    }
+
+    function updateProgress(){
+      const total = placedWords.length;
+      const found = placedWords.filter(p=>p.found).length;
+      progressEl.textContent = `${found} / ${total} encontrados`;
+      nextBtn.disabled = !(found===total && currentPhase < PHASES.length-1);
+      if(found===total) statusEl.textContent = 'Parabéns! Você encontrou todas as palavras desta fase.'; else statusEl.textContent = 'Clique nas letras em ordem para formar a palavra (aceita também ao contrário). Clique novamente para desmarcar.';
+    }
+
+    // --- Selection handling (clique por letra, ordem importa; aceita também reverso) ---
+    function cellFromEvent(evt){
+      const el = evt.target.closest('.cell');
+      if(!el) return null;
+      return {x:Number(el.dataset.x), y:Number(el.dataset.y), el};
+    }
+
+    boardEl.addEventListener('click', (e)=>{
+      const c = cellFromEvent(e);
+      if(!c) return;
+      // ignore clicks on already found words
+      if(isCellFound(c.x,c.y)) return;
+      toggleCellSelection(c.x,c.y);
+      applySelectionClasses();
+      checkOrderedSelection();
+    });
+
+    function toggleCellSelection(x,y){
+      const idx = selectedSeq.findIndex(cc=>cc.x===x && cc.y===y);
+      if(idx>=0) selectedSeq.splice(idx,1); else selectedSeq.push({x,y});
+    }
+
+    function applySelectionClasses(){
+      // remove selected from all
+      document.querySelectorAll('.cell').forEach(c=>c.classList.remove('selected'));
+      // apply to current selected in order
+      selectedSeq.forEach(({x,y})=>{
+        const idx = y*GRID_SIZE + x; const el = boardEl.children[idx]; if(el) el.classList.add('selected');
+      });
+    }
+
+    function clearSelection(){
+      selectedSeq = [];
+      document.querySelectorAll('.cell.selected').forEach(c=>c.classList.remove('selected'));
+    }
+
+    function checkOrderedSelection(){
+      if(selectedSeq.length===0) return;
+      const s = selectedSeq.map(c=>board[c.y][c.x]).join('');
+      const rev = s.split('').reverse().join('');
+      let foundP = null;
+      for(const p of placedWords){
+        if(p.found) continue;
+        if(p.word === s || p.word === rev){ foundP = p; break; }
+      }
+      if(foundP){
+        // mark each selected cell with the word color
+        selectedSeq.forEach(({x,y})=>{
+          const idx = y*GRID_SIZE + x; const el = boardEl.children[idx];
+          if(el){ el.style.background = foundP.color; el.style.color = '#14070a'; el.classList.remove('selected'); el.classList.add('found'); }
+        });
+        // mark word in list
+        const li = document.getElementById('word-'+foundP.word);
+        if(li) li.classList.add('found');
+        foundP.found = true;
+        saveProgress();
+        statusEl.textContent = `Encontrou: ${foundP.word}`;
+        setTimeout(()=>{ updateProgress(); }, 400);
+        selectedSeq = [];
+      } else {
+        // feedback if length matches any word but letters don't
+        const candidates = placedWords.filter(p=>!p.found && p.cells && p.cells.length===selectedSeq.length);
+        if(candidates.length>0){
+          statusEl.textContent = 'Seleção não corresponde a nenhuma palavra.';
+          setTimeout(()=>{ updateProgress(); }, 800);
+        }
+      }
+    }
+
+    // --- Persistence: save which words found per phase ---
+    function saveProgress(){
+      const key = `caca_progress_phase_${currentPhase}`;
+      const data = placedWords.map(p=> ({word:p.word,found:!!p.found}) );
+      localStorage.setItem(key, JSON.stringify(data));
+      const all = placedWords.every(p=>p.found);
+      if(all && currentPhase < PHASES.length-1){
+        nextBtn.disabled = false;
+      }
+    }
+
+    function loadProgress(){
+      const key = `caca_progress_phase_${currentPhase}`;
+      const raw = localStorage.getItem(key);
+      if(!raw) return;
+      try{
+        const arr = JSON.parse(raw);
+        for(const a of arr){
+          const p = placedWords.find(pp=>pp.word===a.word);
+          if(p) p.found = !!a.found;
+        }
+      }catch(e){}
+    }
+
+    // --- Controls for level lifecycle ---
+    function startLevel(){
+      clearSelection();
+      const words = PHASES[currentPhase].map(w=>w.toUpperCase().replace(/[^A-Z0-9]/g,''));
+      placeAllWords(words);
+      loadProgress();
+      renderBoard();
+      renderWordsList();
+      levelTitle.textContent = `Fase ${currentPhase+1}`;
+      renderPhaseButtons();
+      savePhase();
+      nextBtn.disabled = true;
+      updateProgress();
+    }
+
+    function nextLevel(){
+  if(currentPhase < PHASES.length-1){
+    currentPhase++;
+    savePhase();
+    startLevel();
+    renderPhaseButtons();
+    statusEl.textContent = `Avançou para a fase ${currentPhase+1}`;
+  } else {
+    statusEl.textContent = 'Você já concluiu a última fase!';
+  }
+}
+
+
+    function restartLevel(){
+      // remove saved progress for this phase and reset found flags
+      const key = `caca_progress_phase_${currentPhase}`;
+      localStorage.removeItem(key);
+      placedWords.forEach(p=>p.found=false);
+      // clear any visual found/selected state before restarting
+      document.querySelectorAll('.cell.found, .cell.selected').forEach(el=>{
+        el.classList.remove('found','selected');
+        el.style.background = '';
+        el.style.color = '';
+      });
+      startLevel();
+    }
+
+    function shuffleLevel(){ startLevel(); }
+
+    function toggleHints(){ showWords = !showWords; autoFillBtn.textContent = showWords? 'Dica: Ocultar palavras' : 'Dica: Mostrar palavras'; renderBoard(); }
+
+    // --- initialization ---
+    renderPhaseButtons();
+    startLevel();
+
+    // keyboard support: press H to toggle hints, R to restart
+    window.addEventListener('keydown',(e)=>{
+      if(e.key==='h' || e.key==='H') toggleHints();
+      if(e.key==='r' || e.key==='R') restartLevel();
+    });
+
+  </script>
+ <script>
+/* ===== GamePad API (versão com novos comandos e correção do foco) ===== */
+(function(){
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .gpad-cursor { outline: 2px solid #ffffff; transform: scale(1.05); transition:.12s; }
+    .gpad-focus { outline:2px solid #ffffff; }
+    .cell.gpad-cursor.found, .cell.gpad-cursor.selected { outline:2px solid #ffffff; }
+  `;
+  document.head.appendChild(style);
+})();
+
+let gpIndex = null;
+let cursorX = 0, cursorY = 0;
+let uiElements = [];
+let uiFocusIndex = 0;
+const DEADZONE = 0.6;
+let leftLastMoveAt = 0;
+let prevButtons = [];
+
+function refreshUiElements(){
+  uiElements = [];
+  const phaseBtns = Array.from(phaseListEl.querySelectorAll('.phase-btn'));
+  uiElements.push(...phaseBtns);
+  const restart = document.getElementById('restartBtn');
+  const shuffle = document.getElementById('shuffleBtn');
+  const hint = document.getElementById('autoFillBtn');
+  if(restart) uiElements.push(restart);
+  if(shuffle) uiElements.push(shuffle);
+  if(hint) uiElements.push(hint);
+  if(uiFocusIndex >= uiElements.length) uiFocusIndex = 0;
+  applyGamepadUIFocus();
+}
+
+function applyGamepadUIFocus(){
+  uiElements.forEach((el,i)=> el?.classList.toggle('gpad-focus', i===uiFocusIndex));
+}
+
+function updateGamepadBoardCursor(){
+  document.querySelectorAll('.cell.gpad-cursor').forEach(c=>c.classList.remove('gpad-cursor'));
+  const idx = cursorY * GRID_SIZE + cursorX;
+  if(boardEl.children[idx]) boardEl.children[idx].classList.add('gpad-cursor');
+}
+
+function moveCursor(dx,dy){
+  cursorX = Math.max(0, Math.min(GRID_SIZE-1, cursorX+dx));
+  cursorY = Math.max(0, Math.min(GRID_SIZE-1, cursorY+dy));
+  updateGamepadBoardCursor();
+  const el = boardEl.children[cursorY*GRID_SIZE+cursorX];
+  el?.scrollIntoView({block:'nearest', inline:'nearest'});
+}
+
+function moveUiFocus(dir){
+  if(uiElements.length===0) return;
+  uiFocusIndex = (uiFocusIndex + dir + uiElements.length) % uiElements.length;
+  applyGamepadUIFocus();
+  uiElements[uiFocusIndex]?.scrollIntoView({block:'nearest', inline:'nearest'});
+}
+
+function activateUiFocus(){ uiElements[uiFocusIndex]?.click(); }
+function activateCursorCell(){ toggleCellSelection(cursorX,cursorY); applySelectionClasses(); checkOrderedSelection(); }
+
+function pollGamepadsLoop(){
+  const gps = navigator.getGamepads();
+  let gp = gpIndex!==null ? gps[gpIndex] : null;
+  if(!gp){ for(let i=0;i<gps.length;i++) if(gps[i]){ gp=gps[i]; gpIndex=i; break; } }
+  if(!gp){ requestAnimationFrame(pollGamepadsLoop); return; }
+
+  const now = performance.now();
+  const [lx,ly,rx,ry] = gp.axes;
+  const buttons = gp.buttons;
+
+  // ANALÓGICO ESQUERDO = tabuleiro
+  if(Math.abs(lx)>DEADZONE || Math.abs(ly)>DEADZONE){
+    if(now-leftLastMoveAt>200){
+      if(lx<=-DEADZONE) moveCursor(-1,0);
+      if(lx>= DEADZONE) moveCursor( 1,0);
+      if(ly<=-DEADZONE) moveCursor(0,-1);
+      if(ly>= DEADZONE) moveCursor(0, 1);
+      leftLastMoveAt = now;
+    }
+  } else leftLastMoveAt=0;
+
+  // ANALÓGICO DIREITO = scroll do mouse
+  if(Math.abs(rx)>DEADZONE || Math.abs(ry)>DEADZONE){
+    window.scrollBy({left: rx*15, top: ry*15, behavior:"smooth"});
+  }
+
+  // SETAS DO CONTROLE = menus
+  if(buttons[12].pressed && !prevButtons[12]) moveUiFocus(-1); // cima
+  if(buttons[13].pressed && !prevButtons[13]) moveUiFocus(1);  // baixo
+  if(buttons[14].pressed && !prevButtons[14]) moveUiFocus(-1); // esquerda
+  if(buttons[15].pressed && !prevButtons[15]) moveUiFocus(1);  // direita
+
+  // BOTÃO A (0)
+  if(buttons[0].pressed && !prevButtons[0]) activateCursorCell();
+
+  // BOTÃO X (2)
+  if(buttons[2].pressed && !prevButtons[2]) activateUiFocus();
+
+  // START (9)
+  if(buttons[9].pressed && !prevButtons[9]){
+    if(nextBtn && !nextBtn.disabled) nextBtn.click();
+    else nextLevel();
+  }
+
+  prevButtons = buttons.map(b=>b.pressed);
+  requestAnimationFrame(pollGamepadsLoop);
+}
+
+if(typeof renderBoard === 'function'){
+  const _origRenderBoard = renderBoard;
+  renderBoard = function(){
+    _origRenderBoard();
+    updateGamepadBoardCursor();
+  };
+}
+if(typeof renderPhaseButtons === 'function'){
+  const _origRenderPhaseButtons = renderPhaseButtons;
+  renderPhaseButtons = function(){
+    _origRenderPhaseButtons();
+    setTimeout(()=>{
+      refreshUiElements();
+      applyGamepadUIFocus();
+    },40);
+  };
+}
+
+window.addEventListener("gamepadconnected", e=>{ gpIndex=e.gamepad.index; refreshUiElements(); });
+window.addEventListener("gamepaddisconnected", ()=>{ gpIndex=null; });
+
+refreshUiElements();
+requestAnimationFrame(pollGamepadsLoop);
+</script>
+
+</body>
+</html>

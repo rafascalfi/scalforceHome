@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Palavra Cruzada - ScalForce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a; --primary:#5E2497; --accent:#ff8a00;
+      --text:#ffffff; --muted:#cfc6d9; --card:#2b1943; --success:#36c38d;
+    }
+    body{
+      margin:0; font-family:Poppins,sans-serif;
+      background:linear-gradient(180deg,#1a0f26,#140a1a);
+      color:var(--text); 
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg,rgba(20,10,26,.9),rgba(20,10,26,.6) 80%,rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 0; width:min(1200px,92%); margin:auto}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.3rem; color:var(--accent)}
+    .nav-actions{display:flex; align-items:center; gap:.6rem}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.75rem 1rem; border-radius:999px; border:1px solid transparent; transition:.2s ease; font-weight:600}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.primary:hover{background:#cc6d00}
+
+    main{display:flex; flex-direction:column; align-items:center; padding:1rem}
+    h1{color:var(--accent); margin-bottom:.2rem}
+    p.desc{color:var(--muted); margin-top:0; margin-bottom:1.5rem}
+    .topbar{margin-bottom:1rem; display:flex; align-items:center; gap:1rem}
+    select{padding:.5rem; border-radius:12px; border:none; background:var(--card); color:var(--text); font-weight:600}
+
+   .game-area{
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  gap:1rem;
+  flex-wrap:wrap;
+  width:min(1200px,95%);
+  margin:auto;
+}
+.grid{
+  display:grid;
+  gap:2px;
+  background:#1a0f26;
+  padding:6px;
+  border-radius:18px;
+  box-shadow:0 8px 22px rgba(0,0,0,.4);
+  justify-content:center;
+  margin:auto;
+}
+
+    .cell{width:32px; height:32px; background:#fff; color:#000; display:flex; align-items:center; justify-content:center; font-size:1.1rem; text-transform:uppercase; position:relative; cursor:pointer;}
+    .cell.block{background:#333; cursor:default;}
+    .cell .num{position:absolute; top:2px; left:3px; font-size:.55rem; font-weight:bold; color:#000;}
+    .clues{background:var(--card); border-radius:18px; padding:1rem; box-shadow:0 8px 22px rgba(0,0,0,.4);}
+    .clues h2{margin-top:0; font-size:1.2rem; color:var(--accent)}
+    .clues ul{padding-left:1rem}
+    .clues li{margin:.4rem 0; font-size:.9rem; color:var(--muted)}
+    .controls{margin-top:1rem; display:flex; flex-wrap:wrap; gap:.5rem}
+    button{background:var(--accent); border:none; border-radius:999px; padding:.6rem 1.2rem; font-weight:700; cursor:pointer; color:#1a0f26; transition:.2s ease;}
+    button:hover{background:#cc6d00}
+    .highlight{outline:2px solid var(--accent)}
+    .success{color:var(--success); font-weight:700; margin-top:1rem}
+    @media(max-width:800px){
+      .game-area{grid-template-columns:1fr}
+      .grid{margin-inline:auto}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header estilo ScalForce -->
+  <header>
+    <div class="nav">
+      <a class="brand">
+        <img src="Logo.png" alt="Logo ScalForce" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+      <nav class="nav-actions">
+        <a class="btn primary"; style="text-decoration: none"; href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Palavras Cruzadas</h1>
+    <p class="desc">Complete todas as fases da cruzadinha!</p>
+
+    <div class="topbar">
+      <label for="faseSelect"><b>Selecionar fase:</b></label>
+      <select id="faseSelect" onchange="selectPhase(this.value)">
+        <option value="0">Fase 1</option>
+        <option value="1">Fase 2</option>
+        <option value="2">Fase 3</option>
+        <option value="3">Fase 4</option>
+        <option value="4">Fase 5</option>
+      </select>
+    </div>
+
+    <h3 id="faseInfo">Fase 1</h3>
+
+    <div class="game-area">
+      <div id="grid" class="grid"></div>
+      <div class="clues">
+        <h2>Horizontais</h2>
+        <ul id="acrossClues"></ul>
+        <h2>Verticais</h2>
+        <ul id="downClues"></ul>
+        <div class="controls">
+          <button onclick="checkAnswers()">Verificar</button>
+          <button onclick="revealAnswers()">Revelar</button>
+          <button onclick="resetGrid()">Reiniciar</button>
+        </div>
+        <div id="status"></div>
+        <button id="nextBtn" style="display:none" onclick="nextPhase()">Próxima Fase ➡️</button>
+      </div>
+    </div>
+  </main>
+
+<script>
+/* Fases completas (1 a 5) */
+const fases = [
+  {size:12, words:[
+    {num:1,dir:'across',row:0,col:0,answer:'SOL',clue:'Estrela que ilumina a Terra. (3)'},
+    {num:2,dir:'down',row:0,col:2,answer:'LEAO',clue:'Rei da selva. (4)'},
+    {num:3,dir:'across',row:2,col:0,answer:'RUA',clue:'Lugar onde passam os carros. (3)'},
+    {num:4,dir:'down',row:0,col:5,answer:'AGUA',clue:'Líquido essencial para a vida. (4)'},
+    {num:5,dir:'across',row:5,col:1,answer:'ESCOLA',clue:'Lugar onde estudamos. (6)'},
+  ]},
+  {size:14, words:[
+    {num:1,dir:'across',row:0,col:0,answer:'MAE',clue:'Pessoa que nos cria. (3)'},
+    {num:2,dir:'down',row:0,col:3,answer:'UVA',clue:'Fruta roxa ou verde. (3)'},
+    {num:3,dir:'across',row:2,col:0,answer:'RIO',clue:'Curso de água. (3)'},
+    {num:4,dir:'down',row:0,col:5,answer:'LUA',clue:'Satélite da Terra. (3)'},
+    {num:5,dir:'across',row:5,col:1,answer:'CASA',clue:'Lugar onde moramos. (4)'},
+    {num:6,dir:'down',row:3,col:8,answer:'DADO',clue:'Objeto com números de 1 a 6. (4)'},
+    {num:7,dir:'across',row:8,col:2,answer:'BOLA',clue:'Usada para jogar futebol. (4)'},
+  ]},
+  {size:16, words:[
+    {num:1,dir:'across',row:0,col:0,answer:'PEIXE',clue:'Animal que vive na água. (5)'},
+    {num:2,dir:'down',row:0,col:5,answer:'FADA',clue:'Ser mágico das histórias. (4)'},
+    {num:3,dir:'across',row:2,col:0,answer:'ARVORE',clue:'Tem tronco e folhas. (6)'},
+    {num:4,dir:'down',row:0,col:8,answer:'OLHO',clue:'Parte do corpo que vê. (4)'},
+    {num:5,dir:'across',row:6,col:1,answer:'BRASIL',clue:'Nosso país. (6)'},
+    {num:6,dir:'down',row:3,col:10,answer:'MEL',clue:'Doce feito pelas abelhas. (3)'},
+    {num:7,dir:'across',row:10,col:4,answer:'RATO',clue:'Animal pequeno, gosta de queijo. (4)'},
+    {num:8,dir:'down',row:1,col:12,answer:'PATO',clue:'Ave que adora nadar. (4)'},
+    {num:9,dir:'across',row:12,col:6,answer:'CAMA',clue:'Usamos para dormir. (4)'},
+  ]},
+  {size:18, words:[
+    {num:1,dir:'across',row:0,col:0,answer:'FLORESTA',clue:'Conjunto de muitas árvores. (8)'},
+    {num:2,dir:'down',row:0,col:4,answer:'SAPO',clue:'Animal que pula e gosta de lago. (4)'},
+    {num:3,dir:'across',row:2,col:0,answer:'CADERNO',clue:'Usado para escrever na escola. (7)'},
+    {num:4,dir:'down',row:0,col:8,answer:'FOCA',clue:'Animal que vive no gelo. (4)'},
+    {num:5,dir:'across',row:6,col:2,answer:'CAVALO',clue:'Animal usado para montar. (6)'},
+    {num:6,dir:'down',row:3,col:10,answer:'VIDA',clue:'Todos nós temos. (4)'},
+    {num:7,dir:'across',row:8,col:4,answer:'PLANETA',clue:'A Terra é um ____. (7)'},
+    {num:8,dir:'down',row:1,col:12,answer:'NOITE',clue:'Oposto de dia. (5)'},
+    {num:9,dir:'across',row:12,col:6,answer:'AMIGO',clue:'Pessoa querida. (5)'},
+    {num:10,dir:'down',row:5,col:14,answer:'FELIZ',clue:'Sentimento de alegria. (5)'},
+    {num:11,dir:'across',row:15,col:3,answer:'LIVRO',clue:'Objeto cheio de histórias. (5)'},
+  ]},
+  {size:20, words:[
+    {num:1,dir:'across',row:0,col:0,answer:'PROFESSOR',clue:'Pessoa que ensina na escola. (9)'},
+    {num:2,dir:'down',row:0,col:5,answer:'FOGO',clue:'Serve para cozinhar. (4)'},
+    {num:3,dir:'across',row:2,col:0,answer:'VERDE',clue:'Cor das folhas. (5)'},
+    {num:4,dir:'down',row:0,col:8,answer:'GATO',clue:'Animal que mia. (4)'},
+    {num:5,dir:'across',row:4,col:2,answer:'FRUTA',clue:'Comida doce da natureza. (5)'},
+    {num:6,dir:'down',row:1,col:12,answer:'AREIA',clue:'Tem na praia. (5)'},
+    {num:7,dir:'across',row:6,col:4,answer:'JANELA',clue:'Abrimos para ver lá fora. (6)'},
+    {num:8,dir:'down',row:3,col:14,answer:'VENTO',clue:'Ar em movimento. (5)'},
+    {num:9,dir:'across',row:10,col:6,answer:'CORACAO',clue:'Parte do corpo que bate. (7)'},
+    {num:10,dir:'down',row:5,col:16,answer:'OVO',clue:'Sai da galinha. (3)'},
+    {num:11,dir:'across',row:14,col:8,answer:'ESCADA',clue:'Usamos para subir. (6)'},
+    {num:12,dir:'down',row:7,col:18,answer:'PELE',clue:'Cobre nosso corpo. (4)'},
+    {num:13,dir:'across',row:17,col:3,answer:'MUSICA',clue:'Ouvimos com os ouvidos. (6)'},
+  ]}
+];
+
+let faseAtual=0;
+const gridEl=document.getElementById('grid');
+const acrossEl=document.getElementById('acrossClues');
+const downEl=document.getElementById('downClues');
+let selectedWord=null;
+
+function loadPhase(){
+  const f=fases[faseAtual];
+  document.getElementById('faseInfo').textContent=`Fase ${faseAtual+1} / ${fases.length}`;
+  acrossEl.innerHTML=''; downEl.innerHTML=''; gridEl.innerHTML='';
+  gridEl.style.gridTemplateColumns=`repeat(${f.size},32px)`;
+  gridEl.style.gridTemplateRows=`repeat(${f.size},32px)`;
+  for(let r=0;r<f.size;r++){
+    for(let c=0;c<f.size;c++){
+      const cell=document.createElement('div');
+      cell.className='cell block'; cell.dataset.row=r; cell.dataset.col=c;
+      gridEl.appendChild(cell);
+    }
+  }
+  f.words.forEach(w=>{
+    for(let i=0;i<w.answer.length;i++){
+      const r=w.row+(w.dir==='down'?i:0);
+      const c=w.col+(w.dir==='across'?i:0);
+      const cell=gridEl.children[r*f.size+c];
+      cell.className='cell';
+      if(i===0){
+        const numEl=document.createElement('div');
+        numEl.className='num'; numEl.textContent=w.num;
+        cell.appendChild(numEl);
+      }
+    }
+    const li=document.createElement('li'); li.textContent=w.num+'. '+w.clue;
+    if(w.dir==='across') acrossEl.appendChild(li); else downEl.appendChild(li);
+  });
+  document.getElementById('status').textContent='';
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('faseSelect').value=faseAtual;
+}
+loadPhase();
+
+function getWordCells(w){
+  const f=fases[faseAtual]; const res=[];
+  for(let i=0;i<w.answer.length;i++){
+    const r=w.row+(w.dir==='down'?i:0);
+    const c=w.col+(w.dir==='across'?i:0);
+    res.push(gridEl.children[r*f.size+c]);
+  }
+  return res;
+}
+
+gridEl.addEventListener('click',e=>{
+  if(!e.target.classList.contains('cell')||e.target.classList.contains('block'))return;
+  const r=+e.target.dataset.row,c=+e.target.dataset.col;
+  selectedWord=fases[faseAtual].words.find(w=>getWordCells(w).some(cell=>+cell.dataset.row===r&&+cell.dataset.col===c));
+  highlight();
+});
+function highlight(){
+  [...gridEl.children].forEach(c=>c.classList.remove('highlight'));
+  if(selectedWord) getWordCells(selectedWord).forEach(c=>c.classList.add('highlight'));
+}
+document.addEventListener('keydown',e=>{
+  if(!selectedWord)return;
+  if(e.key.length===1&&/[a-zA-ZÀ-ÿ]/.test(e.key)){
+    const cells=getWordCells(selectedWord);
+    const empty=cells.find(c=>!c.textContent||c.querySelector('.num')&&c.textContent.length===1);
+    if(empty){
+      empty.textContent=e.key.toUpperCase();
+      if(empty.querySelector('.num')) empty.prepend(empty.querySelector('.num'));
+    }
+  }
+});
+
+function checkAnswers(){
+  const f=fases[faseAtual]; let correct=0;
+  f.words.forEach(w=>{
+    const guess=getWordCells(w).map(c=>(c.textContent||'')[0]||'').join('');
+    if(guess===w.answer) correct++;
+  });
+  document.getElementById('status').textContent=`Você acertou ${correct}/${f.words.length} palavras.`;
+  if(correct===f.words.length){
+    document.getElementById('status').innerHTML='<span class="success">🎉 Parabéns! Fase concluída!</span>';
+    if(faseAtual<fases.length-1) document.getElementById('nextBtn').style.display='block';
+  }
+}
+function revealAnswers(){
+  fases[faseAtual].words.forEach(w=>{
+    const cells=getWordCells(w);
+    w.answer.split('').forEach((ch,i)=>{
+      cells[i].textContent=ch;
+      if(cells[i].querySelector('.num')) cells[i].prepend(cells[i].querySelector('.num'));
+    });
+  });
+}
+function resetGrid(){ loadPhase(); }
+function nextPhase(){ faseAtual++; loadPhase(); }
+function selectPhase(i){ faseAtual=parseInt(i); loadPhase(); }
+</script>
+</body>
+</html>

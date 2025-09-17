@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz de Bandeiras — Geografia | ScalForce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a; --primary:#5E2497; --accent:#ff8a00; --text:#ffffff; --muted:#cfc6d9; --card:#2b1943;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:Poppins,Arial;color:var(--text);
+      background:linear-gradient(180deg,#1a0f26 100%,var(--bg) 100%);
+      padding-bottom:48px;
+    }
+    .container{width:min(1100px,94%);margin:0 auto}
+    header{background:linear-gradient(180deg, rgba(20,10,26,.95), rgba(20,10,26,.7));
+      padding:10px 0;position:sticky;top:0;z-index:40;border-bottom:1px solid rgba(255,255,255,.04)}
+    .nav{display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:.75rem;font-weight:800}
+   .brand img{height:48px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .volta {
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  border: none;
+  background: #ff8a00;
+  color: #1e1130;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  transition: background 0.3s, transform 0.2s;}
+    .hero{background:linear-gradient(145deg,var(--card),#1a0f2a);padding:18px;border-radius:12px;margin-top:12px}
+    .hero h1{margin:0;font-size:1.4rem}
+    .card{background:var(--card);padding:18px;border-radius:12px;margin-top:12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+    .question{font-size:1.1rem;font-weight:700;margin-bottom:14px;text-align:center}
+    .flag-img{max-width:160px;height:auto;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.4)}
+    .options{display:grid;gap:10px;margin-top:14px}
+    .option{background:#170c23;border:1px solid #361a53;padding:12px;border-radius:10px;cursor:pointer;font-weight:700;color:var(--text);font-size:1.15rem;display:flex;align-items:center;justify-content:center}
+    .option.correct{border-color:#36c38d;background:linear-gradient(90deg, rgba(54,195,141,0.12), #170c23)}
+    .option.wrong{border-color:#ff6b6b;background:linear-gradient(90deg, rgba(255,107,107,0.06), #170c23)}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:14px;justify-content:center}
+    .btn{padding:.6rem 1rem;border-radius:999px;border:0;cursor:pointer;font-weight:700}
+    .btn.primary{background:var(--accent);color:#1b0d27}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--text)}
+    .progress{height:12px;background:#170c23;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.03);margin:10px 0}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#cc6d00);width:0%}
+    .score{font-weight:800;font-size:1.1rem;color:var(--accent)}
+    .explain{margin-top:10px;color:var(--muted);font-size:.95rem;text-align:center}
+    #endCard{text-align:center}
+    @media(max-width:520px){
+      .option{font-size:1rem;padding:10px}
+      .flag-img{max-width:120px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="../Logo.png" alt="Logo ScalForce" onerror="this.style.display='none'">
+        <span style="color:#ff8a00;">ScalForce</span>
+      </a>
+      <nav>
+        <a style="text-decoration: none;" class="volta" href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+  <br>
+  <br>
+  <main class="container" id="main">
+    <!-- Escolha de nível -->
+    <section class="card" id="levelCard">
+      <h2>Quiz de Bandeiras</h2>
+      <p style="color:var(--muted)">Escolha o nível — 5 perguntas sorteadas de um banco de 10. Cada partida é diferente!</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px">
+        <button class="btn primary" onclick="startGame(1)">Nível 1 — Fácil</button>
+        <button class="btn primary" onclick="startGame(2)">Nível 2 — Médio</button>
+        <button class="btn primary" onclick="startGame(3)">Nível 3 — Difícil</button>
+      </div>
+    </section>
+    
+    
+
+    <section class="hero" id="heroCard" style="display:none">
+      <h1 id="titleLevel">Quiz de Bandeiras</h1>
+      <div>Pontuação: <span class="score" id="score">0</span></div>
+      <div class="progress" aria-hidden="false"><i id="progBar"></i></div>
+    </section>
+    <br>
+    <br>
+    <article class="card" id="quizCard" style="display:none" aria-live="polite">
+      <div class="question" id="questionText">Carregando pergunta...</div>
+      <div class="options" id="options"></div>
+      <div class="explain" id="explain"></div>
+      <div class="controls">
+        <button id="nextBtn" class="btn primary" disabled>Próxima</button>
+        <button id="restartBtn" class="btn ghost">Reiniciar</button>
+      </div>
+    </article>
+
+    <section class="card" id="endCard" style="display:none">
+      <h2>Fim do Quiz 🎉</h2>
+      <p>Sua pontuação final:</p>
+      <div style="font-size:2rem;font-weight:800" id="finalScore">0</div>
+      <p id="finalMsg"></p>
+      <button id="playAgain" class="btn primary">Jogar de novo</button>
+      <a style="text-decoration: none;" href="../ScalForce.html" class="btn ghost" style="margin-left:8px">Voltar ao site</a>
+    </section>
+  </main>
+
+  <footer style="margin-top:22px">
+    <div class="container" style="color:var(--muted);font-size:.9rem">
+    </div>
+  </footer>
+
+
+  <script>
+    // Banco de perguntas: 10 por nível
+    const LEVELS = {
+      1: [
+        {img:"imagens12/Brasil.png", opts:["Brasil","Argentina","Chile","Peru"], a:0, explain:"A bandeira do Brasil é verde com losango amarelo e círculo azul."},
+        {img:"imagens12/Japão.png", opts:["Japão","China","Coreia do Sul","Vietnã"], a:0, explain:"Japão: disco vermelho sobre fundo branco."},
+        {img:"imagens12/EUA.png", opts:["Estados Unidos","Reino Unido","França","Canadá"], a:0, explain:"EUA: listras e estrelas."},
+        {img:"imagens12/França.png", opts:["França","Itália","Espanha","Alemanha"], a:0, explain:"França: azul, branco e vermelho."},
+        {img:"imagens12/Reino Unido.png", opts:["Reino Unido","Irlanda","Holanda","Bélgica"], a:0, explain:"Reino Unido: vermelho, branco e azul."},
+        {img:"imagens12/Argentina.png", opts:["Argentina","Uruguai","Chile","Paraguai"], a:0, explain:"Argentina: azul claro, branco e sol."},
+        {img:"imagens12/Portugal.png", opts:["Portugal","Espanha","Itália","França"], a:0, explain:"Portugal: verde, vermelho e brasão."},
+        {img:"imagens12/Alemanha.png", opts:["Alemanha","Bélgica","Holanda","Áustria"], a:0, explain:"Alemanha: preto, vermelho, dourado."},
+        {img:"imagens12/Itália.png", opts:["Itália","México","Hungria","Irlanda"], a:0, explain:"Itália: verde, branco e vermelho."},
+        {img:"imagens12/Canadá.png", opts:["Canadá","Austrália","EUA","Nova Zelândia"], a:0, explain:"Canadá: folha de bordo vermelha."}
+      ],
+      2: [
+        {img:"imagens12/Espanha.png", opts:["Espanha","Portugal","França","Itália"], a:0, explain:"Espanha: vermelho e amarelo com brasão."},
+        {img:"imagens12/Índia.png", opts:["Índia","Paquistão","Bangladesh","Nepal"], a:0, explain:"Índia: laranja, branco e verde com roda azul."},
+        {img:"imagens12/Suécia.png", opts:["Suécia","Noruega","Finlândia","Dinamarca"], a:0, explain:"Suécia: cruz amarela em fundo azul."},
+        {img:"imagens12/Noruega.png", opts:["Noruega","Suécia","Dinamarca","Finlândia"], a:0, explain:"Noruega: cruz azul/branca em vermelho."},
+        {img:"imagens12/Dinamarca.png", opts:["Dinamarca","Noruega","Suécia","Finlândia"], a:0, explain:"Dinamarca: cruz branca em vermelho."},
+        {img:"imagens12/Finlândia.png", opts:["Finlândia","Suécia","Estônia","Islândia"], a:0, explain:"Finlândia: cruz azul em branco."},
+        {img:"imagens12/Polônia.png", opts:["Polônia","Indonésia","Mônaco","Áustria"], a:0, explain:"Polônia: branco em cima, vermelho embaixo."},
+        {img:"imagens12/China.png", opts:["China","Japão","Coreia do Norte","Vietnã"], a:0, explain:"China: fundo vermelho com estrelas amarelas."},
+        {img:"imagens12/Coreia do Sul.png", opts:["Coreia do Sul","Japão","China","Vietnã"], a:0, explain:"Coreia do Sul: disco vermelho-azul e trigramas."},
+        {img:"imagens12/Turquia.png", opts:["Turquia","Síria","Irã","Tunísia"], a:0, explain:"Turquia: lua crescente e estrela em vermelho."}
+      ],
+      3: [
+        {img:"imagens12/África do Sul.png", opts:["África do Sul","Nigéria","Egito","Quênia"], a:0, explain:"África do Sul: várias cores em Y."},
+        {img:"imagens12/Rússia.png", opts:["Rússia","Polônia","Eslováquia","Ucrânia"], a:0, explain:"Rússia: branco, azul e vermelho."},
+        {img:"imagens12/Ucrânia.png", opts:["Ucrânia","Suécia","Romênia","Rússia"], a:0, explain:"Ucrânia: azul sobre amarelo."},
+        {img:"imagens12/Nigéria.png", opts:["Nigéria","Gana","África do Sul","Costa do Marfim"], a:0, explain:"Nigéria: verde, branco, verde."},
+        {img:"imagens12/Arábia Saudita.png", opts:["Arábia Saudita","Emirados Árabes","Qatar","Irã"], a:0, explain:"Arábia Saudita: inscrição árabe e espada."},
+        {img:"imagens12/México.png", opts:["México","Itália","Portugal","Chile"], a:0, explain:"México: verde, branco e vermelho com brasão."},
+        {img:"imagens12/Indonésia.png", opts:["Indonésia","Polônia","Mônaco","Malásia"], a:0, explain:"Indonésia: vermelho em cima, branco embaixo."},
+        {img:"imagens12/Filipinas.png", opts:["Filipinas","Tailândia","Malásia","Vietnã"], a:0, explain:"Filipinas: sol e estrelas com azul e vermelho."},
+        {img:"imagens12/Vietnã.png", opts:["Vietnã","China","Coreia do Norte","Japão"], a:0, explain:"Vietnã: estrela amarela em vermelho."},
+        {img:"imagens12/Bangladesh.png", opts:["Bangladesh","Paquistão","Nepal","Sri Lanka"], a:0, explain:"Bangladesh: círculo vermelho em verde."}
+      ]
+    };
+
+    // sorteia N itens únicos de um array
+    function pickRandom(array, n){
+      const copy = [...array];
+      const result = [];
+      for(let i=0;i<n;i++){
+        const idx = Math.floor(Math.random()*copy.length);
+        result.push(copy.splice(idx,1)[0]);
+      }
+      return result;
+    }
+
+    let levelQuestions = [], index=0, score=0, answered=false;
+    const qText=document.getElementById('questionText');
+    const optionsEl=document.getElementById('options');
+    const scoreEl=document.getElementById('score');
+    const progBar=document.getElementById('progBar');
+    const explainEl=document.getElementById('explain');
+    const nextBtn=document.getElementById('nextBtn');
+    const restartBtn=document.getElementById('restartBtn');
+    const endCard=document.getElementById('endCard');
+    const finalScore=document.getElementById('finalScore');
+    const finalMsg=document.getElementById('finalMsg');
+    const playAgain=document.getElementById('playAgain');
+    const quizCard=document.getElementById('quizCard');
+    const heroCard=document.getElementById('heroCard');
+    const levelCard=document.getElementById('levelCard');
+    const titleLevel=document.getElementById('titleLevel');
+
+    function shuffle(array){
+      for(let i=array.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [array[i],array[j]]=[array[j],array[i]];
+      }
+      return array;
+    }
+
+    function startGame(level){
+      levelCard.style.display="none";
+      heroCard.style.display="block";
+      quizCard.style.display="block";
+      titleLevel.textContent="Quiz de Bandeiras | Nível "+level;
+      // sorteia 5 de 10
+      levelQuestions = pickRandom(LEVELS[level], 5);
+      index=0; score=0;
+      renderQuestion();
+    }
+
+    function renderQuestion(){
+      const item = levelQuestions[index];
+      qText.innerHTML = `<img src="${item.img}" alt="Bandeira" class="flag-img">`;
+      optionsEl.innerHTML='';
+      explainEl.textContent='';
+      nextBtn.disabled=true;
+      answered=false;
+
+      let opts = item.opts.map((o,i)=>({txt:o,correct:i===item.a}));
+      shuffle(opts);
+
+      opts.forEach(opt=>{
+        const btn = document.createElement('button');
+        btn.className='option';
+        btn.textContent = opt.txt;
+        btn.onclick = ()=>select(opt.correct,btn,item);
+        optionsEl.appendChild(btn);
+      });
+
+      progBar.style.width = Math.round((index/levelQuestions.length)*100) + '%';
+      scoreEl.textContent = score;
+    }
+
+    function select(correct,btn,item){
+      if(answered) return;
+      answered=true;
+      if(correct){
+        btn.classList.add('correct');
+        score += 10;
+        explainEl.textContent = "✅ Correto! " + item.explain;
+      } else {
+        btn.classList.add('wrong');
+        Array.from(optionsEl.children).forEach(b=>{
+          if(b.textContent.trim() === item.opts[item.a]){
+            b.classList.add('correct');
+          }
+        });
+        explainEl.textContent = "❌ Ops! " + item.explain;
+      }
+      scoreEl.textContent = score;
+      nextBtn.disabled = false;
+    }
+
+    nextBtn.onclick = ()=>{
+      index++;
+      if(index >= levelQuestions.length){ endGame(); }
+      else{ renderQuestion(); }
+    };
+
+    restartBtn.onclick = ()=>resetGame();
+    playAgain.onclick = ()=>resetGame();
+
+    function resetGame(){
+      index = 0; score = 0;
+      endCard.style.display = "none";
+      heroCard.style.display = "none";
+      quizCard.style.display = "none";
+      levelCard.style.display = "block";
+    }
+
+    function endGame(){
+      quizCard.style.display = "none";
+      heroCard.style.display = "none";
+      endCard.style.display = "block";
+      finalScore.textContent = score;
+      finalMsg.textContent = score >= 40 ? "Parabéns, você arrasou! 🎉" :
+                             score >= 20 ? "Muito bem! Continue aprendendo. 😀" :
+                             "Boa tentativa! Tente de novo. 😉";
+    }
+  </script>
+</body>
+</html>

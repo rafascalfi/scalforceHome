@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Complete a Frase — Inglês (ScalForce)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+      --danger:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text); background: linear-gradient(180deg, #1a0f26 100%, #140a1a 100%);
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+    .container{width:min(1100px,94%);margin:0 auto;padding-bottom:48px}
+
+    header{position:sticky;top:0;background:linear-gradient(180deg, rgba(20,10,26,.92), rgba(20,10,26,.6));border-bottom:1px solid rgba(255,255,255,.04);z-index:20}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800;letter-spacing:.5px}
+     .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{color:var(--accent)}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:999px;border:1px solid transparent;transition:.18s;font-weight:700}
+    .btn.primary{background:var(--accent);color:#1b0d27}
+    .btn.ghost{background:transparent;border-color:#2c1847;color:var(--muted)}
+    .btn-back {
+      padding: 0.9rem 1.6rem;
+      border-radius: 999px;
+      border: none;
+      background: #ff8a00;
+      color: #1e1130;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    main{padding:28px 0}
+    .game-card{background:linear-gradient(145deg,var(--card),#1a0f2a);border:3px solid rgba(255,255,255,.04);padding:20px;border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+
+    .header-game{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .header-game h1{margin:0;font-size:1.6rem}
+    .meta{color:var(--muted);font-weight:600}
+
+    .phase-bar{display:flex;align-items:center;gap:.6rem;margin-top:10px}
+    .phase-pill{padding:.45rem .7rem;border-radius:999px;background:#170c25;border:1px solid #2c1847}
+
+    .board{margin-top:18px;display:grid;grid-template-columns:1fr;gap:18px}
+    .sentence{background:#12071a;border:1px solid rgba(255,255,255,.03);padding:12px;border-radius:12px;display:flex;align-items:center;gap:12px}
+    .sentence p{margin:0;font-size:1.05rem}
+
+    /* lacuna (botão) */
+    .blank{
+      display:inline-block;
+      min-width:110px;
+      padding:.35rem .6rem;
+      border-radius:8px;
+      border:2px dashed rgb(255, 255, 255);
+      text-align:center;
+      background:rgba(255, 255, 255, 0.02);
+      cursor:pointer;
+      color: #ffffff;           /* <<< garante que o texto dentro da lacuna seja branco */
+      font-weight: 700;         /* opcional: deixa mais visível */
+      line-height: 1.1;
+    }
+
+    /* estado quando preenchida — reforça cor branca e leve destaque */
+    .blank.filled{
+      border-style:solid;
+      color: #ffffff;           /* <<< mantém explicitamente branco */
+      background: rgba(255,255,255,0.03);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.45) inset;
+    }
+
+    .wordbank{margin-top:14px;background:#13051a;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.03);display:flex;flex-wrap:wrap;gap:8px}
+    .word{
+      padding:.5rem .75rem;
+      border-radius:12px;
+      background:#24123a;
+      border:1px solid rgba(255,255,255,.03);
+      cursor:pointer;
+      font-weight:700;
+      color: #ffffff; /* ← texto branco */
+    }
+    .word.used{opacity:.0;pointer-events:none}
+    .word.selected{outline:2px solid rgba(255,138,0,.22)}
+
+    .controls{display:flex;gap:.6rem;align-items:center;margin-top:14px}
+    .feedback{margin-top:12px;display:flex;gap:.6rem;align-items:center}
+    .correct{color:var(--success);font-weight:800}
+    .wrong{color:var(--danger);font-weight:800}
+
+    .kbd-hint{font-size:.85rem;color:var(--muted)}
+
+    .footer-controls{margin-top:18px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+
+    @media(min-width:720px){
+      .board{grid-template-columns:1fr 1fr}
+    }
+
+    @media(max-width:480px){
+      .blank{min-width:80px}
+    }
+
+    .small{font-size:.9rem;color:var(--muted)}
+  </style>
+</head>
+<body>
+ <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="Logo.png" alt="Logo SCALFORCE" style="height:42px">
+        <span>ScalForce</span>
+      </a>
+      <button class="btn-back" onclick="window.location.href='../ScalForce.html'">Voltar</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="game-card" role="application" aria-labelledby="game-title">
+      <div class="header-game">
+        <div>
+          <h1 id="game-title">Complete a Frase — Inglês</h1>
+          <div class="meta">5 fases • 10 frases por fase • Escolha a palavra e clique na lacuna</div>
+          <div class="meta small" id="phase-theme" aria-live="polite" style="margin-top:6px">Tema: </div>
+        </div>
+        <div class="phase-bar">
+          <div class="phase-pill small">Fase <span id="phase-num">1</span>/5</div>
+          <div class="phase-pill small" id="score-pill">Acertos: 0</div>
+        </div>
+      </div>
+
+      <div id="game-area">
+        <div class="board" id="board" aria-live="polite"></div>
+
+        <div>
+          <h3 style="margin:12px 0 6px">Palavras (caixa)</h3>
+          <div class="wordbank" id="wordbank" aria-label="Caixa de palavras"></div>
+        </div>
+
+        <div class="controls">
+          <button class="btn primary" id="check-btn">Verificar respostas</button>
+          <button class="btn ghost" id="reset-btn">Reiniciar fase</button>
+          <div class="kbd-hint">Clique em uma palavra e depois na lacuna para preencher.</div>
+        </div>
+
+        <div class="feedback" id="feedback" aria-live="polite"></div>
+
+        <div class="footer-controls">
+          <div class="small">Progresso: <span id="progress">0/50</span></div>
+          <div>
+            <button class="btn ghost" id="prev-phase" disabled>Fase anterior</button>
+            <button class="btn primary" id="next-phase" disabled>Próxima fase</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // (mantive seu JavaScript original inalterado)
+    // Dados das 5 fases: 10 sentenças cada. Cada sentença tem text com ___ e resposta.
+    const PHASES = [
+      // Phase 1 — vocabulário básico (I/You/He/She/We/They + have, is)
+      {
+        title: 'Fase 1 — Vocabulário Básico',
+        items: [
+          {text: 'I ___ a cat.', answer: 'have', options:['have','has','is','am']},
+          {text: 'He ___ a ball.', answer: 'has', options:['have','has','is','are']},
+          {text: 'She ___ happy.', answer: 'is', options:['is','are','am','have']},
+          {text: 'We ___ friends.', answer: 'are', options:['are','is','am','have']},
+          {text: 'They ___ in school.', answer: 'are', options:['is','are','am','has']},
+          {text: 'You ___ my friend.', answer: 'are', options:['is','are','am','have']},
+          {text: 'I ___ seven years old.', answer: 'am', options:['are','is','am','have']},
+          {text: 'It ___ a red toy.', answer: 'is', options:['are','is','am','has']},
+          {text: 'She ___ two dolls.', answer: 'has', options:['has','have','is','are']},
+          {text: 'We ___ a big house.', answer: 'have', options:['have','has','is','are']}
+        ]
+      },
+      // Phase 2 — verbos simples e objetos
+      {
+        title: 'Fase 2 — Objetos e ações',
+        items: [
+          {text: 'I ___ apples.', answer: 'like', options:['like','likes','eat','eats']},
+          {text: 'She ___ milk.', answer: 'drinks', options:['drink','drinks','drank','eats']},
+          {text: 'They ___ soccer.', answer: 'play', options:['play','plays','playing','played']},
+          {text: 'He ___ a book.', answer: 'reads', options:['read','reads','reading','eat']},
+          {text: 'We ___ eggs.', answer: 'eat', options:['eat','eats','ate','eaten']},
+          {text: 'You ___ fast.', answer: 'run', options:['run','runs','ran','running']},
+          {text: 'I ___ the ball.', answer: 'kick', options:['kick','kicked','kicks','kicking']},
+          {text: 'Mom ___ dinner.', answer: 'makes', options:['make','makes','made','making']},
+          {text: 'Dad ___ the car.', answer: 'drives', options:['drive','drives','drove','driven']},
+          {text: 'Birds ___ in the sky.', answer: 'fly', options:['fly','flies','flew','flying']}
+        ]
+      },
+      // Phase 3 — cores, números e descrições
+      {
+        title: 'Fase 3 — Cores e descrições',
+        items: [
+          {text: 'The apple is ___.', answer: 'red', options:['red','blue','big','small']},
+          {text: 'The sky is ___.', answer: 'blue', options:['green','yellow','blue','red']},
+          {text: 'The ball is ___.', answer: 'big', options:['small','big','red','green']},
+          {text: 'The car is ___.', answer: 'yellow', options:['yellow','blue','black','white']},
+          {text: 'I see three ___.', answer: 'cats', options:['cats','dog','chair','milk']},
+          {text: 'She has five ___.', answer: 'books', options:['books','book','apple','eggs']},
+          {text: 'This is a ___ house.', answer: 'small', options:['small','fast','slow','loud']},
+          {text: 'That is a ___ dog.', answer: 'big', options:['red','big','yellow','green']},
+          {text: 'The sun is ___.', answer: 'yellow', options:['blue','yellow','red','black']},
+          {text: 'The flower is ___.', answer: 'pink', options:['pink','brown','gray','blue']}
+        ]
+      },
+      // Phase 4 — perguntas simples (What/Where/Who)
+      {
+        title: 'Fase 4 — Perguntas',
+        items: [
+          {text: '___ is your name?', answer: 'What', options:['What','Where','Who','When']},
+          {text: '___ is the cat?', answer: 'Where', options:['Who','Why','Where','What']},
+          {text: '___ is that boy?', answer: 'Who', options:['What','Who','When','How']},
+          {text: '___ are you? (idade)', answer: 'How', options:['How','Why','What','Who']},
+          {text: '___ old are you?', answer: 'How', options:['What','Who','How','Which']},
+          {text: '___ is this?', answer: 'What', options:['Who','What','Where','Why']},
+          {text: '___ is your book?', answer: 'Where', options:['What','Who','Which','Where']},
+          {text: '___ is the time?', answer: 'What', options:['Why','What','Who','How']},
+          {text: '___ are they coming?', answer: 'When', options:['When','Why','Where','Who']},
+          {text: '___ color is it?', answer: 'What', options:['What','Which','Who','How']}
+        ]
+      },
+      // Phase 5 — frases curtas com adjetivos e possessivos
+      {
+        title: 'Fase 5 — Possessivos e adjetivos',
+        items: [
+          {text: 'This is my ___.', answer: 'book', options:['book','house','car','dog']},
+          {text: 'That is his ___.', answer: 'ball', options:['ball','apple','pen','cup']},
+          {text: 'Her dress is ___.', answer: 'beautiful', options:['beautiful','fast','tall','small']},
+          {text: 'My father is ___.', answer: 'strong', options:['strong','green','hot','soft']},
+          {text: 'Their house is ___.', answer: 'big', options:['big','old','young','small']},
+          {text: 'Our cat is ___.', answer: 'cute', options:['cute','loud','yellow','fast']},
+          {text: 'His bike is ___.', answer: 'red', options:['red','blue','green','pink']},
+          {text: 'Her eyes are ___.', answer: 'blue', options:['blue','brown','black','white']},
+          {text: 'This is our ___.', answer: 'school', options:['school','car','food','house']},
+          {text: 'I love my ___.', answer: 'family', options:['family','friends','dog','book']}
+        ]
+      }
+    ];
+
+    let currentPhase = 0;
+    let answers = {};
+    let selectedWord = null; let selectedButton = null;
+    let totalCorrect = 0;
+
+    const board = document.getElementById('board');
+    const wordbankEl = document.getElementById('wordbank');
+    const phaseNum = document.getElementById('phase-num');
+    const scorePill = document.getElementById('score-pill');
+    const checkBtn = document.getElementById('check-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const nextBtn = document.getElementById('next-phase');
+    const prevBtn = document.getElementById('prev-phase');
+    const feedback = document.getElementById('feedback');
+    const progress = document.getElementById('progress');
+
+    function init(){
+      for(let i=0;i<PHASES.length;i++) answers[i] = Array(PHASES[i].items.length).fill(null);
+      renderPhase();
+      updateProgress();
+    }
+
+    function renderPhase(){
+      const phase = PHASES[currentPhase];
+      phaseNum.textContent = (currentPhase+1);
+      document.title = `Complete a Frase — ${phase.title}`;
+      (function updateTheme(){
+        let phaseThemeEl = document.getElementById('phase-theme');
+        if(!phaseThemeEl){
+          const headerGame = document.querySelector('.header-game > div');
+          if(headerGame){
+            phaseThemeEl = document.createElement('div');
+            phaseThemeEl.id = 'phase-theme';
+            phaseThemeEl.className = 'meta small';
+            phaseThemeEl.setAttribute('aria-live','polite');
+            phaseThemeEl.style.marginTop = '6px';
+            headerGame.appendChild(phaseThemeEl);
+          }
+        }
+        if(phaseThemeEl){
+          phaseThemeEl.textContent = `Tema: ${phase.title}`;
+          phaseThemeEl.style.display = 'block';
+          phaseThemeEl.style.visibility = 'visible';
+        }
+      })();
+      const phaseThemeEl = document.getElementById('phase-theme');
+      if(phaseThemeEl) phaseThemeEl.textContent = `Tema: ${phase.title}`;
+
+      board.innerHTML = '';
+      phase.items.forEach((it,idx)=>{
+        const div = document.createElement('div'); div.className='sentence'; div.dataset.index = idx;
+        const p = document.createElement('p');
+        const parts = it.text.split('___');
+        const left = document.createElement('span'); left.innerHTML = parts[0];
+        const blank = document.createElement('button'); blank.className='blank'; blank.type='button'; blank.dataset.index=idx;
+        blank.setAttribute('aria-label', `Lacuna ${idx+1}`);
+        blank.addEventListener('click', ()=> onBlankClick(idx, blank));
+        if(answers[currentPhase][idx]){ blank.textContent = answers[currentPhase][idx]; blank.classList.add('filled'); }
+        const right = document.createElement('span'); right.innerHTML = parts[1] || '';
+        p.appendChild(left); p.appendChild(blank); p.appendChild(right);
+        div.appendChild(p);
+        board.appendChild(div);
+      });
+
+      const pool = buildPoolForPhase(currentPhase);
+      wordbankEl.innerHTML = '';
+      pool.forEach(w=>{
+        const b = document.createElement('button'); b.className='word'; b.type='button'; b.textContent = w;
+        b.addEventListener('click', ()=> onWordClick(b));
+        if(isWordUsedInPhase(currentPhase,w)) b.classList.add('used');
+        wordbankEl.appendChild(b);
+      });
+
+      prevBtn.disabled = currentPhase === 0;
+      nextBtn.disabled = currentPhase === PHASES.length-1;
+
+      feedback.innerHTML=''; selectedWord=null; updateScore();
+    }
+
+    function buildPoolForPhase(phaseIndex){
+      const items = PHASES[phaseIndex].items;
+      const pool = [];
+      items.forEach(it=> pool.push(it.answer));
+      for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+      return pool;
+    }
+
+    function isWordUsedInPhase(phaseIndex,word){
+      const usedCount = answers[phaseIndex].filter(a=>a===word).length;
+      const available = PHASES[phaseIndex].items.filter(it=>it.answer===word).length;
+      return usedCount >= available;
+    }
+
+    function onWordClick(buttonEl){
+      if(buttonEl.classList.contains('used')) return;
+      if(selectedButton === buttonEl){
+        buttonEl.classList.remove('selected');
+        selectedButton = null; selectedWord = null;
+      } else {
+        document.querySelectorAll('.word').forEach(w=>w.classList.remove('selected'));
+        buttonEl.classList.add('selected');
+        selectedButton = buttonEl; selectedWord = buttonEl.textContent;
+      }
+    }
+
+    function onBlankClick(idx, blankEl){
+      if(!selectedWord){
+        const old = answers[currentPhase][idx];
+        if(old){
+          answers[currentPhase][idx] = null;
+          blankEl.textContent = '';
+          blankEl.classList.remove('filled');
+          const usedBtn = document.querySelector(`.word[data-used-for="${currentPhase}-${idx}"]`);
+          if(usedBtn){
+            usedBtn.classList.remove('used');
+            delete usedBtn.dataset.usedFor;
+          } else {
+            const b = Array.from(document.querySelectorAll('.word.used')).find(x=>x.textContent===old);
+            if(b){ b.classList.remove('used'); delete b.dataset.usedFor; }
+          }
+        }
+        return;
+      }
+      if(isWordUsedInPhase(currentPhase,selectedWord)){
+        if(selectedButton){ selectedButton.classList.remove('selected'); selectedButton = null; }
+        selectedWord = null;
+        return;
+      }
+      answers[currentPhase][idx] = selectedWord;
+      blankEl.textContent = selectedWord;
+      blankEl.classList.add('filled');
+      if(selectedButton){
+        selectedButton.classList.add('used');
+        selectedButton.classList.remove('selected');
+        selectedButton.dataset.usedFor = `${currentPhase}-${idx}`;
+      } else {
+        const btn = Array.from(document.querySelectorAll('.word')).find(w=>w.textContent===selectedWord && !w.classList.contains('used'));
+        if(btn){
+          btn.classList.add('used');
+          btn.dataset.usedFor = `${currentPhase}-${idx}`;
+        }
+      }
+      selectedButton = null; selectedWord = null;
+    }
+
+    function checkAnswers(){
+      const phase = PHASES[currentPhase];
+      const res = []; let correctCount = 0;
+      phase.items.forEach((it,idx)=>{
+        const user = answers[currentPhase][idx];
+        const ok = user === it.answer;
+        res.push({idx,ok, user, correct: it.answer});
+        if(ok) correctCount++;
+      });
+      feedback.innerHTML = '';
+      res.forEach(r=>{
+        const span = document.createElement('div'); span.className = r.ok ? 'correct' : 'wrong';
+        if(r.ok) span.textContent = `Frase ${r.idx+1}: correta ✅`;
+        else span.textContent = `Frase ${r.idx+1}: incorreta — sua resposta: ${r.user || '[vazia]'} • correta: ${r.correct}`;
+        feedback.appendChild(span);
+      });
+
+      totalCorrect = computeTotalCorrect(); updateScore();
+
+      const allCorrect = correctCount === phase.items.length;
+      if(allCorrect){
+        feedback.insertAdjacentHTML('beforeend', '<div class="correct" style="margin-top:8px">Parabéns! Você completou a fase.</div>');
+        nextBtn.disabled = currentPhase === PHASES.length-1 ? true : false;
+      } else {
+        feedback.insertAdjacentHTML('beforeend', '<div class="small" style="margin-top:8px;color:var(--muted)">Revise as frases e tente novamente. Você pode clicar na resposta errada para trocar.</div>');
+        nextBtn.disabled = true;
+      }
+
+      updateProgress();
+    }
+
+    function computeTotalCorrect(){
+      let total = 0;
+      for(let p=0;p<PHASES.length;p++){
+        PHASES[p].items.forEach((it,idx)=>{ if(answers[p][idx]===it.answer) total++; });
+      }
+      return total;
+    }
+
+    function updateScore(){
+      scorePill.textContent = `Acertos: ${computeTotalCorrect()}`;
+      progress.textContent = `${computeTotalCorrect()}/${PHASES.length*PHASES[0].items.length}`;
+    }
+
+    checkBtn.addEventListener('click', ()=> checkAnswers());
+    resetBtn.addEventListener('click', ()=>{
+      answers[currentPhase] = Array(PHASES[currentPhase].items.length).fill(null);
+      renderPhase();
+      feedback.innerHTML='';
+    });
+
+    nextBtn.addEventListener('click', ()=>{ if(currentPhase < PHASES.length-1) currentPhase++; renderPhase(); });
+    prevBtn.addEventListener('click', ()=>{ if(currentPhase > 0) currentPhase--; renderPhase(); });
+
+    function updateProgress(){ progress.textContent = `${computeTotalCorrect()}/${PHASES.length*PHASES[0].items.length}`; }
+
+    init();
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ selectedWord=null; document.querySelectorAll('.word').forEach(w=>w.classList.remove('selected')); } });
+  </script>
+</body>
+</html>

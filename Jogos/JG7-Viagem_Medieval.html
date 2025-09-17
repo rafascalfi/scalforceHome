@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Viagem Medieval — ScalForce</title>
+  <meta name="description" content="Viagem Medieval: jogo educativo para crianças sobre a Idade Média." />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    /* Base visual extraído do ScalForce.html (cores e tipografia) */
+    :root{
+      --bg:#140a1a; --primary:#5E2497; --accent:#ff8a00; --text:#ffffff; --muted:#cfc6d9; --card:#2b1943; --glass:rgba(255,255,255,0.04); --success:#36c38d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;color:var(--text);background:linear-gradient(180deg,#1a0f26 100%,#140a1a 100%);}
+    .container{width:min(1100px,94%);margin-inline:auto;padding-bottom:60px}
+    header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg, rgba(20,10,26,.95), rgba(20,10,26,.6));border-bottom:1px solid rgba(255,255,255,.04);backdrop-filter:blur(6px)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800}
+     .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{color:var(--accent)}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:999px;border:1px solid transparent;font-weight:700;cursor:pointer}
+     .voltar {
+  padding: 0.9rem 1.6rem;
+  border-radius: 999px;
+  border: none;
+  background: #ff8a00;
+  color: #1e1130;
+  font-size: 14px;  
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  transition: background 0.3s, transform 0.2s;
+     }
+    .btn.primary{background:var(--accent);color:#1b0d27}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.04)}
+
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:1.6rem;padding:26px 0}
+    .hero-left h1{font-size:clamp(1.6rem,3.2vw,2.4rem);margin:0 0 .4rem}
+    .hero-left p{margin:0 0 1rem;color:var(--muted)}
+
+    .game-card{background:linear-gradient(145deg,var(--card),#1a0f2a);padding:1rem;border-radius:18px;border:3px solid rgba(255,255,255,.04)}
+    .stats{display:flex;gap:.6rem;margin-top:.8rem}
+    .stat{flex:1;background:#170c25;border-radius:12px;padding:.7rem;text-align:center;border:1px solid rgba(255,255,255,.03)}
+    .stat small{display:block;color:var(--muted);font-size:.85rem}
+
+    .controls{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem}
+    .controls .row{display:flex;gap:.6rem}
+
+    main .section{margin-top:1.4rem}
+
+    /* Grid for content area */
+    .layout{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-top:1.2rem}
+
+    /* Event / modal */
+    .overlay{position:fixed;inset:0;background:rgba(3,3,3,.6);display:none;align-items:center;justify-content:center;padding:20px;z-index:60}
+    .modal{width:min(720px,100%);background:linear-gradient(180deg,#221233 0,#13071a 100%);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.05);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+    .modal h3{margin:0 0 .6rem}
+    .choices{display:grid;grid-template-columns:1fr;gap:.6rem;margin-top:.8rem}
+    .choice{padding:.8rem;border-radius:10px;background:#170c25;border:1px solid rgba(255,255,255,.03);cursor:pointer}
+    .choice:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+
+    /* Right column: progress, achievements */
+    .panel{background:linear-gradient(145deg,#1b0f2d,#26133f);padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,.04)}
+    .progress{display:flex;flex-direction:column;gap:.6rem}
+    .meter{height:12px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
+    .meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ffc57a)}
+
+    .ach-list{display:flex;flex-direction:column;gap:.5rem}
+    .ach{padding:.45rem .6rem;border-radius:8px;background:rgba(255,255,255,.03);font-weight:700}
+
+    footer{margin-top:2rem;padding:2rem 0;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:940px){.hero{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.hero-left p{font-size:.95rem}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="Logo.png" alt="Logo SCALFORCE" style="height:42px">
+        <span>ScalForce</span>
+      </a>
+      <button class="voltar" onclick="window.location.href='../ScalForce.html'">Voltar</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-left">
+        <h1>Viagem Medieval — Aventura interativa</h1>
+        <p>Uma jornada divertida pela Idade Média. Faça escolhas, responda extraQuizzes e aprenda enquanto acumula moedas, amizade e saber.</p>
+      <div class="panel">
+        <h4 style="margin:0 0 .6rem">Como jogar</h4>
+        <ol style="color:var(--muted);padding-left:18px">
+          <li>Use <strong>Viajar</strong> para avançar o dia e enfrentar eventos.</li>
+          <li>No <strong>Mercado</strong> você pode comprar e vender itens (ganhar ou perder moedas).</li>
+          <li>Faça <strong>Quiz</strong> para ganhar moedas e saber.</li>
+          <li>Objetivo: terminar com ≥ 300 moedas e 6 amizade antes do dia 15.</li>
+        </ol>
+      </div>
+      <br>
+
+        <div class="game-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <div>
+              <strong id="titulo-regiao">Região: Vilas</strong>
+              <div style="font-size:.9rem;color:var(--muted)" id="dia-label">Dia 1 de 10</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:.85rem;color:var(--muted)">Meta: ≥ 300 moedas e 6 amizade</div>
+            </div>
+          </div>
+
+          <div class="stats" style="margin-top:12px">
+            <div class="stat"><b id="moedas">100</b><small>Moedas</small></div>
+            <div class="stat"><b id="amizade">3</b><small>Amizade</small></div>
+            <div class="stat"><b id="saber">0</b><small>Saber</small></div>
+          </div>
+
+          <div class="controls">
+            <div class="row">
+              <button class="btn primary" style="flex:1" id="btn-viajar">Viajar (Avança o dia)</button>
+              <button class="btn primary" style="flex:1" id="btn-mercado">Mercado</button>
+            </div>
+            <div class="row">
+              <button class="btn primary" style="flex:1" id="btn-quiz">Quiz</button>
+              <button class="btn primary" style="flex:1" id="btn-gloss">Glossário</button>
+            </div>
+          </div>
+        </div>
+          <br>
+        <div class="section" style="margin-top:12px">
+          <h3 style="margin:0 0 8px">Eventos recentes</h3>
+          <div id="log" style="min-height:80px;padding:.8rem;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03);color:var(--muted);font-size:.95rem"></div>
+        </div>
+
+      </div>
+
+      <aside>
+        <div class="panel">
+          <h4 style="margin:0 0 .6rem">Progresso</h4>
+          <div class="progress">
+            <div>Dia: <strong id="dia-small">1</strong> / 15</div>
+            <div class="meter"><i id="meter-dia" style="width:10%"></i></div>
+            <div style="margin-top:.6rem">Região: <strong id="regiao-small">Vilas</strong></div>
+
+            <div style="margin-top:.8rem">Figurinhas (a cada 5 dias)</div>
+            <div style="display:flex;gap:.4rem;margin-top:.4rem">
+              <div id="fig1" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.03);display:grid;place-items:center">—</div>
+              <div id="fig2" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.03);display:grid;place-items:center">—</div>
+              <div id="fig3" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.03);display:grid;place-items:center">—</div>
+            </div>
+
+            <div style="margin-top:10px">Conquistas</div>
+            <div class="ach-list" id="ach-list"></div>
+          </div>
+        </div>
+        <div style="height:12px"></div>
+
+        <div class="panel">
+          <h4 style="margin:0 0 .6rem">Reiniciar o jogo</h4>
+          <button class="btn primary" id="btn-start" onclick="startNewGame()">↺</button>
+          <br><hr>
+          <h4 style="margin:0 0 .6rem">Inventário</h4>
+          <div style="font-size:.95rem;color:var(--muted)" id="inv-short">Nenhum item</div>
+          <div style="margin-top:8px"><button class="btn primary" onclick="openInventoryModal()">Abrir Inventário</button></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="panel">
+          <h4 style="margin:0 0 .6rem">Mapa da Viajem</h4>
+          <div style="margin-top:10px"><img src="Mapa.png" alt="Mapa das regiões" style="width:100%;border-radius:8px;display:block"/></div>
+          <br>
+          <h4 style="margin:0 0 .6rem">Glossário rápido</h4>
+          <div style="font-size:.95rem;color:var(--muted)">
+            <button class="btn primary" onclick="openGloss()" style="width:100%">Abrir Glossário</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <!-- Overlay modals -->
+  <div id="overlay" class="overlay">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div id="modal-body"></div>
+      <div style="margin-top:12px;text-align:right"><button class="btn ghost" onclick="closeOverlay()">Fechar</button></div>
+    </div>
+  </div>
+
+  
+  
+  <script>
+    // Game state
+    const MAX_DIAS = 15;
+    const TARGET_MOEDAS = 300;
+    const TARGET_AMIZADE = 6;
+
+    const regions = ['Vila','Feudo','Cidade'];
+
+    const sampleEvents = [
+        {title:'Feira da Vila', text:'Uma feira movimentada com comerciantes e artesãos. O que você faz?',
+    choices:[
+      {label:'Negociar com um mercador (tentar lucro)', delta:{moedas:+30,amizade:-1,saber:0},curiosidade:'No mercado medieval, negociar era comum — crianças ajudavam às vezes.'},
+      {label:'Ajudar um artesão a arrumar barraca', delta:{moedas:+5,amizade:+2,saber:0},curiosidade:'Ajudar reforçava sua amizade com a comunidade.'},
+      {label:'Ouvir histórias no meio da feira', delta:{moedas:0,amizade:+1,saber:+2},curiosidade:'Feiras eram lugares de trocar notícias e saberes.'}
+    ]},
+        {title:'Mosteiro Silencioso', text:'Um monge oferece um livro antigo para estudar.',
+    choices:[
+      {label:'Estudar o livro', delta:{moedas:0,amizade:0,saber:+3},curiosidade:'Mosteiros guardavam e copiavam livros.'},
+      {label:'Ajudar no refeitório', delta:{moedas:+2,amizade:+2,saber:0},curiosidade:'Trabalhar com monges ensinava disciplina.'},
+      {label:'Vender um item antigo para comprar comida', delta:{moedas:+20,amizade:-1,saber:-1},curiosidade:'Vender objetos às vezes resolvia problemas imediatos.'}
+    ]},
+        {title:'Encontro com uma Guilda', text:'Membros da guilda oferecem um desafio de habilidade.',
+     choices:[
+      {label:'Participar do desafio', delta:{moedas:+25,amizade:+1,saber:+1},curiosidade:'Guildas treinavam jovens nas profissões.'},
+      {label:'Aprender sobre ofícios', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Ofícios eram passados por aprendizagem prática.'},
+      {label:'Ignorar e seguir viagem', delta:{moedas:0,amizade:-1,saber:0},curiosidade:'Às vezes evitar oportunidades traz consequências.'}
+    ]},
+       {title:'Bando de Peregrinos', text:'Peregrinos compartilham canções e histórias.',
+    choices:[
+      {label:'Cantar com eles', delta:{moedas:0,amizade:+2,saber:0},curiosidade:'Cantar espalhava histórias e memórias.'},
+      {label:'Trocar moedas por mapa', delta:{moedas:-10,amizade:0,saber:+2},curiosidade:'Mapas e rotas eram valiosos para viajantes.'},
+      {label:'Pedir conselhos de viagem', delta:{moedas:0,amizade:+1,saber:+1},curiosidade:'Ouvir outros viajantes ajuda a evitar perigos.'}
+    ]},
+       {title:'Fogueira na Aldeia', text:'Os aldeões reúnem-se ao redor da fogueira para trocar histórias. O que você faz?',
+   choices:[
+     {label:'Contar uma história antiga', delta:{moedas:0,amizade:+2,saber:+1},curiosidade:'Contar histórias ajudava a transmitir conhecimento e valores.'},
+     {label:'Ajudar a acender a fogueira', delta:{moedas:0,amizade:+1,saber:0},curiosidade:'Ajudar tarefas comunitárias estreitava laços.'},
+     {label:'Vender um amuleto aos curiosos', delta:{moedas:+10,amizade:-1,saber:0},curiosidade:'Alguns aproveitavam eventos para vender pequenos objetos.'}
+   ]},
+  {title:'Professor Ambulante', text:'Um professor ambulante ensina no centro. Você se inscreve em sua aula?',
+   choices:[
+     {label:'Participar da aula e praticar', delta:{moedas:0,amizade:0,saber:+3},curiosidade:'Professores itinerantes levavam saber a locais distantes.'},
+     {label:'Fazer perguntas e ajudar colegas', delta:{moedas:0,amizade:+1,saber:+1},curiosidade:'Interação em aula ajuda na aprendizagem.'},
+     {label:'Sair cedo para vender lembranças', delta:{moedas:+8,amizade:-1,saber:0},curiosidade:'Nem sempre a aprendizagem era prioridade frente a ganhos.'}
+   ]},
+  {title:'Bardo na Praça', text:'Um bardo canta canções de heróis. Como reage?',
+   choices:[
+     {label:'Ouvir atentamente e aprender as letras', delta:{moedas:0,amizade:+1,saber:+2},curiosidade:'Bardos preservavam história e cultura em canções.'},
+     {label:'Ajudar com instrumentos', delta:{moedas:0,amizade:+2,saber:0},curiosidade:'Participar de música cria laços sociais.'},
+     {label:'Pedir recompensa por silenciar a canção', delta:{moedas:+5,amizade:-2,saber:0},curiosidade:'Reações rudes podiam gerar conflito social.'}
+   ]},
+  {title:'Festival da Colheita', text:'É dia de festa após a colheita. Há muitas barracas e jogos.',
+   choices:[
+     {label:'Competir e ganhar um prêmio', delta:{moedas:+20,amizade:+1,saber:0},curiosidade:'Competições locais recompensavam habilidades.'},
+     {label:'Provar comidas e aprender receitas', delta:{moedas:-3,amizade:+2,saber:+1},curiosidade:'Comidas típicas ensinam sobre cultura local.'},
+     {label:'Ignorar e procurar lucro vendendo algo', delta:{moedas:+15,amizade:-1,saber:0},curiosidade:'Alguns preferiam negócios até em celebrações.'}
+   ]},
+  {title:'Travessia do Rio', text:'Uma ponte está ocupada; atravessar o rio exige decisão.',
+   choices:[
+     {label:'Ajudar a construir um bote coletivo', delta:{moedas:0,amizade:+2,saber:+1},curiosidade:'Cooperação era vital para desafios geográficos.'},
+     {label:'Pagar um barqueiro experiente', delta:{moedas:-5,amizade:0,saber:0},curiosidade:'Serviços pagos facilitavam deslocamentos.'},
+     {label:'Tentar atravessar sozinho e perder tempo', delta:{moedas:0,amizade:-1,saber:0},curiosidade:'Tomar riscos sem preparo pode custar oportunidades.'}
+   ]},
+  {title:'Ponte em Ruínas', text:'A ponte principal está danificada. O que faz?',
+   choices:[
+     {label:'Avisar o povo e organizar reparos', delta:{moedas:0,amizade:+2,saber:+1},curiosidade:'Organizar ajuda pública aumentava prestígio.'},
+     {label:'Procurar passagem alternativa e estudar mapa', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Saber ler o terreno e mapas era valioso.'},
+     {label:'Tentar passar arriscando e perder itens', delta:{moedas:-10,amizade:-1,saber:0},curiosidade:'Ações impulsivas podem trazer prejuízos.'}
+   ]},
+  {title:'Visita ao Ferreiro', text:'O ferreiro oferece uma lição sobre forja. Como reage?',
+   choices:[
+     {label:'Aprender as técnicas básicas', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Ofícios eram aprendidos na prática nas oficinas.'},
+     {label:'Ajudar e trocar comida por trabalho', delta:{moedas:0,amizade:+1,saber:+1},curiosidade:'Trocas eram comuns entre aldeões.'},
+     {label:'Tentar vender uma ferramenta usada', delta:{moedas:+8,amizade:-1,saber:0},curiosidade:'Vender sem saber o valor real podia atrair desconfiança.'}
+   ]},
+  {title:'Crianças Perdidas', text:'Você encontra crianças que se perderam. O que faz?',
+   choices:[
+     {label:'Ajudar a encontrar a família', delta:{moedas:0,amizade:+3,saber:0},curiosidade:'Ajudar crianças fortalecia reputação comunitária.'},
+     {label:'Levar até a estalagem para perguntar', delta:{moedas:0,amizade:+1,saber:0},curiosidade:'Lugares públicos eram pontos de encontro.'},
+     {label:'Ignorar por medo de problemas', delta:{moedas:0,amizade:-2,saber:0},curiosidade:'Medo de envolver-se podia prejudicar relações sociais.'}
+   ]},
+  {title:'Tempestade de Verão', text:'Uma tempestade danifica barracas e estradas. Como contribuir?',
+   choices:[
+     {label:'Ajudar a consertar telhados', delta:{moedas:0,amizade:+2,saber:0},curiosidade:'Solidariedade era essencial após desastres.'},
+     {label:'Vender capas impermeáveis a preço alto', delta:{moedas:+20,amizade:-1,saber:0},curiosidade:'Alguns lucravam em crises, atitude nem sempre bem vista.'},
+     {label:'Buscar abrigo e esperar a chuva passar', delta:{moedas:0,amizade:0,saber:0},curiosidade:'Cautela evita riscos, mas não ajuda a comunidade.'}
+   ]},
+  {title:'Caravana de Mercadores', text:'Uma caravana chega com itens exóticos. O que faz?',
+   choices:[
+     {label:'Negociar para aprender sobre estrangeiros', delta:{moedas:+10,amizade:+1,saber:+1},curiosidade:'Comércio trazia conhecimentos de outras regiões.'},
+     {label:'Comprar algo valioso e estudar', delta:{moedas:-20,amizade:0,saber:+2},curiosidade:'Investir em conhecimento pode custar moedas.'},
+     {label:'Espiar de longe e anotar rotas', delta:{moedas:0,amizade:0,saber:+1},curiosidade:'Observar práticas alheias é uma forma de aprender.'}
+   ]},
+  {title:'Feira de Ervas', text:'Ervas medicinais são vendidas por um curandeiro. O que faz?',
+   choices:[
+     {label:'Aprender sobre as ervas e suas propriedades', delta:{moedas:0,amizade:0,saber:+3},curiosidade:'Conhecimento de ervas era valioso para cuidados.'},
+     {label:'Comprar um remédio para repartir', delta:{moedas:-5,amizade:+2,saber:0},curiosidade:'Compartilhar remédios ajudava laços sociais.'},
+     {label:'Desconfiar e fugir sem participar', delta:{moedas:0,amizade:-1,saber:0},curiosidade:'Medo do desconhecido podia fechar portas de aprendizado.'}
+   ]},
+  {title:'Corrida de Cavalos', text:'Uma corrida local atrai apostas e torcida. Participa?',
+   choices:[
+     {label:'Apoiar um corredor e celebrar a vitória', delta:{moedas:+10,amizade:+2,saber:0},curiosidade:'Eventos esportivos uniam comunidades.'},
+     {label:'Estudar técnicas de manejo de cavalos', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Conhecer animais era útil em sociedade medieval.'},
+     {label:'Apostar impulsivamente e perder', delta:{moedas:-15,amizade:0,saber:0},curiosidade:'Apostas sem informação causavam perdas.'}
+   ]},
+  {title:'Visita ao Castelo', text:'Um servo do castelo convida você para conhecer os arredores. Aceita?',
+   choices:[
+     {label:'Fazer perguntas e aprender sobre administração', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Castelos eram centros administrativos importantes.'},
+     {label:'Oferecer ajuda em troca de alimento', delta:{moedas:0,amizade:+1,saber:0},curiosidade:'Serviços rendiam sustento e novas relações.'},
+     {label:'Tentar furtar algo e ser pego', delta:{moedas:+30,amizade:-3,saber:0},curiosidade:'Roubo trazia sérias consequências sociais e legais.'}
+   ]},
+  {title:'Investigação de Muralha', text:'Descobre-se um buraco na muralha; precisa decidir o que fazer.',
+   choices:[
+     {label:'Avisar imediatamente os guardas', delta:{moedas:0,amizade:+1,saber:0},curiosidade:'Vigilância protegia comunidades.'},
+     {label:'Estudar o dano e sugerir reparos', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Soluções técnicas vinham de observação.'},
+     {label:'Explorar o buraco para roubar algo', delta:{moedas:+10,amizade:-2,saber:0},curiosidade:'Atos egoístas minavam confiança social.'}
+   ]},
+  {title:'Biblioteca Escondida', text:'Você encontra uma pequena biblioteca escondida. O que faz?',
+   choices:[
+     {label:'Ler e copiar trechos importantes', delta:{moedas:0,amizade:0,saber:+3},curiosidade:'Mesmo livros pequenos guardavam conhecimento raro.'},
+     {label:'Perguntar ao bibliotecário sobre conservação', delta:{moedas:0,amizade:+1,saber:+1},curiosidade:'Conversar com guardiões de livros enriquece aprendizado.'},
+     {label:'Vender alguns volumes a colecionadores', delta:{moedas:+25,amizade:-1,saber:-1},curiosidade:'Vender livros podia aumentar riqueza, mas reduzir saber comunitário.'}
+   ]},
+  {title:'Cozinheira da Estalagem', text:'A cozinheira oferece ensinar uma receita local. Aceita?',
+   choices:[
+     {label:'Aprender atentamente e anotar', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Culinária carrega técnicas e história cultural.'},
+     {label:'Ajudar na cozinha em troca de comida', delta:{moedas:0,amizade:+2,saber:0},curiosidade:'Trabalho prático ensinava rotinas e receitas.'},
+     {label:'Oferecer vender a receita a outro viajante', delta:{moedas:+10,amizade:-1,saber:0},curiosidade:'Revelar segredos culinários tinha custo social.'}
+   ]},
+  {title:'Oficina de Tapeçaria', text:'Tecer tapetes e tapeçarias é uma arte local. Participa?',
+   choices:[
+     {label:'Aprender pontos artísticos', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Artesanato preservava técnicas passadas por gerações.'},
+     {label:'Ajudar e trocar histórias com artesãos', delta:{moedas:0,amizade:+1,saber:+1},curiosidade:'Trabalhar lado a lado cria conhecimento compartilhado.'},
+     {label:'Apropriar-se de material para vender', delta:{moedas:+20,amizade:-2,saber:0},curiosidade:'Ações desonestas prejudicavam relações profissionais.'}
+   ]},
+  {title:'Pescador no Rio', text:'Um pescador oferece ensinar a lançar rede. Você aprende?',
+   choices:[
+     {label:'Aprender a pescar com técnica', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Técnicas de pesca eram transmitidas entre gerações.'},
+     {label:'Ajudar e partilhar o peixe', delta:{moedas:0,amizade:+2,saber:0},curiosidade:'Compartilhar mantimentos fortalecia alianças.'},
+     {label:'Vender a rede por lucro rápido', delta:{moedas:+15,amizade:-1,saber:0},curiosidade:'Vender ferramentas podia gerar lucro imediato, mas perda de habilidade.'}
+   ]},
+  {title:'Ofício do Curandeiro', text:'Um curandeiro pede ajuda em ervas. O que faz?',
+   choices:[
+     {label:'Aprender como preparar uma infusão', delta:{moedas:0,amizade:0,saber:+3},curiosidade:'Conhecimentos de cura eram preciosos na comunidade.'},
+     {label:'Ajudar a recolher ervas', delta:{moedas:0,amizade:+1,saber:+1},curiosidade:'Trabalho de campo complementa o saber teórico.'},
+     {label:'Cobrar caro por um remédio', delta:{moedas:+20,amizade:-2,saber:0},curiosidade:'Comportamento explorador afetava reputação.'}
+   ]},
+  {title:'Astrônomo Itinerante', text:'Um viajante mostra estrelas e instrumentos. Vai assistir?',
+   choices:[
+     {label:'Observar e anotar constelações', delta:{moedas:0,amizade:0,saber:+3},curiosidade:'Observação celeste ajudava navegação e calendário.'},
+     {label:'Conversar e trocar conhecimentos práticos', delta:{moedas:0,amizade:+1,saber:+1},curiosidade:'Trocas entre viajantes difundiam técnicas.'},
+     {label:'Desacreditar por medo do desconhecido', delta:{moedas:0,amizade:-1,saber:0},curiosidade:'Fechar-se ao novo limita aprendizado.'}
+   ]},
+  {title:'Ofício dos Carpinteiros', text:'Carpinteiros constroem uma carroça comunitária. Participa?',
+   choices:[
+     {label:'Ajudar e aprender ferramentas', delta:{moedas:0,amizade:+1,saber:+2},curiosidade:'Trabalhos manuais transmitiam conhecimento técnico.'},
+     {label:'Pagar para usar a carroça', delta:{moedas:-10,amizade:0,saber:0},curiosidade:'Serviços práticos podiam ser acessados por pagamento.'},
+     {label:'Desmontar peças para vender', delta:{moedas:+12,amizade:-2,saber:0},curiosidade:'Destruir bens comunitários prejudica a confiança.'}
+   ]},
+  {title:'Lenda do Campo', text:'Há rumores de um lugar antigo com inscrições no campo. Investiga?',
+   choices:[
+     {label:'Ler as inscrições e catalogar', delta:{moedas:0,amizade:0,saber:+3},curiosidade:'Inscrições antigas oferecem pistas históricas.'},
+     {label:'Perguntar aos mais velhos sobre a lenda', delta:{moedas:0,amizade:+1,saber:+1},curiosidade:'Tradição oral preserva interpretações culturais.'},
+     {label:'Tirar vantagem vendendo histórias exageradas', delta:{moedas:+10,amizade:-1,saber:0},curiosidade:'Sensacionalismo pode trazer lucro, mas perde credibilidade.'}
+   ]},
+  {title:'Ofício do Oleiro', text:'O oleiro ensina a moldar vasos. Quer aprender?',
+   choices:[
+     {label:'Aprender a técnica do torno', delta:{moedas:0,amizade:0,saber:+2},curiosidade:'Cerâmica era habilidade prática importante na vida diária.'},
+     {label:'Ajudar e trocar porcelana por comida', delta:{moedas:0,amizade:+1,saber:0},curiosidade:'Trocas locais mantinham economia comunitária.'},
+     {label:'Roubá-los para vender', delta:{moedas:+18,amizade:-3,saber:0},curiosidade:'Atos desonestos corroem reputações.'}
+   ]}
+    ];
+
+    // Market items with actions that can be used AFTER travelling
+    const marketItems = [
+      {id:'pao',name:'Pão e comida',price:6,profit:2,actions:[
+        {label:'Comer',delta:{moedas:0,amizade:+2,saber:0},desc:'Comer ou partilhar comida aumenta a amizade.'},
+        {label:'Vender',delta:{moedas:+6,amizade:0,saber:0},desc:'Vender o pão recupera as moedas.'},
+        {label:'Doar',delta:{moedas:0,amizade:+3,saber:0},desc:'Doar alimentos gera gratidão.'}
+      ]},
+      {id:'tecido',name:'Tecido fino',price:25,profit:10,actions:[
+        {label:'Vender',delta:{moedas:+25,amizade:0,saber:0},desc:'Venda pode render boas moedas.'},
+        {label:'Presentear',delta:{moedas:0,amizade:+2,saber:0},desc:'Presentear alguém aumenta sua reputação.'},
+        {label:'Usar para aprender sobre comércio',delta:{moedas:0,amizade:0,saber:+1},desc:'Tocar e observar tecidos ensina técnicas.'}
+      ]},
+      {id:'mapa',name:'Mapa do comércio',price:30,profit:25,actions:[
+        {label:'Estudar mapa',delta:{moedas:0,amizade:0,saber:+3},desc:'Estudar mapas aumenta seu saber sobre rotas.'},
+        {label:'Vender',delta:{moedas:+30,amizade:0,saber:0},desc:'Mapas valem dinheiro no mercado.'},
+        {label:'Doar',delta:{moedas:0,amizade:+1,saber:+1},desc:'Doar um mapa ajuda outros viajantes e ensina.'}
+      ]}
+    ];
+
+    // persistent storage key
+    const STORAGE_KEY = 'viagem_medieval_save_v2';
+
+    // current state
+    let state = null;
+
+    function newState(){
+      return {
+        dia:1, moedas:100, amizade:3, saber:0, regionIndex:0, figurinhas:[], achs:{}, log:[], inventory:{}, afterTravel:false
+      };
+    }
+
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function loadState(){ const s = localStorage.getItem(STORAGE_KEY); if(s){ state = JSON.parse(s); } else { state = newState(); } updateUI(); }
+
+    function startNewGame(){ if(confirm('Começar uma nova viagem? Seu progresso atual será reiniciado.')){ state = newState(); saveState(); addLog('Viagem iniciada. Boa sorte!'); updateUI(); }}
+
+    function addLog(msg){ state.log.unshift(msg); if(state.log.length>8) state.log.pop(); saveState(); updateUI(); }
+
+    function updateUI(){
+      document.getElementById('moedas').textContent = state.moedas;
+      document.getElementById('amizade').textContent = state.amizade;
+      document.getElementById('saber').textContent = state.saber;
+      document.getElementById('dia-label').textContent = `Dia ${state.dia} de ${MAX_DIAS}`;
+      document.getElementById('dia-small').textContent = state.dia;
+      document.getElementById('titulo-regiao').textContent = `Região: ${regions[state.regionIndex]}`;
+      document.getElementById('regiao-small').textContent = regions[state.regionIndex];
+      document.getElementById('meter-dia').style.width = `${(state.dia/MAX_DIAS)*100}%`;
+
+      // figurinhas
+      document.getElementById('fig1').textContent = state.figurinhas.includes(1) ? '⭐' : '—';
+      document.getElementById('fig2').textContent = state.figurinhas.includes(2) ? '⭐' : '—';
+      document.getElementById('fig3').textContent = state.figurinhas.includes(3) ? '⭐' : '—';
+
+      // inventory count display (small)
+      const invShort = document.getElementById('inv-short');
+      if(invShort){
+        const keys = Object.keys(state.inventory);
+        if(keys.length===0) invShort.textContent = 'Nenhum item';
+        else invShort.textContent = keys.map(k=>`${k} x${state.inventory[k]}`).join(' • ');
+      }
+
+      // log
+      document.getElementById('log').innerHTML = state.log.map(l=>`<div>${escapeHtml(l)}</div>`).join('');
+
+      // achievements
+      const achList = document.getElementById('ach-list'); achList.innerHTML = '';
+      const achs = [];
+      if(state.moedas>=200) achs.push('💰 ≥ 200 moedas');
+      if(state.moedas>=400) achs.push('🏆 Mercador Rico (≥ 400)');
+      if(state.amizade>=6) achs.push('🤝 Amizade ≥ 6');
+      if(state.amizade>=8) achs.push('👑 Amigo de Todos (≥ 8)');
+      if(state.saber>=6) achs.push('📖 Saber ≥ 6');
+      if(state.saber>=12) achs.push('📚 Grande Sábio (≥ 12)');
+      if(state.figurinhas.length>=3) achs.push('⭐ Colecionou Figurinhas');
+      if(achs.length===0) achList.innerHTML = '<div style="color:var(--muted)">Nenhuma conquista ainda</div>';
+      else achs.forEach(a=>{const d=document.createElement('div');d.className='ach';d.textContent=a;achList.appendChild(d)});
+
+      checkEndConditions();
+    }
+
+    function checkEndConditions(){
+      if(state.moedas>=TARGET_MOEDAS && state.amizade>=TARGET_AMIZADE){ endGame(true); }
+      else if(state.dia>MAX_DIAS){ endGame(false); }
+    }
+
+    function endGame(success){
+      let title='🌙 Aventura Encerrada';
+      if(success) title='⭐ Herói da Viagem';
+      if(state.moedas>=400) title='🏆 Mercador Rico';
+      if(state.saber>=12) title='📚 Grande Sábio';
+      if(state.amizade>=8) title='👑 Amigo de Todos';
+      let msg = `${title}
+
+Resultado final:
+Moedas: ${state.moedas}
+Amizade: ${state.amizade}
+Saber: ${state.saber}`;
+      showModal(`<h3>${title}</h3><p style="white-space:pre-line">${escapeHtml(msg)}</p><div style="margin-top:10px;text-align:right"><button class=\"btn primary\" onclick=\"location.reload()\">Jogar de novo</button></div>`);
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
+    // Event flow
+    function viajar(){
+      if(state.dia>MAX_DIAS) return;
+      // reset afterTravel flag while moving to next day; it will be set true AFTER the event resolution
+      state.afterTravel = false;
+      state.dia += 1;
+      state.regionIndex = Math.min(Math.floor((state.dia-1)/5), regions.length-1);
+      if(state.dia===5) addFig(1);
+      if(state.dia===10) addFig(2);
+      if(state.dia===15) addFig(3);
+
+      const ev = sampleEvents[Math.floor(Math.random()*sampleEvents.length)];
+      openEvent(ev);
+      saveState(); updateUI();
+    }
+
+    function addFig(idx){ if(!state.figurinhas.includes(idx)) state.figurinhas.push(idx); addLog('Conquistou uma figurinha na mudança de região! (fig '+idx+')'); saveState(); }
+
+    function openEvent(ev){
+      const body = document.getElementById('modal-body');
+      let html = `<h3>${escapeHtml(ev.title)}</h3><p style=\"color:var(--muted)\">${escapeHtml(ev.text)}</p><div class=\"choices\">`;
+      ev.choices.forEach((c,i)=>{
+        html += `<div class=\"choice\" onclick=\"chooseEvent(${sampleEvents.indexOf(ev)},${i})\"><strong>${escapeHtml(c.label)}</strong><div style=\"color:var(--muted);margin-top:6px;font-size:.92rem\">Curiosidade: ${escapeHtml(c.curiosidade)}</div></div>`;
+      });
+      html += `</div>`;
+      showModal(html);
+    }
+
+    function chooseEvent(evIndex,choiceIndex){
+      const ev = sampleEvents[evIndex];
+      const c = ev.choices[choiceIndex];
+      state.moedas = Math.max(0, state.moedas + (c.delta.moedas || 0));
+      state.amizade = Math.max(0, state.amizade + (c.delta.amizade || 0));
+      state.saber = Math.max(0, state.saber + (c.delta.saber || 0));
+      addLog(`${ev.title} — Você: ${c.label} (Moedas ${c.delta.moedas>=0?'+':''}${c.delta.moedas}, Amizade ${c.delta.amizade>=0?'+':''}${c.delta.amizade}, Saber ${c.delta.saber>=0?'+':''}${c.delta.saber})`);
+      // after resolving event, allow item usage
+      state.afterTravel = true;
+      saveState(); updateUI(); closeOverlay();
+      // prompt to use items (optional)
+      if(Object.keys(state.inventory || {}).length>0){
+        setTimeout(()=>{ openInventory(true); }, 350);
+      }
+    }
+
+    // Market
+    function openMarket(){
+      let html = `<h3>Mercado</h3><p style=\"color:var(--muted)\">Compre itens e tente lucrar. Alguns trazem conhecimento. Os itens ficam no inventário e só podem ser usados após uma viagem.</p><div style=\"display:grid;gap:.6rem;margin-top:8px">`;
+      marketItems.forEach((it,idx)=>{
+        html += `<div class=\"choice\"><div style=\"display:flex;justify-content:space-between;align-items:center\"><div><strong>${escapeHtml(it.name)}</strong><div style=\"color:var(--muted)\">Preço: ${it.price} moedas</div></div><div><button class=\"btn primary\" onclick=\"buyItem(${idx})\">Comprar</button></div></div></div>`;
+      });
+      html += `</div>`;
+      showModal(html);
+    }
+
+    function buyItem(idx){
+      const it = marketItems[idx];
+      if(state.moedas < it.price){ alert('Moedas insuficientes!'); return; }
+      state.moedas -= it.price;
+      // add to inventory counts
+      state.inventory[it.id] = (state.inventory[it.id] || 0) + 1;
+      addLog(`Comprou ${it.name} por ${it.price} moedas. (Agora: x${state.inventory[it.id]})`);
+      saveState(); updateUI(); closeOverlay();
+    }
+
+    // Inventory / Use items
+    function openInventory(fromTravel=false){
+      const keys = Object.keys(state.inventory || {}).filter(k=>state.inventory[k]>0);
+      let html = `<h3>Inventário</h3><div style="color:var(--muted);margin-top:8px">`;
+      if(keys.length===0){
+        html += '<div>Nenhum item no inventário.</div>';
+      } else {
+        html += '<div style="display:grid;gap:.6rem">';
+        keys.forEach(k=>{
+          const count = state.inventory[k];
+          const item = marketItems.find(x=>x.id===k);
+          html += `<div class="choice"><div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${escapeHtml(item.name)}</strong><div style="color:var(--muted)">Quantidade: ${count}</div></div><div>`;
+          // if using after travel, show action buttons
+          if(fromTravel || state.afterTravel){
+            item.actions.forEach((a,ai)=>{
+              html += `<button class="btn ghost" style="margin-left:6px" onclick="useItem('${k}',${ai})">${escapeHtml(a.label)}</button>`;
+            });
+          } else {
+            html += `<div style="color:var(--muted)">Use itens após viajar para obter efeitos.</div>`;
+          }
+          html += `</div></div><div style="color:var(--muted);margin-top:6px">${escapeHtml(item.actions.map(x=>x.desc).join(' • '))}</div></div>`;
+        });
+        html += '</div>';
+      }
+
+      showModal(html);
+    }
+
+    function skipUse(){ state.afterTravel = false; saveState(); closeOverlay(); addLog('Pulou o uso de itens após a viagem.'); updateUI(); }
+
+    function useItem(itemId, actionIndex){
+      const item = marketItems.find(x=>x.id===itemId);
+      const action = item.actions[actionIndex];
+      // apply deltas
+      state.moedas = Math.max(0, state.moedas + (action.delta.moedas || 0));
+      state.amizade = Math.max(0, state.amizade + (action.delta.amizade || 0));
+      state.saber = Math.max(0, state.saber + (action.delta.saber || 0));
+      // decrease count
+      state.inventory[itemId] = Math.max(0, (state.inventory[itemId] || 0) - 1);
+      addLog(`Usou ${item.name} -> ${action.label} (Moedas ${action.delta.moedas>=0?'+':''}${action.delta.moedas||0}, Amizade ${action.delta.amizade>=0?'+':''}${action.delta.amizade||0}, Saber ${action.delta.saber>=0?'+':''}${action.delta.saber||0})`);
+      // after using one item, keep allowing other uses until player closes or runs out
+      saveState(); updateUI();
+      // if no more inventory, close prompt and clear afterTravel
+      if(Object.values(state.inventory).every(v=>v===0)){
+        state.afterTravel = false;
+        saveState();
+        setTimeout(()=>{ closeOverlay(); }, 400);
+      } else {
+        // refresh modal to reflect new counts
+        setTimeout(()=>{ openInventory(true); }, 250);
+      }
+    }
+
+    // Quiz (openQuiz e answerQuiz atualizados para pontuar por alternativa)
+   const extraQuizzes = [
+  {
+    q: 'Quem eram os servos no feudalismo?',
+    options: [
+      {text:'Camponeses ligados à terra', saber:3, moedas:15, amizade:1},
+      {text:'Nobres guerreiros', saber:0, moedas:-5, amizade:0},
+      {text:'Comerciantes das cidades', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'Servos eram camponeses que trabalhavam nas terras dos senhores feudais.'
+  },
+  {
+    q: 'Qual era a função principal de um cavaleiro?',
+    options: [
+      {text:'Defender o feudo', saber:3, moedas:15, amizade:1},
+      {text:'Cultivar terras', saber:0, moedas:-5, amizade:0},
+      {text:'Vender produtos', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'Cavaleiros protegiam os feudos e cumpriam deveres militares.'
+  },
+  {
+    q: 'O que era o feudo?',
+    options: [
+      {text:'Um território rural sob controle de um senhor', saber:3, moedas:15, amizade:1},
+      {text:'Uma festa medieval', saber:0, moedas:-5, amizade:0},
+      {text:'Um tipo de moeda', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'Feudo era a unidade territorial e econômica do sistema feudal.'
+  },
+  {
+    q: 'Quem era o suserano?',
+    options: [
+      {text:'Senhor que concedia terras a um vassalo', saber:3, moedas:15, amizade:1},
+      {text:'Servo da gleba', saber:0, moedas:-5, amizade:0},
+      {text:'Padre local', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'O suserano era o senhor que concedia terras em troca de fidelidade.'
+  },
+  {
+    q: 'Qual era a principal atividade econômica no feudalismo?',
+    options: [
+      {text:'Agricultura de subsistência', saber:3, moedas:15, amizade:1},
+      {text:'Indústria pesada', saber:0, moedas:-5, amizade:0},
+      {text:'Comércio marítimo internacional', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'A agricultura de subsistência sustentava a economia feudal.'
+  },
+  {
+    q: 'Quem comandava as paróquias locais?',
+    options: [
+      {text:'Padres', saber:3, moedas:15, amizade:1},
+      {text:'Camponeses', saber:0, moedas:-5, amizade:0},
+      {text:'Cavaleiros', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'Padres cuidavam da vida religiosa das comunidades locais.'
+  },
+  {
+    q: 'Qual era a importância da Igreja na Idade Média?',
+    options: [
+      {text:'Controlava a vida espiritual e social', saber:3, moedas:15, amizade:1},
+      {text:'Organizava apenas festas', saber:0, moedas:-5, amizade:0},
+      {text:'Comandava exércitos mercenários', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'A Igreja tinha poder espiritual, político e econômico no período.'
+  },
+  {
+    q: 'O que eram as Cruzadas?',
+    options: [
+      {text:'Expedições militares para a Terra Santa', saber:3, moedas:15, amizade:1},
+      {text:'Feiras de comércio', saber:0, moedas:-5, amizade:0},
+      {text:'Jogos entre cavaleiros', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'As Cruzadas eram expedições religiosas e militares rumo a Jerusalém.'
+  },
+  {
+    q: 'Quem eram os vassalos?',
+    options: [
+      {text:'Nobres que recebiam terras de um suserano', saber:3, moedas:15, amizade:1},
+      {text:'Servos sem direitos', saber:0, moedas:-5, amizade:0},
+      {text:'Comerciantes da cidade', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'Os vassalos recebiam feudos em troca de fidelidade ao suserano.'
+  },
+  {
+    q: 'Qual a função das muralhas nas cidades medievais?',
+    options: [
+      {text:'Proteger contra invasões', saber:3, moedas:15, amizade:1},
+      {text:'Enfeitar a cidade', saber:0, moedas:-5, amizade:0},
+      {text:'Servir de mercado', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'As muralhas serviam como defesa contra ataques externos.'
+  },
+  {
+    q: 'O que era uma catedral?',
+    options: [
+      {text:'Igreja principal de uma cidade', saber:3, moedas:15, amizade:1},
+      {text:'Casa de camponeses', saber:0, moedas:-5, amizade:0},
+      {text:'Armazém de mercadorias', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'A catedral era a igreja mais importante da cidade.'
+  },
+  {
+    q: 'Quem eram os artesãos?',
+    options: [
+      {text:'Trabalhadores que produziam bens manuais', saber:3, moedas:15, amizade:1},
+      {text:'Senhores feudais', saber:0, moedas:-5, amizade:0},
+      {text:'Soldados mercenários', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'Artesãos faziam produtos como tecidos, ferramentas e utensílios.'
+  },
+  {
+    q: 'O que era o sistema de servidão?',
+    options: [
+      {text:'Trabalho obrigatório do camponês na terra do senhor', saber:3, moedas:15, amizade:1},
+      {text:'Comércio marítimo entre cidades', saber:0, moedas:-5, amizade:0},
+      {text:'Estudos em universidades', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'A servidão obrigava o camponês a trabalhar para o senhor feudal.'
+  },
+  {
+    q: 'O que eram as feiras medievais?',
+    options: [
+      {text:'Locais de comércio entre regiões', saber:3, moedas:15, amizade:1},
+      {text:'Campos de treinamento', saber:0, moedas:-5, amizade:0},
+      {text:'Igrejas paroquiais', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'As feiras reuniam comerciantes de várias regiões e impulsionavam o comércio.'
+  },
+  {
+    q: 'Qual era a função de um mosteiro?',
+    options: [
+      {text:'Preservar a fé e o conhecimento', saber:3, moedas:15, amizade:1},
+      {text:'Organizar feiras agrícolas', saber:0, moedas:-5, amizade:0},
+      {text:'Treinar cavaleiros', saber:1, moedas:5, amizade:0}
+    ],
+    correctIndex: 0,
+    info: 'Mosteiros eram centros de oração, trabalho e preservação cultural.'
+  }
+];
+
+    function openQuiz(){
+      const q = extraQuizzes[Math.floor(Math.random()*extraQuizzes.length)];
+      let html = `<h3>Quiz: ${escapeHtml(q.q)}</h3><div style=\"display:grid;gap:.5rem;margin-top:8px">`;
+      q.options.forEach((opt,i)=> html += `<div class="choice" onclick="answerQuiz(${extraQuizzes.indexOf(q)},${i})">${escapeHtml(opt.text)}</div>`);
+      html += `</div>`;
+      showModal(html);
+    }
+
+    function answerQuiz(qIndex, optionIndex){
+      const q = extraQuizzes[qIndex];
+      const opt = q.options[optionIndex];
+
+      state.saber = Math.max(0, state.saber + (opt.saber||0));
+      state.moedas = Math.max(0, state.moedas + (opt.moedas||0));
+      state.amizade = Math.max(0, state.amizade + (opt.amizade||0));
+
+      if(optionIndex === q.correctIndex){
+        addLog(`Quiz correto! +${opt.moedas} moedas, +${opt.saber} saber, +${opt.amizade} amizade.`);
+        showModal(`<h3>Resposta certa!</h3><p style="color:var(--muted)">${escapeHtml(q.info)}</p><div style="margin-top:10px;text-align:right"><button class="btn primary" onclick="closeOverlay()">Continuar</button></div>`);
+      } else {
+        addLog(`Quiz respondido. Ganhou ${opt.saber} saber, ${opt.moedas} moedas, ${opt.amizade} amizade.`);
+        showModal(`<h3>Resposta escolhida</h3><p style="color:var(--muted)">${escapeHtml(q.info)}</p><div style="margin-top:10px;text-align:right"><button class="btn primary" onclick="closeOverlay()">Continuar</button></div>`);
+      }
+
+      saveState(); updateUI();
+    }
+
+    // Glossario
+    const glossario = {
+      'Vila':'Pequeno povoado ligado ao campo e à agricultura.',
+      'Feudo':'Território governado por um senhor feudal ou nobre.',
+      'Cidade':'Centro urbano murado com comércio e oficinas.',
+      'Guilda':'Associação de trabalhadores de uma mesma profissão.',
+      'Mosteiro':'Local onde monges viviam, rezavam e copiavam livros.'
+    };
+    function openGloss(){
+      let html = `<h3>Glossário</h3><div style=\"color:var(--muted);margin-top:8px">`;
+      for(const k in glossario) html += `<div style=\"margin-bottom:8px\"><strong>${escapeHtml(k)}</strong><div style=\"color:var(--muted)\">${escapeHtml(glossario[k])}</div></div>`;
+      html += `</div>`;
+      showModal(html);
+    }
+
+    // Modal helpers
+    function showModal(html){ document.getElementById('modal-body').innerHTML = html; document.getElementById('overlay').style.display = 'flex'; }
+    function closeOverlay(){ document.getElementById('overlay').style.display = 'none'; updateUI(); }
+
+    // Utility
+    function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+    // Buttons
+    document.getElementById('btn-viajar').addEventListener('click', ()=>{ viajar(); });
+    document.getElementById('btn-mercado').addEventListener('click', ()=> openMarket());
+    document.getElementById('btn-quiz').addEventListener('click', ()=> openQuiz());
+    document.getElementById('btn-gloss').addEventListener('click', ()=> openGloss());
+    // inventory quick open
+    function openInventoryModal(){ openInventory(false); }
+    // attach to window for buttons in HTML
+    window.openInventoryModal = openInventoryModal;
+
+    // init
+    window.addEventListener('load', ()=>{ loadState(); addLog('Bem-vindo à Viagem Medieval!'); saveState(); updateUI(); });
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SCALFORCE — Jogo de Biologia: Ecossistema</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+      --danger:#ff5f5f;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:  linear-gradient(180deg, #1a0f26 100%, var(--bg) 100%);
+    }
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1200px,92%);margin-inline:auto}
+    header{
+      position:sticky;top:0;z-index:10;backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 0}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800;letter-spacing:.5px}
+    .brand img{height:42px;width:auto;display:block;filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.3rem;color:var(--accent)}
+    .nav-actions{display:flex;align-items:center;gap:.6rem}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-radius:999px;border:1px solid transparent;transition:.2s ease;font-weight:600;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#1b0d27}
+    .btn.primary:hover{background:var(--accent-700)}
+    .btn.ghost{border-color:#2c1847;background:#170c25;color:var(--muted)}
+    .btn.ghost:hover{background:#1f0f32}
+    main{padding:2rem 0}
+    h1{margin:.1rem 0 .6rem;font-size:1.8rem}
+    p.lead{color:var(--muted);margin:0 0 1rem}
+    .card{background:linear-gradient(145deg,var(--card),#1a0f2a);border:3px solid rgba(255,255,255,.06);padding:1.5rem;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+    .stage-bar{display:flex;gap:.5rem;align-items:center;margin:1rem 0;flex-wrap:wrap}
+    .stage{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;font-weight:700;background:#170c25;border:1px solid rgba(255,255,255,.03)}
+    .stage.active{background:linear-gradient(90deg,var(--accent),var(--primary));color:#1b0d27}
+    .game-area{display:grid;grid-template-columns:1fr 360px;gap:1rem;margin-top:1rem}
+    @media(max-width:960px){.game-area{grid-template-columns:1fr}}
+    .question-box{padding:1rem;border-radius:14px}
+    .question{font-size:1.1rem;margin:0 0 .8rem}
+    .options{display:flex;flex-direction:column;gap:.6rem}
+    .opt{background:#170c25;border:1px solid #2c1847;padding:.75rem;border-radius:10px;cursor:pointer;font-weight:800;color:#ffffff;text-align:left}
+    .opt:hover{transform:translateY(-3px)}
+    .opt.correct{outline:3px solid rgba(54,195,141,.18);background:linear-gradient(90deg,var(--success),#1b3f2f);}    
+    .opt.wrong{outline:3px solid rgba(255,138,0,.12);opacity:.8}
+    .side{position:relative}
+    .score{display:flex;flex-direction:column;gap:.6rem}
+    .score .row{display:flex;justify-content:space-between;align-items:center;padding:.6rem;background:#170c25;border-radius:10px;border:1px solid rgba(255,255,255,.03)}
+    .vidasWrap{display:flex;align-items:center;gap:.5rem}
+    .hearts{display:flex;gap:.2rem;font-size:1.05rem;line-height:1}
+    .heart{filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
+    .img-preview{height:220px;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,var(--primary),#2a1645);display:flex;align-items:center;justify-content:center}
+    .img-preview img{max-width:100%;max-height:100%;object-fit:cover;display:block;margin:auto}
+    .controls{display:flex;gap:.6rem;margin-top:1rem}
+    .feedback{margin-top:.8rem;padding:.7rem;border-radius:10px;font-weight:700}
+    .feedback.good{background:rgba(54,195,141,.08);color:var(--success)}
+    .feedback.bad{background:rgba(255,138,0,.06);color:var(--accent)}
+    .feedback.danger{background:rgba(255,95,95,.1);color:var(--danger)}
+    footer{padding:2.5rem 0 3rem;color:var(--muted)}
+    footer .brand span{color:var(--accent)}
+    .footgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:1.5rem}
+    .footgrid a{display:block;padding:.25rem 0;color:var(--muted)}
+    @media(max-width:960px){.footgrid{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){.nav-actions{display:none}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="../ScalForce.html">
+        <img src="../Logo.png" alt="Logo SCALFORCE" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+      <nav class="nav-actions">
+        <a class="btn primary" href="../ScalForce.html">Voltar</a>
+        <div id="loginArea"></div>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <div class="card">
+      <h1>Ecossistema</h1>
+      <p class="lead">Passe por 10 fases sobre espécies — cada fase tem 3 perguntas.</p>
+      <div class="stage-bar" id="stageBar"></div>
+      <div class="game-area">
+        <section>
+          <div class="question-box">
+            <div class="img-preview" id="imgPreview"><img src="https://upload.wikimedia.org/wikipedia/commons/0/03/Barn_Swallow.jpg" alt="preview"></div>
+            <h2 class="question" id="question">Carregando fase...</h2>
+            <div class="options" id="options"></div>
+            <div id="feedbackArea"></div>
+            <div class="controls">
+              <button class="btn ghost" id="btnHint">Dica</button>
+              <button class="btn primary" id="btnNext" disabled>Próxima</button>
+            </div>
+          </div>
+        </section>
+        <aside class="side">
+          <div class="score">
+            <div class="row"><div>Fase</div><div id="faseAtual">1</div></div>
+            <div class="row"><div>Pontos</div><div id="pontos">0</div></div>
+            <div class="row"><div>Acertos seguidos</div><div id="combo">0</div></div>
+            <div class="row"><div>Vidas</div><div class="vidasWrap"><div class="hearts" id="hearts"></div><div id="vidas" class="small">--</div></div></div>
+          </div>
+          <div style="height:12px"></div>
+          <div class="card" style="padding:.8rem">
+            <div class="small">Como funciona</div>
+            <ul class="small" style="margin:.6rem 0 0;padding-left:1rem">
+              <li>15 fases — cada fase tem 3 perguntas.</li>
+              <li>Acertou: avança. <strong>Errou: perde 1 vida e volta ao começo.</strong></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+ 
+  <script>
+ // =========================
+    // CONFIG DE JOGO / VIDAS
+    // =========================
+    const VIDAS_MAX = 3;
+
+    // BASE_FASES contém o conteúdo original (15 fases x 3 perguntas).
+    const BASE_FASES = [
+  // Fase 1
+  [
+    { q: 'Como se chama esta ave?', img: 'imagens15/Andorinha.png', options: ['Andorinha', 'Pica-pau', 'Corvo', 'Beija-flor'], answer: 0, hint: 'Costuma voar e tem cauda em V.' },
+    { q: 'Qual é este animal do mar?', img: 'imagens15/Golfinho.png', options: ['Peixe-boi', 'Tubarão', 'Golfinho', 'Caranguejo'], answer: 2, hint: 'É brincalhão e nada perto da superfície.' },
+    { q: 'Como se chama este gato selvagem?', img: 'imagens15/Gato do mato.png', options: ['Onça', 'Tigre', 'Gato-do-mato', 'Leão'], answer: 2, hint: 'É pequeno e vive em matas.' }
+  ],
+  // Fase 2
+  [
+    { q: 'Onde vive este animal?', img: 'imagens15/Onça Pelo grosso.png', options: ['Deserto', 'Floresta', 'Oceano', 'Montanha'], answer: 1, hint: 'Muitos árvores e plantas.' },
+    { q: 'Que planta é esta?', img: 'imagens15/Cacto.png', options: ['Samambaia', 'Cacto', 'Ipê', 'Bromélia'], answer: 1, hint: 'Gosta de lugares secos e guarda água.' },
+    { q: 'Este peixe vive em água doce ou salgada?', img: 'imagens15/Pirarara.png', options: ['Doce', 'Salgada', 'Ambas', 'Nenhuma'], answer: 0, hint: 'Encontra-se em rios.' }
+  ],
+  // Fase 3
+  [
+    { q: 'O que ajuda este animal a voar longe?', img: 'imagens15/Asas longas.png', options: ['Asas longas', 'Garras', 'Nadadeiras', 'Bico curvo'], answer: 0, hint: 'Asas grandes e finas.' },
+    { q: 'Qual parte da planta guarda água?', img: 'imagens15/Caule.png', options: ['Raiz fina', 'Espinhos', 'Caules suculentos', 'Flores grandes'], answer: 2, hint: 'Caules grossos que armazenam água.' },
+    { q: 'Por que alguns animais têm pelo grosso?', img: 'imagens15/Onça Pelo grosso.png', options: ['Para nadar melhor', 'Para esquentar o corpo', 'Para voar', 'Para fazer som'], answer: 1, hint: 'Ajuda a manter o calor quando está frio.' }
+  ],
+  // Fase 4
+  [
+    { q: 'Um cogumelo pertence a qual grupo?', img: 'imagens15/Cogumelos.png', options: ['Animal', 'Planta', 'Fungo', 'Bactéria'], answer: 2, hint: 'Não faz fotossíntese.' },
+    { q: 'Este animal começa na água e depois vai para a terra. O que é?', img: 'imagens15/Anfíbio sapo.png', options: ['Peixe', 'Anfíbio', 'Répteis', 'Mamífero'], answer: 1, hint: 'Por exemplo: sapo.' },
+    { q: 'O que é uma pássaro?', img: 'imagens15/Ave.png', options: ['Peixe', 'Ave', 'Inseto', 'Répteis'], answer: 1, hint: 'Tem penas e bico.' }
+  ],
+  // Fase 5
+  [
+    { q: 'O coelho é que tipo de animal na cadeia alimentar?', img: 'imagens15/Coelho.png', options: ['Predador', 'Produtor', 'Herbívoro', 'Decompositor'], answer: 2, hint: 'Come plantas.' },
+    { q: 'O que as corujas costumam comer?', img: 'imagens15/Coruja.png', options: ['Plantas', 'Insetos grandes', 'Pequenos mamíferos', 'Algas'], answer: 2, hint: 'Caçam à noite roedores.' },
+    { q: 'O que faz um decompositor?', img: 'imagens15/Cogumelos.png', options: ['Fazer comida', 'Quebrar restos e devolver ao solo', 'Caçar grandes animais', 'Construir casas'], answer: 1, hint: 'Ajuda a reciclar o que morreu.' }
+  ],
+  // Fase 6
+  [
+    { q: 'Por que flamingos ficam em uma perna só?', img: 'imagens15/Flamingo.png', options: ['Para dormir', 'Para perder calor', 'Para equilibrar', 'Para nadar'], answer: 1, hint: 'Ajuda a manter a temperatura do corpo.' },
+    { q: 'O que é migração?', img: 'imagens15/migração.png', options: ['Trocar de cor', 'Viagem de animais por estação', 'Reprodução', 'Comer mais'], answer: 1, hint: 'Animais mudam de lugar em épocas do ano.' },
+    { q: 'Para que serve a camuflagem?', img: 'imagens15/camuflagem urutal.png', options: ['Chamar atenção', 'Esconder-se dos outros', 'Fortalecer ossos', 'Respirar melhor'], answer: 1, hint: 'Ficar difícil de ver no ambiente.' }
+  ],
+  // Fase 7
+  [
+    { q: 'Qual é o gênero em "Panthera onca"?', img: 'imagens15/panthera onça.png', options: ['Panthera', 'onca', 'Felidae', 'Mammalia'], answer: 0, hint: 'É a primeira palavra do nome científico.' },
+    { q: 'Como chamamos o nome com duas palavras (ex: Homo sapiens)?', img: 'imagens15/Nomenclatura binomial Homo.png', options: ['Taxonomia', 'Nomenclatura binomial', 'Evolução', 'Anatomia'], answer: 1, hint: 'Dois nomes: gênero e espécie.' },
+    { q: 'O que indica "Homo sapiens"?', img: 'imagens15/evolução.png', options: ['Família e ordem', 'Gênero e espécie', 'Classe e filo', 'Reino e família'], answer: 1, hint: 'Segundo nome é a espécie.' }
+  ],
+  // Fase 8
+  [
+    { q: 'O que significa "espécie endêmica"?', img: 'imagens15/endemicas.png', options: ['Vive em muitos lugares', 'Só vive num lugar', 'Está extinta', 'Foi trazida por pessoas'], answer: 1, hint: 'Só existe naquela região.' },
+    { q: 'Onde há muitas variedades de plantas e animais?', img: 'imagens15/floresta tropical.png', options: ['Deserto', 'Floresta tropical', 'Cidade', 'Polo'], answer: 1, hint: 'Lugar quente e com muita chuva.' },
+    { q: 'Por que ilhas têm animais diferentes?', img: 'imagens15/ilha tropical.png', options: ['Sem predadores', 'Isolamento que cria espécies novas', 'Mesmo clima do continente', 'Sempre vazias'], answer: 1, hint: 'Ficar separado permite mudar com o tempo.' }
+  ],
+  // Fase 9
+  [
+    { q: 'A seleção natural favorece quem tem:', img: 'imagens15/seleção natural.png', options: ['Habilidades úteis', 'Espécies mudam do nada', 'Ambiente sem vida', 'Só plantas'], answer: 0, hint: 'Características que ajudam a sobreviver.' },
+    { q: 'O que é um ancestral comum?', img: 'imagens15/Ancestral.png', options: ['Espécie atual', 'Ser do qual dois grupos vieram', 'Mutação', 'Lugar'], answer: 1, hint: 'É o antepassado que deram origem a outros.' },
+    { q: 'O que mostra uma filogenia?', img: 'imagens15/Filogenia.png', options: ['Relações entre espécies', 'Mapa de cidades', 'Cadeia alimentar', 'Lista de nomes'], answer: 0, hint: 'É como uma árvore mostrando parentesco.' }
+  ],
+  // Fase 10
+  [
+    { q: 'Um pássaro com bico longo e curvo pode comer:', img: 'imagens15/Bico longo.png', options: ['Correr', 'Buscar invertebrados na lama', 'Caçar grandes animais', 'Fazer fotossíntese'], answer: 1, hint: 'Usa o bico para procurar comida em lugares estreitos.' },
+    { q: 'Como podemos distinguir duas espécies parecidas?', img: 'imagens15/Especies parecidas.png', options: ['Só pelo lugar', 'Usando genética e comportamento', 'Pelo tamanho da sombra', 'Nunca é possível'], answer: 1, hint: 'Olhar DNA e como se comportam.' },
+    { q: 'Como contar aves em uma área grande?', img: 'imagens15/contas aves.png', options: ['Contar todas', 'Fazer amostras em pontos', 'Só com satélite', 'Medir as árvores'], answer: 1, hint: 'Escolher pontos e contar lá.' }
+  ]
+];
+
+    // Utilitários
+    function deepCopy(obj){ return JSON.parse(JSON.stringify(obj)); }
+    function shuffleArray(a){
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+      }
+      return a;
+    }
+
+    // Cria a versão ativa das fases (FASES), com embaralhamento interno
+    let FASES = [];
+    function resetFASESRandom(){
+      const copy = deepCopy(BASE_FASES);
+      for(const fase of copy){
+        shuffleArray(fase);
+        fase.forEach(q=>{
+          const opts = q.options.map((o,idx)=>({o,idx}));
+          shuffleArray(opts);
+          const newOptions = opts.map(x=>x.o);
+          const newAnswer = opts.findIndex(x=>x.idx===q.answer);
+          q.options = newOptions;
+          q.answer = newAnswer;
+        });
+      }
+      FASES = copy;
+    }
+
+    // Estado do jogo
+    let faseIndex = 0; // 0..14
+    let perguntaIndex = 0; // 0..2
+    let pontos = 0;
+    let combo = 0;
+    let dicasRestantes = 2;
+    let vidas = VIDAS_MAX;
+
+    // DOM
+    const stageBar = document.getElementById('stageBar');
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const imgPreview = document.querySelector('#imgPreview img');
+    const faseAtual = document.getElementById('faseAtual');
+    const pontosEl = document.getElementById('pontos');
+    const vidasEl = document.getElementById('vidas');
+    const heartsEl = document.getElementById('hearts');
+    const comboEl = document.getElementById('combo');
+    const btnNext = document.getElementById('btnNext');
+    const btnHint = document.getElementById('btnHint');
+    const feedbackArea = document.getElementById('feedbackArea');
+
+    function initStageBar(){
+      stageBar.innerHTML = '';
+      const total = 10;
+      for(let i=0;i<total;i++){
+        const el = document.createElement('div');
+        el.className = 'stage' + (i===0 ? ' active' : '');
+        el.textContent = (i+1);
+        stageBar.appendChild(el);
+      }
+    }
+
+    function renderHearts(){
+      heartsEl.innerHTML = '';
+      for(let i=0;i<VIDAS_MAX;i++){
+        const span = document.createElement('span');
+        span.className = 'heart';
+        span.textContent = i < vidas ? '❤' : '♡';
+        heartsEl.appendChild(span);
+      }
+      vidasEl.textContent = vidas + '/' + VIDAS_MAX;
+    }
+
+    function renderEstado(){
+      faseAtual.textContent = (faseIndex+1);
+      pontosEl.textContent = pontos;
+      comboEl.textContent = combo;
+      document.querySelectorAll('.stage').forEach((s,idx)=>{
+        s.classList.toggle('active', idx===faseIndex);
+      });
+      renderHearts();
+    }
+
+    function carregarPergunta(){
+      feedbackArea.innerHTML = '';
+      btnNext.disabled = true;
+      const fase = FASES[faseIndex];
+      const pergunta = fase[perguntaIndex];
+      questionEl.textContent = pergunta.q;
+      imgPreview.src = pergunta.img || 'https://upload.wikimedia.org/wikipedia/commons/0/03/Barn_Swallow.jpg';
+      optionsEl.innerHTML = '';
+      pergunta.options.forEach((opt,idx)=>{
+        const b = document.createElement('button');
+        b.className = 'opt';
+        b.textContent = opt;
+        b.addEventListener('click',()=>selecionar(idx,b));
+        optionsEl.appendChild(b);
+      });
+      renderEstado();
+    }
+
+    function selecionar(idx,buttonEl){
+      if(btnNext.disabled===false) return; // já respondeu
+
+      const pergunta = FASES[faseIndex][perguntaIndex];
+      const correto = pergunta.answer === idx;
+
+      // marcar opções
+      Array.from(optionsEl.children).forEach((c,i)=>{
+        c.classList.remove('correct','wrong');
+        c.disabled = true;
+        if(i===pergunta.answer) c.classList.add('correct');
+        if(i===idx && i!==pergunta.answer) c.classList.add('wrong');
+      });
+
+      if(correto){
+        pontos += 10 + (combo*2);
+        combo += 1;
+        feedbackArea.innerHTML = '<div class="feedback good">Correto! +' + (10 + (combo-1)*2) + ' pontos.</div>';
+        btnNext.disabled = false;
+        renderEstado();
+      } else {
+        // ERRO: perde 1 vida e volta ao começo; ao zerar vidas, game over
+        vidas = Math.max(0, vidas - 1);
+        combo = 0; // zera combo ao errar
+        renderEstado();
+        if(vidas > 0){
+          feedbackArea.innerHTML = '<div class="feedback bad">Errado. Resposta correta: ' + pergunta.options[pergunta.answer] + '. <strong>-1 vida</strong> ('+ vidas +'/'+ VIDAS_MAX +'). Voltando à fase 1...</div>';
+          setTimeout(()=>{
+            reiniciarDoComeco(true); // preserva vidas restantes
+          }, 1200);
+        } else {
+          feedbackArea.innerHTML = '<div class="feedback danger">Errado. Suas vidas acabaram.</div>';
+          setTimeout(()=>{
+            terminarJogo(false);
+          }, 900);
+        }
+      }
+    }
+
+    function proxima(){
+      perguntaIndex++;
+      if(perguntaIndex >= FASES[faseIndex].length){
+        faseIndex++;
+        perguntaIndex = 0;
+        if(faseIndex >= FASES.length){
+          terminarJogo(true);
+          return;
+        }
+      }
+      carregarPergunta();
+    }
+
+    function reiniciarDoComeco(keepLives=false){
+      resetFASESRandom();
+      faseIndex = 0; perguntaIndex = 0; pontos = keepLives ? pontos : 0; combo = 0; dicasRestantes = keepLives ? dicasRestantes : 2; // mantém pontos/dicas se desejado
+      if(!keepLives){ vidas = VIDAS_MAX; }
+      renderEstado();
+      carregarPergunta();
+    }
+
+    function terminarJogo(vitoria){
+      questionEl.textContent = vitoria ? 'Parabéns — você concluiu todas as fases!' : 'Fim de jogo — suas vidas acabaram.';
+      optionsEl.innerHTML = '';
+      imgPreview.src = 'https://upload.wikimedia.org/wikipedia/commons/0/03/Barn_Swallow.jpg';
+      feedbackArea.innerHTML = '<div class="card" style="margin-top:1rem;text-align:center">\
+        <h3>'+ (vitoria ? 'Vitória' : 'Você perdeu') +'</h3>\
+        <p class="small">Pontos totais: '+pontos+' | Vidas: '+vidas+'/'+VIDAS_MAX+'</p>\
+        <div style="margin-top:.6rem">\
+          <button class="btn primary" onclick="reiniciarDoComeco(false)">Jogar novamente</button>\
+          <button class="btn ghost" onclick="voltarMenu()">Voltar</button>\
+        </div>\
+      </div>';
+    }
+
+    function voltarMenu(){
+      window.location.href = 'index.html';
+    }
+
+    btnNext.addEventListener('click', proxima);
+
+    btnHint.addEventListener('click', ()=>{
+      if(dicasRestantes<=0){
+        feedbackArea.innerHTML = '<div class="feedback bad">Sem dicas restantes.</div>';
+        return;
+      }
+      const pergunta = FASES[faseIndex][perguntaIndex];
+      feedbackArea.innerHTML = '<div class="feedback good">Dica: '+(pergunta.hint || 'Sem dica')+'</div>';
+      dicasRestantes -= 1;
+    });
+
+    // inicia jogo com fases embaralhadas para variação
+    initStageBar();
+    resetFASESRandom();
+    carregarPergunta();
+
+  </script>
+</body>
+</html>

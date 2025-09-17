@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Caça ao Tesouro dos Continentes — Geografia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --accent:#ff8a00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+    }
+    *{box-sizing:border-box}
+    /* Remova o padding lateral do body e container */
+body {
+  margin: 0;
+  font-family: Poppins, system-ui, Segoe UI, Roboto, Arial;
+  color: var(--text);
+  background: linear-gradient(180deg, #1a0f26 100%, #140a1a 100%);
+}
+
+.container {
+  width: min(1300px, 100%);
+  margin-inline: auto;
+}
+
+/* Espaçamento só no conteúdo */
+main.game {
+  padding-inline: 50px; /* espaçamento lateral */
+  margin-top: 100px;     /* espaçamento vertical abaixo do header */
+}
+
+
+  header {
+  position: fixed;
+  top: 0;
+  z-index: 10;
+  background: #140a1a;
+  width: 100%;
+  margin: 0;
+  padding: 0px 50px; /* <<< espaçamento interno (cima/baixo) */
+}
+
+.nav {
+  max-width: 1920px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;   /* espaçamento de 20px em todas as bordas */
+}
+
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800;text-decoration:none;color:var(--text);}
+    .brand img{height:48px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+     .voltar {
+  padding: 0.9rem 1.6rem;
+  border-radius: 999px;
+  border: none;
+  background: #ff8a00;
+  color: #1e1130;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  transition: background 0.3s, transform 0.2s;
+}
+    .brand span{color:var(--accent)}
+
+    /* Layout: left = mapa/continentes, right = itens (sidebar) */
+    .game{display:grid;grid-template-columns:1fr 360px;gap:1.25rem;align-items:start}
+    .card{background:linear-gradient(145deg,var(--card),#1a0f2a);border-radius:14px;padding:16px;border:3px solid rgba(255,255,255,0.04)}
+    h1{margin:0 0 8px;font-size:1.4rem}
+    p{color:var(--muted);margin:.25rem 0 10px}
+
+    .controls{display:flex;gap:.5rem;flex-wrap:wrap}
+    .btn{background:var(--accent);color:#1b0d27;padding:.6rem .9rem;border-radius:999px;border:none;font-weight:700;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+    /* palavras como lista vertical na lateral */
+    .words-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:12px;max-height:64vh;overflow:auto;padding-right:6px}
+    .word{padding:.6rem .5rem;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.02);cursor:grab;text-align:center}
+    .word[draggable="true"]:active{cursor:grabbing}
+
+    .drops-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-top:6px}
+    .drop{min-height:140px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:10px;border:2px dashed rgba(255,255,255,0.04);}
+    .drop h3{margin:0 0 .4rem;font-size:1rem}
+    .drop .slot{padding:.35rem .5rem;border-radius:8px;background:rgba(0,0,0,0.2);margin:.3rem 0;min-height:40px}
+
+    .status{margin-top:10px;color:var(--muted)}
+    .hint{background:#0f1530;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.04);}
+
+    .legend{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:8px}
+    .pill{background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:999px;font-size:.85rem}
+
+    .items-card{position:sticky;top:18px;align-self:start}
+
+    @media (max-width:1100px){
+      .game{grid-template-columns:1fr;}
+      .drops-wrap{grid-template-columns:repeat(1,1fr)}
+      .words-list{max-height:none;flex-direction:row;flex-wrap:wrap}
+    }
+  </style>
+</head>
+<body>
+    <header>
+  <div class="nav">
+    <a class="brand">
+      <img src="Logo.png" alt="Logo SCALFORCE" style="height:42px">
+      <span>ScalForce</span>
+    </a>
+    <button class="voltar" onclick="window.location.href='../ScalForce.html'">Voltar</button>
+  </div>
+</header>
+<br>
+
+    <main class="game">
+      <!-- Left column: instruções + continentes (drops) -->
+      <div>
+        <section class="card">
+          <h1>Como jogar</h1>
+          <p>Encontre o tesouro! Arraste cada item até o continente correto. Existem 7 continentes — cada um tem 4 itens associados.</p>
+
+          <div class="controls">
+            <button class="btn" id="btn-check">Checar respostas</button>
+            <button class="btn ghost" id="btn-shuffle">Embaralhar</button>
+            <button class="btn ghost" id="btn-reset">Reiniciar</button>
+          </div>
+
+          <div class="status" id="status">Coloque todos os itens que tenham relação com o continente e clique em <strong>Checar respostas</strong>.</div>
+
+          <div style="margin-top:12px" class="hint">Dica: Pense em animais, paisagens, comidas e monumentos típicos de cada continente.</div>
+
+          <div class="legend" aria-hidden>
+            <div class="pill">7 Continentes</div>
+            <div class="pill">28 Itens</div>
+            <div class="pill">Arraste • Solte • Verifique</div>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:12px">
+          <h1>Continentes</h1>
+          <div class="drops-wrap" id="drops"></div>
+        </section>
+      </div>
+
+      <!-- Right column: itens do tesouro (sidebar) -->
+      <aside class="items-card card">
+        <h1>Itens do Tesouro</h1>
+        <div class="words-list" id="words"></div>
+        <p style="color:var(--muted);font-size:0.95rem;margin-top:8px">Arraste os itens para os continentes à esquerda. Clique em um item colocado para devolvê-lo.</p>
+      </aside>
+    </main>
+  </div>
+
+  <footer>
+    <br>
+    <br>
+    <br>
+  </footer>
+
+  <script>
+    // Grupos: 7 continentes com 4 itens cada
+    const GROUPS = {
+      AF: {title: 'África', items: ['leão','baobá','savana','saara']},
+      AN: {title: 'Antártica', items: ['pinguim','iceberg','foca','geleira']},
+      AS: {title: 'Ásia', items: ['tigre','muralha','chá','arroz']},
+      EU: {title: 'Europa', items: ['castelo','catedral','queijo','ópera']},
+      NA: {title: 'América do Norte', items: ['urso','xarope','canyon','pradaria']},
+      SA: {title: 'América do Sul', items: ['amazônia','carnaval','andes','puma']},
+      OC: {title: 'Oceania', items: ['canguru','barreira de coral','kiwi','surf']}
+    };
+
+    // criar lista de palavras (com grupo correto)
+    let WORDS = Object.keys(GROUPS).flatMap(k => GROUPS[k].items.map(w=>({word:w,group:k})))
+
+    const wordsEl = document.getElementById('words');
+    const dropsEl = document.getElementById('drops');
+    const status = document.getElementById('status');
+
+    function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } }
+
+    function renderWords(){
+      wordsEl.innerHTML='';
+      WORDS.forEach(w=>{
+        const d = document.createElement('div');
+        d.className='word';
+        d.draggable=true;
+        d.id = 'word-'+btoa(w.word).replace(/=/g,'');
+        d.textContent = w.word;
+        d.dataset.group = w.group;
+        d.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', d.id);
+          setTimeout(()=> d.style.visibility='hidden',50);
+        });
+        d.addEventListener('dragend', e => d.style.visibility='visible');
+        wordsEl.appendChild(d);
+      })
+    }
+
+    function renderDrops(){
+      dropsEl.innerHTML='';
+      Object.keys(GROUPS).forEach(k=>{
+        const box = document.createElement('div');
+        box.className='drop';
+        box.dataset.group = k;
+        box.innerHTML = `<h3>${GROUPS[k].title}</h3><div class="slot" aria-live="polite" data-count="0">(vazio)</div>`;
+
+        box.addEventListener('dragover', e=> e.preventDefault());
+        box.addEventListener('drop', e=>{
+          e.preventDefault();
+          const id = e.dataTransfer.getData('text/plain');
+          const el = document.getElementById(id);
+          if(!el) return;
+
+          let slot = box.querySelector('.slot');
+          if(slot.textContent.trim()==='(vazio)') slot.textContent='';
+
+          // cria pílula item
+          const pill = document.createElement('div');
+          pill.className='word';
+          pill.style.margin='6px 0';
+          pill.style.cursor='pointer';
+          pill.draggable=false;
+          pill.textContent = el.textContent;
+          pill.dataset.group = el.dataset.group;
+
+          // ao clicar, retorna para a área de itens
+          pill.addEventListener('click', ()=>{
+            wordsEl.appendChild(el);
+            el.style.visibility='visible';
+            pill.remove();
+            if(!box.querySelector('.word')) box.querySelector('.slot').textContent='(vazio)';
+          });
+
+          // impede duplicatas no mesmo box
+          if(Array.from(box.querySelectorAll('.word')).some(x=>x.textContent===el.textContent)){
+            el.style.visibility='visible';
+            return;
+          }
+
+          // remove original do grid e adiciona o pill
+          el.remove();
+          box.querySelector('.slot').appendChild(pill);
+        });
+
+        dropsEl.appendChild(box);
+      })
+    }
+
+    function checkAnswers(){
+      let correct=0; let total=0;
+      // reset visual
+      document.querySelectorAll('.drop').forEach(d=>{ d.style.borderColor='rgba(255,255,255,0.04)'; d.style.boxShadow='none'; })
+
+      Object.keys(GROUPS).forEach(k=>{
+        const box = dropsEl.querySelector(`[data-group="${k}"]`);
+        const placedEls = Array.from(box.querySelectorAll('.word'));
+        const placed = placedEls.map(x=>x.textContent.trim());
+        total += GROUPS[k].items.length;
+        placed.forEach(w=>{ if(GROUPS[k].items.includes(w)) correct++; });
+
+        // destaque: verde se todos corretos, amarelo se parcialmente, vermelho se nenhum
+        if(placed.length>0){
+          const good = placed.filter(x=>GROUPS[k].items.includes(x)).length;
+          if(good===placed.length && good>0) { box.style.borderColor='rgba(46,204,113,0.8)'; box.style.boxShadow='0 6px 18px rgba(46,204,113,0.06)'; }
+          else if(good>0) { box.style.borderColor='rgba(241,196,15,0.8)'; box.style.boxShadow='0 6px 18px rgba(241,196,15,0.06)'; }
+          else { box.style.borderColor='rgba(231,76,60,0.8)'; box.style.boxShadow='0 6px 18px rgba(231,76,60,0.06)'; }
+        }
+      });
+
+      status.textContent = `Acertos: ${correct} de ${total}.`;
+      if(correct===total) status.textContent += ' Parabéns — você encontrou todos os tesouros!';
+    }
+
+    function resetGame(){
+      WORDS = Object.keys(GROUPS).flatMap(k => GROUPS[k].items.map(w=>({word:w,group:k})))
+      shuffleArray(WORDS);
+      renderWords();
+      renderDrops();
+      status.textContent='Coloque todos os itens nos continentes e clique em Checar respostas.';
+    }
+
+    document.getElementById('btn-check').addEventListener('click', checkAnswers);
+    document.getElementById('btn-shuffle').addEventListener('click', ()=>{ shuffleArray(WORDS); renderWords(); });
+    document.getElementById('btn-reset').addEventListener('click', resetGame);
+
+    // inicialização
+    shuffleArray(WORDS);
+    renderWords();
+    renderDrops();
+  </script>
+</body>
+</html>

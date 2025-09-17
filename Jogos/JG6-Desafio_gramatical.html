@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Desafio Gramatical — SCALFORCE</title>
+  <meta name="description" content="Jogo educativo de Português para Fundamental 1. 5 fases, 10 questões cada, com dificuldade progressiva." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+      --danger:#ff5a6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,#1a0f26 0%, #140a1a 100%);
+    }
+    a{color:white; text-decoration:none}
+    .container{width:min(1100px,92%); margin-inline:auto}
+
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.3rem; color:var(--accent)}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.75rem 1rem; border-radius:999px; border:1px solid transparent; transition:.2s ease; font-weight:700; cursor:pointer}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.primary:hover{background:var(--accent-700)}
+     .btn.ghost{background:#ff8a00; color:rgba(20,10,26,.9); border:none;}
+    .btn.ghost:hover{background:#ff8a00; color:rgba(20,10,26,.9);}
+
+    main{padding:2rem 0 3rem}
+    .game-wrap{display:grid; grid-template-columns: 1fr 1.25fr; gap:1.4rem; align-items:start}
+
+    .panel{
+      background:linear-gradient(145deg,var(--card),#1a0f2a);
+      border:3px solid rgba(255,255,255,.06);
+      border-radius:22px; padding:1.25rem; box-shadow:0 20px 50px rgba(0,0,0,.35);
+    }
+
+    .phase-list{display:grid; gap:.7rem}
+    .phase{display:flex; align-items:center; justify-content:space-between; gap:.8rem; padding:.9rem 1rem; border:1px solid #2c1847; background:#170c25; border-radius:14px}
+    .phase.locked{opacity:.55; filter:grayscale(.6)}
+    .phase .meta{display:flex; align-items:center; gap:.6rem; color:var(--muted); font-size:.9rem}
+    .phase .stars{letter-spacing:1px}
+
+    .question-card{padding:1rem; background:#3e2461; border:1px solid rgba(255, 255, 255, 0.08); border-radius:18px}
+    .question-card h2{margin:.2rem 0 .2rem; font-size:clamp(1.2rem,2.6vw,1.6rem)}
+    .question-text{color:var(--muted); margin:.3rem 0 1rem}
+
+    .options{display:grid; gap:.7rem; margin:.8rem 0}
+    .option{
+      text-align:left; padding:.85rem 1rem; border-radius:12px; border:1px solid #2a1645; background:#ffffff; cursor:pointer; font-weight:600
+    }
+    .option:hover{background:#ff9e2f}
+    .option.correct{background:rgba(54,195,141,.18); border-color:rgba(54,195,141,.6)}
+    .option.wrong{background:rgba(255,90,107,.18); border-color:rgba(255,90,107,.6)}
+
+    .hud{display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:.6rem 0 1rem}
+    .progress{flex:1; height:12px; background:#160c23; border:1px solid #2a1645; border-radius:999px; overflow:hidden}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg,#ff8a00,#ffb457)}
+    .pill{padding:.35rem .6rem; border:1px solid #2a1645; background:#170c25; border-radius:999px; color:var(--muted); font-weight:700}
+
+    .feedback{min-height:28px; font-weight:700}
+    .feedback.ok{color:var(--success)}
+    .feedback.no{color:var(--danger)}
+
+    .footer-actions{display:flex; justify-content:flex-end; gap:.6rem; margin-top:1rem}
+
+    .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55)}
+    .modal.show{display:grid}
+    .modal .box{width:min(520px,92%); background:linear-gradient(145deg,var(--card),#1a0f2a); border:1px solid rgba(255,255,255,.1); border-radius:18px; padding:1.1rem}
+
+    .tiny{font-size:.85rem; color:var(--muted)}
+
+    @media (max-width: 960px){
+      .game-wrap{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand"><img src="../Logo.png" alt="Logo SCALFORCE" onerror="this.style.display='none'"><span>ScalForce</span></a>
+      <nav>
+        <a class="btn ghost" href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="game-wrap">
+      <!-- Painel lateral: Fases -->
+      <aside class="panel">
+        <h1 style="margin:0 0 .2rem; font-size:clamp(1.2rem,2.5vw,1.6rem)">Desafio Gramatical</h1>
+        <p class="tiny" style="margin:.15rem 0 1rem">Fundamental 1 • 5 fases • 10 questões por fase</p>
+        <div id="phaseList" class="phase-list" aria-live="polite"></div>
+        <div style="margin-top:1rem; display:flex; gap:.6rem">
+          <button class="btn primary" id="btnReset">Recomeçar</button>
+          <a class="btn ghost" href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})">Topo</a>
+        </div>
+      </aside>
+
+      <!-- Área principal do jogo -->
+      <section class="panel">
+        <div class="hud">
+          <span class="pill" id="phaseName">Selecione uma fase</span>
+          <div class="progress" aria-label="Progresso da fase"><div class="bar" id="bar"></div></div>
+          <span class="pill" id="scorePill">0/10</span>
+        </div>
+
+        <div class="question-card" id="qCard" style="display:none">
+          <h2 id="qTitle"></h2>
+          <p class="question-text" id="qText"></p>
+          <div class="options" id="options"></div>
+          <div id="feedback" class="feedback" aria-live="polite"></div>
+          <div class="footer-actions">
+            <button id="btnTip" class="btn ghost" title="Ver dica desta questão">Dica</button>
+            <button id="btnNext" class="btn primary" disabled>Próxima</button>
+          </div>
+        </div>
+
+        <div id="placeholder" class="question-card">
+          <h2>Como jogar</h2>
+          <p class="question-text">Escolha uma fase no painel à esquerda. Cada fase tem 10 questões de múltipla escolha. Ganhe <b>estrelas</b> e desbloqueie as próximas fases!</p>
+          <ul style="margin:.2rem 0 0.6rem; padding-left:1rem; color:var(--muted)">
+            <li>1 estrela: 6 acertos • 2 estrelas: 8 acertos • 3 estrelas: 10 acertos</li>
+            <li>Progresso salvo automaticamente no seu navegador.</li>
+          </ul>
+          <div class="tiny">Dica de acessibilidade: você pode responder usando número 1–4 do teclado.</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Modal de fim de fase -->
+  <div class="modal" id="endModal" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="box">
+      <h2 id="endTitle" style="margin:.2rem 0">Fase concluída!</h2>
+      <p id="endDesc" class="tiny"></p>
+      <div id="endStars" style="font-size:1.4rem; margin:.6rem 0 1rem">⭐️⭐️⭐️</div>
+      <div style="display:flex; gap:.6rem; justify-content:flex-end">
+        <button class="btn ghost" id="btnReplay">Jogar de novo</button>
+        <button class="btn primary" id="btnNextPhase">Próxima fase</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ------------------------------
+    // Banco de questões
+    // Cada item: { enunciado, texto (opcional), opcoes[4], correta(index), dica }
+    // 5 fases × 10 questões cada.
+    // ------------------------------
+    const FASES = [
+      {
+        nome: 'Fase 1 — Substantivos', dificuldade: 'Fácil',
+        tema: 'Identifique o substantivo (nome de pessoa, lugar, objeto, animal, ideia).',
+        perguntas: [
+          { enunciado: 'Qual das palavras é um substantivo?', opcoes:['correr','feliz','bola','devagar'], correta:2, dica:'Substantivo dá nome às coisas.' },
+          { enunciado: 'Em "A <u>casa</u> é grande.", a palavra destacada é...', opcoes:['verbo','substantivo','adjetivo','artigo'], correta:1, dica:'Ela nomeia um lugar/objeto.' },
+          { enunciado: 'Qual é um substantivo próprio?', opcoes:['cidade','Rio de Janeiro','alto','brincar'], correta:1, dica:'Substantivo próprio tem nome específico e letra maiúscula.' },
+          { enunciado: 'Assinale o substantivo:', opcoes:['bonito','rápido','gato','amanhã'], correta:2, dica:'Animal é um nome.' },
+          { enunciado: 'Em qual opção <b>todas</b> são substantivos?', opcoes:['mesa, cantar, verde','livro, escola, João','ágil, bola, feliz','pular, casa, Pedro'], correta:1, dica:'Procure nomes. Adjetivos e verbos não valem.' },
+          { enunciado: '"Flor" é...', opcoes:['verbo','substantivo','adjetivo','pronome'], correta:1, dica:'É nome de um ser vivo.' },
+          { enunciado: 'Qual é um substantivo comum?', opcoes:['Ana','caderno','Brasil','Rafael'], correta:1, dica:'Comum não é nome específico.' },
+          { enunciado: 'Em "O <u>cachorro</u> latiu.", o termo destacado é...', opcoes:['substantivo','verbo','adjetivo','conjunção'], correta:0, dica:'Ele nomeia o animal.' },
+          { enunciado: 'Qual palavra <b>não</b> é substantivo?', opcoes:['parque','ver','festa','giz'], correta:1, dica:'Verbos indicam ação.' },
+          { enunciado: 'Escolha o substantivo:', opcoes:['amarelo','voar','menina','ontem'], correta:2, dica:'É nome de pessoa.' },
+        ]
+      },
+      {
+        nome: 'Fase 2 — Verbos', dificuldade: 'Básico',
+        tema: 'Encontre o verbo (ação, estado ou fenômeno).',
+        perguntas: [
+          { enunciado: 'Em "O gato <u>correu</u>.", a palavra destacada é...', opcoes:['verbo','substantivo','adjetivo','artigo'], correta:0, dica:'Indica ação.' },
+          { enunciado: 'Qual é um verbo?', opcoes:['jogar','bola','lindo','mesa'], correta:0, dica:'Verbo pode ser conjugado: eu jogo, tu jogas...' },
+          { enunciado: 'Assinale o verbo:', opcoes:['feliz','pular','carro','amigo'], correta:1, dica:'Ação do corpo.' },
+          { enunciado: 'Qual opção tem <b>dois</b> verbos?', opcoes:['brincar e azul','correr e cantar','gato e brincar','lápis e casa'], correta:1, dica:'Ações comuns no recreio.' },
+          { enunciado: 'Em "Nós <u>somos</u> amigos.", "somos" é...', opcoes:['adjetivo','substantivo','verbo','advérbio'], correta:2, dica:'Verbo de estado (ser/estar).'},
+          { enunciado: 'Qual alternativa traz um verbo no <i>presente</i>?', opcoes:['corri','corre','correrei','corrido'], correta:1, dica:'Agora mesmo.' },
+          { enunciado: 'Marque o verbo:', opcoes:['rápido','chuver','chuva','chuvao'], correta:0, dica:'Cuidado! Só um é verbo real (dica: não tem erro ortográfico).'},
+          { enunciado: 'Em "A menina <u>leu</u> o livro.", o verbo está no...', opcoes:['passado','presente','futuro','imperativo'], correta:0, dica:'A ação já aconteceu.' },
+          { enunciado: 'Escolha o verbo:', opcoes:['felicidade','andar','verde','parque'], correta:1, dica:'Pode virar "andamos".' },
+          { enunciado: 'Em qual opção <b>todas</b> são verbos?', opcoes:['cantar, correr, brincar','cantar, rápido, brincar','mesa, correr, brincar','cantar, correr, verde'], correta:0, dica:'Sem adjetivos ou substantivos.' },
+        ]
+      },
+      {
+        nome: 'Fase 3 — Adjetivos', dificuldade: 'Intermediário',
+        tema: 'Descubra a palavra que indica característica/qualidade.',
+        perguntas: [
+          { enunciado: 'Em "O livro é <u>interessante</u>.", a palavra destacada é...', opcoes:['substantivo','verbo','adjetivo','artigo'], correta:2, dica:'Qualidade do livro.' },
+          { enunciado: 'Qual é um adjetivo?', opcoes:['feliz','menino','correu',' cidade'], correta:0, dica:'Indica característica.' },
+          { enunciado: 'Assinale o adjetivo:', opcoes:['gato','bonita','brincar','parque'], correta:1, dica:'A aparência de algo.' },
+          { enunciado: 'Qual opção tem <b>dois</b> adjetivos?', opcoes:['alto e azul','alto e correr','azul e carro','brincar e feliz'], correta:0, dica:'Duas características.' },
+          { enunciado: 'Em "O bolo <u>gostoso</u> sumiu.", "gostoso" é...', opcoes:['adjetivo','verbo','substantivo','pronome'], correta:0, dica:'Fala do sabor.' },
+          { enunciado: 'Escolha a opção só com adjetivos:', opcoes:['doce, macio, rápido','doce, correr, macio','doce, macio, gato','parque, macio, rápido'], correta:0, dica:'Nenhum nome nem verbo.' },
+          { enunciado: 'Qual transforma a frase: "A menina é <i>triste</i>" para o antônimo?', opcoes:['A menina é alegre','A menina é chorou','A menina é correr','A menina é menina'], correta:0, dica:'Antônimo = contrário.' },
+          { enunciado: 'Em "Carro <u>velho</u> e lento", os adjetivos são...', opcoes:['velho e lento','carro e lento','carro e velho','velho e carro'], correta:0, dica:'Ambos qualificam o carro.' },
+          { enunciado: 'Qual é um adjetivo <b>de cor</b>?', opcoes:['verde',' correr','cidade','amigo'], correta:0, dica:'Pense no arco-íris.' },
+          { enunciado: 'Qual frase contém um adjetivo?', opcoes:['O menino correu.','O bolo delicioso acabou.','Ana cantou.','Vamos ao parque.'], correta:1, dica:'Procure uma qualidade do bolo.' },
+        ]
+      },
+      {
+        nome: 'Fase 4 — Gênero e Número', dificuldade: 'Intermediário+',
+        tema: 'Marque a forma correta (masculino/feminino, singular/plural).',
+        perguntas: [
+          { enunciado: 'Plural de "casa" é...', opcoes:['casas','casaes','casaís','casaz'], correta:0, dica:'Acrescenta -s.' },
+          { enunciado: 'Feminino de "aluno" é...', opcoes:['alunos','aluna','alune','aluná'], correta:1, dica:'Troca -o por -a.' },
+          { enunciado: 'Escolha a frase correta:', opcoes:['As menino estão felizes.','Os meninos está felizes.','Os meninos estão felizes.','Os menino estão feliz.'], correta:2, dica:'Concordância sujeito (plural) + verbo (plural).' },
+          { enunciado: 'Plural de "flor" é...', opcoes:['flores','flors','flóres','flore'], correta:0, dica:'Apenas acrescenta -es.' },
+          { enunciado: 'Feminino de "tio" é...', opcoes:['tia','tiá','tiã','tiae'], correta:0, dica:'Forma regular.' },
+          { enunciado: 'Qual forma está no <b>singular</b>?', opcoes:['cadernos','menina','casas','flores'], correta:1, dica:'Apenas um.' },
+          { enunciado: 'Complete: "As ______ são azuis"', opcoes:['bola','bolas','bolás','bolaes'], correta:1, dica:'Concordância no plural.' },
+          { enunciado: 'Qual está no <b>feminino</b>?', opcoes:['gato','amigo','professora','menino'], correta:2, dica:'Terminação típica: -a.' },
+          { enunciado: 'Qual par está correto?', opcoes:['cachorro/cachorras','livro/livras','menina/meninas','aluno/alunaso'], correta:2, dica:'Observe gênero e plural.' },
+          { enunciado: 'Escolha a frase correta:', opcoes:['A flores é bonitas.','As flores são bonitas.','As flor são bonita.','A flor são bonita.'], correta:1, dica:'Tudo no plural e verbo concordando.' },
+        ]
+      },
+      {
+        nome: 'Fase 5 — Concordância e Vocabulário', dificuldade: 'Desafio',
+        tema: 'Escolha a forma/sinônimo/antônimo corretos em frases simples.',
+        perguntas: [
+          { enunciado: 'Complete: "Ele ______ bola todos os dias."', opcoes:['joga','jogo','jogam','jogar'], correta:0, dica:'3ª pessoa do singular.' },
+          { enunciado: 'Sinônimo de "feliz" é...', opcoes:['triste','alegre','lento','pequeno'], correta:1, dica:'Sinônimo = parecido.' },
+          { enunciado: 'Antônimo de "alto" é...', opcoes:['grande','longo','baixo','velho'], correta:2, dica:'Contrário.' },
+          { enunciado: 'Complete: "Nós ______ amigos"', opcoes:['é','somos','são','ser'], correta:1, dica:'1ª pessoa do plural do verbo ser.' },
+          { enunciado: 'Qual frase está correta?', opcoes:['A menina comeu maçã.','A menina comeu maçãs.','A menina comer maçã.','A menina comeram maçã.'], correta:0, dica:'Singular coerente: artigo + substantivo.' },
+          { enunciado: 'Complete: "As crianças ______ no parque."', opcoes:['brinca','brincam','brincou','brincará'], correta:1, dica:'Sujeito plural → verbo plural.' },
+          { enunciado: 'Escolha o <b>sinônimo</b> de "rápido"', opcoes:['veloz','devagar','curto','fraco'], correta:0, dica:'Palavra com sentido parecido.' },
+          { enunciado: 'Complete: "Ela ______ muito bem."', opcoes:['cantam','cantou','canta','cante'], correta:2, dica:'Presente do indicativo, 3ª pessoa singular.' },
+          { enunciado: 'Qual opção mantém concordância?', opcoes:['Os livro estão novos.','O livros está novo.','Os livros estão novos.','Os livros está novos.'], correta:2, dica:'Plural em todo o grupo.' },
+          { enunciado: 'Antônimo de "triste" é...', opcoes:['feliz','choroso','cansado','parado'], correta:0, dica:'Contrário direto.' },
+        ]
+      }
+    ];
+
+    // ------------------------------
+    // Estado e progresso
+    // ------------------------------
+    const state = {
+      faseIndex: -1,
+      qIndex: 0,
+      acertos: 0,
+      responded: false,
+    };
+
+    const progressKey = 'dg_progress_v1';
+    const progress = JSON.parse(localStorage.getItem(progressKey) || '[]'); // [{stars:0}]
+
+    function saveProgress(){ localStorage.setItem(progressKey, JSON.stringify(progress)); }
+
+    // ------------------------------
+    // UI Elements
+    // ------------------------------
+    const phaseList = document.getElementById('phaseList');
+    const phaseName = document.getElementById('phaseName');
+    const bar = document.getElementById('bar');
+    const scorePill = document.getElementById('scorePill');
+    const qCard = document.getElementById('qCard');
+    const placeholder = document.getElementById('placeholder');
+    const qTitle = document.getElementById('qTitle');
+    const qText = document.getElementById('qText');
+    const optionsEl = document.getElementById('options');
+    const feedback = document.getElementById('feedback');
+    const btnNext = document.getElementById('btnNext');
+    const btnTip = document.getElementById('btnTip');
+    const btnReset = document.getElementById('btnReset');
+
+    const endModal = document.getElementById('endModal');
+    const endDesc = document.getElementById('endDesc');
+    const endStars = document.getElementById('endStars');
+    const btnReplay = document.getElementById('btnReplay');
+    const btnNextPhase = document.getElementById('btnNextPhase');
+
+    // ------------------------------
+    // Fases list / render
+    // ------------------------------
+    function starsFor(score){
+      if(score >= 10) return 3;
+      if(score >= 8) return 2;
+      if(score >= 6) return 1;
+      return 0;
+    }
+
+    function renderPhaseList(){
+      // ensure progress length
+      while(progress.length < FASES.length) progress.push({stars:0});
+
+      phaseList.innerHTML = FASES.map((f,i)=>{
+        const locked = i>0 && progress[i-1].stars===0; // desbloqueia fase i quando a anterior tem pelo menos 1 estrela
+        const st = '⭐'.repeat(progress[i].stars) + '☆'.repeat(3-progress[i].stars);
+        return `<button class="phase ${locked?'locked':''}" ${locked?'disabled':''} onclick="startPhase(${i})" aria-label="${f.nome}">
+          <div>
+            <div style="font-weight:800">${f.nome}</div>
+            <div class="meta"><span>${f.dificuldade}</span><span>•</span><span>${f.perguntas.length} questões</span></div>
+          </div>
+          <div class="stars" aria-hidden="true">${st}</div>
+        </button>`
+      }).join('');
+    }
+
+    // ------------------------------
+    // Jogo
+    // ------------------------------
+    function startPhase(i){
+      state.faseIndex = i; state.qIndex = 0; state.acertos = 0; state.responded = false;
+      phaseName.textContent = FASES[i].nome;
+      scorePill.textContent = '0/10';
+      bar.style.width = '0%';
+      placeholder.style.display='none';
+      qCard.style.display='block';
+      renderQuestion();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function renderQuestion(){
+      const f = FASES[state.faseIndex];
+      const q = f.perguntas[state.qIndex];
+      qTitle.textContent = `Q${state.qIndex+1} — ${f.tema}`;
+      qText.innerHTML = q.enunciado;
+      feedback.textContent=''; feedback.className='feedback';
+      btnNext.disabled = true;
+      btnTip.onclick = ()=> showTip(q.dica);
+      optionsEl.innerHTML = q.opcoes.map((txt,idx)=>`<button class="option" onclick="answer(${idx})"><span style="opacity:.7; font-weight:800; margin-right:.35rem">${idx+1})</span> ${txt}</button>`).join('');
+      updateHud();
+    }
+
+    function updateHud(){
+      scorePill.textContent = `${state.acertos}/10`;
+      const progressPct = (state.qIndex/10)*100;
+      bar.style.width = `${progressPct}%`;
+    }
+
+    function answer(idx){
+      if(state.responded) return;
+      const q = FASES[state.faseIndex].perguntas[state.qIndex];
+      const nodes = [...optionsEl.querySelectorAll('.option')];
+      nodes.forEach((btn,i)=>{
+        if(i === q.correta) btn.classList.add('correct');
+        if(i === idx && idx !== q.correta) btn.classList.add('wrong');
+        btn.disabled = true;
+      });
+      const ok = idx === q.correta;
+      if(ok){ state.acertos++; feedback.textContent='Boa! Resposta correta.'; feedback.classList.add('ok'); }
+      else { feedback.textContent='Ops! Tente observar a dica.'; feedback.classList.add('no'); }
+      state.responded = true;
+      btnNext.disabled = false;
+    }
+
+    btnNext.addEventListener('click', ()=>{
+      if(!state.responded) return;
+      state.qIndex++;
+      state.responded = false;
+      if(state.qIndex >= 10){
+        finishPhase();
+      } else {
+        renderQuestion();
+      }
+    });
+
+    function finishPhase(){
+      const f = FASES[state.faseIndex];
+      const s = state.acertos;
+      const st = starsFor(s);
+      if(progress[state.faseIndex].stars < st){
+        progress[state.faseIndex].stars = st;
+        saveProgress();
+      }
+      renderPhaseList();
+      // modal
+      endDesc.textContent = `${f.nome}: você acertou ${s} de 10.`;
+      endStars.textContent = '⭐'.repeat(st) + '☆'.repeat(3-st);
+      endModal.classList.add('show');
+      // atualizar HUD final
+      bar.style.width = '100%';
+      scorePill.textContent = `${s}/10`;
+    }
+
+    btnReplay.addEventListener('click', ()=>{
+      endModal.classList.remove('show');
+      startPhase(state.faseIndex);
+    });
+    btnNextPhase.addEventListener('click', ()=>{
+      endModal.classList.remove('show');
+      const next = Math.min(state.faseIndex+1, FASES.length-1);
+      startPhase(next);
+    });
+
+    function showTip(text){
+      if(!text) return;
+      feedback.textContent = 'Dica: ' + text;
+      feedback.classList.remove('ok','no');
+    }
+
+    btnReset.addEventListener('click', ()=>{
+      if(!confirm('Tem certeza que deseja apagar o progresso?')) return;
+      for(let i=0;i<progress.length;i++) progress[i].stars=0;
+      saveProgress();
+      renderPhaseList();
+      state.faseIndex=-1; state.qIndex=0; state.acertos=0; state.responded=false;
+      phaseName.textContent = 'Selecione uma fase';
+      qCard.style.display='none';
+      placeholder.style.display='block';
+      bar.style.width='0%';
+      scorePill.textContent = '0/10';
+    });
+
+    // keyboard shortcuts 1-4
+    window.addEventListener('keydown', (e)=>{
+      if(!qCard || qCard.style.display==='none') return;
+      const k = e.key;
+      if(['1','2','3','4'].includes(k)){
+        const idx = Number(k)-1;
+        const btn = optionsEl.querySelectorAll('.option')[idx];
+        if(btn) btn.click();
+      }
+      if(k==='Enter' && !btnNext.disabled){ btnNext.click(); }
+    });
+
+    // inicializa
+    renderPhaseList();
+  </script>
+</body>
+</html>

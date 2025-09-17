@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tower Defence Educativo — Comandos (esquerda)</title>
+  <meta name="description" content="Jogo Tower Defence educativo — box de comandos à esquerda." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#140a1a; --primary:#5E2497; --accent:#ff8a00; --text:#ffffff; --muted:#cfc6d9; --card:#2b1943; }
+    *{box-sizing:border-box} html,body{height:100%} body{margin:0; font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text); background:linear-gradient(180deg,#1a0f26 100%, #140a1a 100%);} a{color:inherit;text-decoration:none}
+    .container{width:min(1200px,92%); margin-inline:auto}
+    header{
+      position:sticky; top:0; z-index:30; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.6rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.1rem; color:var(--accent)}
+    .nav-actions{display:flex; align-items:center; gap:.6rem}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.7rem 1rem; border-radius:999px; border:1px solid transparent; transition:.2s; font-weight:700; cursor:pointer}
+    .btn.primary{background:var(--accent); color:#1b0d27} .btn.ghost{border-color:#2c1847; background:#170c25; color:var(--muted)}
+    main.container{padding:2rem 0}
+    /* ordem: comandos (esq) | jogo (centro) | loja (dir) */
+    .grid-page{display:grid; grid-template-columns:260px 1fr 340px; gap:1.2rem; align-items:start}
+    .card{background:linear-gradient(145deg,var(--card),#1a0f2a); border:3px solid rgba(255,255,255,.06); padding:1rem; border-radius:18px; box-shadow:0 20px 50px rgba(0,0,0,.35)}
+    .card h2{margin:.2rem 0 1rem; font-size:1.25rem}
+    .subtitle{color:var(--muted); margin:-.3rem 0 1rem}
+    canvas{width:100%; height:auto; image-rendering:pixelated; background:#1b0f2d; border-radius:12px; border:1px solid #2c1847}
+    .hud{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin:.6rem 0 0}
+    .pill{background:#170c25; border:1px solid #2c1847; border-radius:999px; padding:.5rem .8rem; display:flex; align-items:center; justify-content:center; gap:.4rem}
+    .shop .slot{display:flex; align-items:center; justify-content:space-between; background:#170c25; border:1px solid #2c1847; border-radius:12px; padding:.6rem .8rem; margin:.5rem 0}
+    .list{display:grid; gap:.6rem}
+    .info{font-size:.95rem; color:var(--muted)}
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); z-index:50}
+    .modal.active{display:flex}
+    .modal-card{width:min(560px,92%); background:#2b1943; border:2px solid rgba(255,255,255,.08); border-radius:14px; padding:1rem 1.2rem}
+    .question{font-weight:800; margin:.3rem 0 .8rem}
+    .answers{display:grid; gap:.5rem}
+    .answers button{width:100%}
+    .toast{position:fixed; right:16px; top:72px; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.08); padding:.6rem .8rem; border-radius:10px; display:none; z-index:60}
+    .toast.show{display:block}
+    footer{padding:2.5rem 0 3rem; color:var(--muted)}
+    /* comandos estilo */
+    .commands-card{height:fit-content; display:flex; flex-direction:column; gap:.6rem}
+    .commands-card ul{margin:0; padding-left:1.1rem}
+    @media (max-width:1200px){ .grid-page{grid-template-columns:220px 1fr 300px} }
+    @media (max-width:960px){ .grid-page{grid-template-columns:1fr; } .commands-card{order:1} .card{border-radius:14px} }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="ScalForce.html"><img src="Logo.png" alt="Logo" onerror="this.style.display='none'"><span style="color:var(--accent)">ScalForce</span></a>
+      <nav class="nav-actions">
+        <button class="btn primary" id="btnNovaPartida">Nova Partida</button>
+        <a class="btn primary" id="btnVoltar" href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid-page">
+      <!-- Coluna ESQUERDA: Comandos -->
+      <aside class="card commands-card" id="commandsBox">
+        <h2>🎮 Comandos do Controle</h2>
+        <ul class="info" style="list-style:disc; padding-left:1.2rem">
+          <li><b>Analógico Esquerdo</b> → move o cursor (posição onde torre será colocada).</li>
+          <li><b>Setas</b> → percorre os botões da interface e do Header.</li>
+          <li><b>Analógico Direito</b> → Scroll do mouse.</li>
+          <li><b>Botão X</b> → compra o item na loja.</li>
+          <li><b>Botão A</b> → ativa os botões normais e seleciona a alternativa.</li>
+          <li><b>Botão B</b> → posiciona a torre no tabuleiro.</li>
+        </ul>
+        <div class="info" style="margin-top:.6rem">
+          Dica: Analógico esquerdo para posicionar com precisão; analógico direito para acessar conteúdo abaixo sem usar o mouse.
+        </div>
+      </aside>
+
+      <!-- Coluna CENTRAL: Jogo -->
+      <section class="card">
+        <h2>Tower Defence Educativo</h2>
+        <div class="subtitle">Derrote as ondas respondendo perguntas para construir e melhorar torres.</div>
+        <canvas id="game" width="896" height="504" aria-label="Área do jogo"></canvas>
+        <div class="hud">
+          <div class="pill" id="hudMoedas">🪙 Moedas: <b style="margin-left:6px">0</b></div>
+          <div class="pill" id="hudVida">❤️ Vidas: <b style="margin-left:6px">20</b></div>
+          <div class="pill" id="hudWave">⚔️ Onda: <b style="margin-left:6px">1</b></div>
+        </div>
+      </section>
+
+      <!-- Coluna DIREITA: Loja & Ações -->
+      <aside class="card">
+        <h2>Loja & Ações</h2>
+        <div class="shop">
+          <div class="slot"><div>
+            <b>Torre BÁSICA</b><br><small>Alcance 2, Dano 10 • Vel. 0.9s</small></div>
+            <button class="btn primary" data-torre="basic">Comprar <span class="price">40</span></button>
+          </div>
+          <div class="slot"><div>
+            <b>Torre RÁPIDA</b><br><small>Alcance 2, Dano 6 • Vel. 0.4s</small></div>
+            <button class="btn primary" data-torre="fast">Comprar <span class="price">60</span></button>
+          </div>
+          <div class="slot"><div>
+            <b>Torre PESADA</b><br><small>Alcance 3, Dano 22 • Vel. 1.5s</small></div>
+            <button class="btn primary" data-torre="heavy">Comprar <span class="price">100</span></button>
+          </div>
+        </div>
+
+        <div class="list" style="margin-top:1rem">
+          <button class="btn ghost" id="btnIniciar">▶️ Iniciar Onda</button>
+          <button class="btn ghost" id="btnVender" title="Clique numa torre e depois aqui">💸 Vender Torre</button>
+          <div class="info">Coloque as torres fora do caminho dos inimigos (faixas roxas). A cada compra/upgrade responda uma pergunta.</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="modal" id="quizModal" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
+    <div class="modal-card">
+      <div id="quizTitle" class="question">Pergunta</div>
+      <div id="quizEnunciado" class="question"></div>
+      <div id="quizAlternativas" class="answers"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <footer>
+    <div class="container">
+      <p>Feito para a plataforma <b>ScalForce</b>. Responda, aprenda e defenda! 🎓🛡️</p>
+    </div>
+  </footer>
+
+  <!-- Áudios (placeholders) -->
+  <audio id="sfxShot" preload="auto"><source src="data:audio/mp3;base64,//uQZAAAA..." type="audio/mpeg"></audio>
+  <audio id="sfxHit" preload="auto"><source src="data:audio/mp3;base64,//uQZAAAA..." type="audio/mpeg"></audio>
+  <audio id="bgm" loop preload="auto"><source src="data:audio/mp3;base64,//uQZAAAA..." type="audio/mpeg"></audio>
+
+  <script>
+    /* === Mantive toda a lógica JS anterior (game loop, quiz, gamepad).
+       Não alterei comportamento — só reposicionei a box visualmente.
+       Copiei aqui o JS essencial; em caso de conflito, substitua pelo seu JS completo anterior. */
+    const TOWER_COLORS = { basic: '#7BD389', fast:  '#5FB3FF', heavy: '#FFB36F' };
+    const rand = (a,b)=> Math.random()*(b-a)+a;
+    const dist = (a,b)=> Math.hypot(a.x-b.x, a.y-b.y);
+
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const TILE = 56;
+    const GRID_W = Math.floor(canvas.width / TILE);
+    const GRID_H = Math.floor(canvas.height / TILE);
+
+    let coins = 150, lives = 20, wave = 1, running = false, placing = null, selectedTower = null, sellMode = false;
+    const towers = []; const enemies = []; const shots = [];
+
+    const path = [ {x: -1, y: 2}, {x: 4, y: 2}, {x: 4, y: 6}, {x: 10, y: 6}, {x: 10, y: 1}, {x: GRID_W+1, y: 1} ];
+    function gridToPx(g){ return {x: g.x*TILE + TILE/2, y: g.y*TILE + TILE/2}; }
+    const pathPx = path.map(gridToPx);
+
+    const roadTiles = new Set();
+    function rasterizeRoad(){
+      function bresenham(x0,y0,x1,y1){ x0=Math.floor(x0); y0=Math.floor(y0); x1=Math.floor(x1); y1=Math.floor(y1); const dx=Math.abs(x1-x0), sx=x0<x1?1:-1; const dy=-Math.abs(y1-y0), sy=y0<y1?1:-1; let err=dx+dy; while(true){ roadTiles.add(`${x0},${y0}`); if(x0===x1 && y0===y1) break; const e2=2*err; if(e2>=dy){err+=dy;x0+=sx} if(e2<=dx){err+=dx;y0+=sy} } }
+      for(let i=0;i<path.length-1;i++) bresenham(path[i].x, path[i].y, path[i+1].x, path[i+1].y);
+    }
+    rasterizeRoad();
+
+    const QUIZ = {
+      Matematica: [
+        {q:"Quanto é 9 + 7?", a:["15","16","17","18"], c:1},
+        {q:"Quanto é 5 × 4?", a:["20","25","10","15"], c:0},
+        {q:"Quanto é 18 − 9?", a:["9","8","7","11"], c:0},
+        {q:"Qual a metade de 14?", a:["6","7","8","9"], c:1},
+        {q:"Quantos centímetros têm 1 metro?", a:["10","100","1000","1"], c:1},
+        {q:"Se você tem 3 pacotes com 4 balas cada, quantas balas no total?", a:["7","12","9","10"], c:1},
+        {q:"Quanto é 6 × 6?", a:["30","36","42","32"], c:1},
+        {q:"Quanto é 15 − 7?", a:["7","8","9","6"], c:1},
+        {q:"Quantos lados tem um quadrado?", a:["3","4","5","6"], c:1},
+        {q:"Quantos minutos têm uma hora?", a:["30","60","100","24"], c:1},
+        {q:"Se você tem R$10,00 e gasta R$3,00, quanto resta?", a:["R$6,00","R$7,00","R$8,00","R$5,00"], c:1},
+        {q:"Qual número vem depois do 99?", a:["100","999","90","101"], c:0},
+        {q:"Qual a forma geométrica com três lados?", a:["Quadrado","Triângulo","Círculo","Retângulo"], c:1},
+        {q:"Qual é o resultado de 4 × 7?", a:["24","28","27","30"], c:1},
+        {q:"Quanto é 25 ÷ 5?", a:["4","5","6","7"], c:1},
+        {q:"Qual número é maior?", a:["98","89","79","97"], c:0},
+        {q:"Se um retângulo tem 4 lados, quantos ângulos ele tem?", a:["2","3","4","5"], c:2},
+        {q:"Quanto é 50 + 25?", a:["60","70","75","80"], c:2}
+      ],
+      Portugues: [
+        {q:"Qual é o plural de 'lápis'?", a:["lapises","lápis","lápiss","lápises"], c:1},
+        {q:"Escolha a palavra que é o antônimo de 'alto'.", a:["grande","pequeno","baixo","rápido"], c:2},
+        {q:"Que sinal de pontuação usamos no final de uma pergunta?", a:["ponto final","vírgula","ponto de exclamação","ponto de interrogação"], c:3},
+        {q:"Complete: 'O gato ___ em cima do telhado.' (verbo no passado)", a:["pula","pulou","pular","pulava"], c:1},
+        {q:"Qual palavra está escrita corretamente?", a:["cafe","café","cafè","caffé"], c:1},
+        {q:"Qual é o plural de 'flor'?", a:["flors","flores","flôres","florais"], c:1},
+        {q:"Que sinal usamos no final de uma pergunta?", a:["ponto final","vírgula","ponto de exclamação","ponto de interrogação"], c:3},
+        {q:"Complete: 'O menino ___ no pátio.' (verbo no passado)", a:["brinca","brincou","brincar","brincava"], c:1},
+        {q:"Qual palavra está escrita corretamente?", a:["amizad","amizade","amizada","amizadi"], c:1},
+        {q:"Qual é o aumentativo de 'casa'?", a:["casão","casinha","casãozão","casarão"], c:3},
+        {q:"Complete: 'Nós ___ felizes.'", a:["sou","são","somos","era"], c:2},
+        {q:"Qual é o sinônimo de 'feliz'?", a:["triste","alegre","cansado","rápido"], c:1}
+      ],
+      Ciencias: [
+        {q:"Qual parte da planta absorve água do solo?", a:["folhas","caule","raiz","flor"], c:2},
+        {q:"Qual desses animais é um mamífero?", a:["tubarão","morcego","tartaruga","águia"], c:1},
+        {q:"De onde vem o mel?", a:["abelhas","flores","árvores","rios"], c:0},
+        {q:"Qual é o estado da água quando está congelada?", a:["vapor","líquido","gelo","fumaça"], c:2},
+        {q:"Qual é o maior planeta do Sistema Solar?", a:["Terra","Marte","Júpiter","Vênus"], c:2},
+        {q:"Quantas fases principais tem a Lua?", a:["2","4","8","12"], c:2},
+        {q:"O que precisamos para acender uma lâmpada?", a:["água","eletricidade","areia","vento"], c:1},
+        {q:"Qual sentido usamos para cheirar?", a:["ver","ouvir","cheirar","tocar"], c:2},
+        {q:"Como chamamos o bebê do cachorro?", a:["filhote","pintinho","leitão","bezerro"], c:0},
+        {q:"Qual planeta é conhecido como 'planeta vermelho'?", a:["Marte","Júpiter","Saturno","Vênus"], c:0},
+        {q:"Qual desses animais bota ovos?", a:["gato","galinha","cachorro","cavalo"], c:1},
+        {q:"Qual órgão usamos para respirar?", a:["coração","pulmões","estômago","ossos"], c:1},
+        {q:"Qual desses é uma fonte de energia renovável?", a:["carvão","petróleo","vento","gás"], c:2}
+      ],
+      Geografia: [
+        {q:"Em que continente fica o Brasil?", a:["África","Europa","América do Sul","Ásia"], c:2},
+        {q:"Que dia vem antes de terça-feira?", a:["segunda-feira","quarta-feira","domingo","sábado"], c:0},
+        {q:"Em que continente fica o Brasil?", a:["África","Europa","América do Sul","Ásia"], c:2},
+        {q:"Onde nasce um rio?", a:["nascente","foz","margem","delta"], c:0},
+        {q:"Qual é a capital do Brasil?", a:["São Paulo","Rio de Janeiro","Brasília","Salvador"], c:2},
+        {q:"Quantas estações do ano existem?", a:["2","3","4","5"], c:2},
+        {q:"Qual é o maior oceano do mundo?", a:["Atlântico","Índico","Pacífico","Ártico"], c:2},
+        {q:"Qual país é vizinho do Brasil?", a:["Portugal","Argentina","México","Espanha"], c:1},
+        {q:"Qual é a capital de São Paulo?", a:["São Paulo","Campinas","Santos","Guarulhos"], c:0},
+        {q:"O que usamos para nos localizar no mapa?", a:["bússola","lupa","caderno","caneta"], c:0}
+      ],
+      Historia: [
+        {q:"Em que ano o Brasil foi descoberto pelos europeus?", a:["1492","1500","1822","1888"], c:1},
+        {q:"Quem descobriu o Brasil?", a:["Pedro Álvares Cabral","Cristóvão Colombo","Fernão de Magalhães","Dom Pedro I"], c:0},
+        {q:"Quem foi o primeiro imperador do Brasil?", a:["Dom Pedro I","Dom Pedro II","Tiradentes","Pedro Álvares Cabral"], c:0},
+        {q:"Em que ano o Brasil ficou independente de Portugal?", a:["1500","1822","1889","1922"], c:1},
+        {q:"Qual foi a primeira capital do Brasil?", a:["Rio de Janeiro","Brasília","Salvador","São Paulo"], c:2},
+        {q:"Quem era o líder da Inconfidência Mineira?", a:["Getúlio Vargas","Tiradentes","Dom Pedro II","Zumbi"], c:1}
+      ]
+    };
+
+    function pickQuestion(){
+      const categorias = Object.keys(QUIZ);
+      const categoria = categorias[Math.floor(Math.random() * categorias.length)];
+      const perguntas = QUIZ[categoria];
+      const item = perguntas[Math.floor(Math.random() * perguntas.length)];
+      return { ...item, tag: categoria };
+    }
+
+    class Enemy{ constructor(){ this.hp = 60 + wave*10; this.speed = 55 + wave*2; this.pos = {...pathPx[0]}; this.segment = 0; this.alive = true; this.reward = 10 + Math.floor(wave/2);} step(dt){ const target = pathPx[this.segment+1]; if(!target){ this.alive=false; lives=Math.max(0,lives-1); toast('Um inimigo passou!'); updateHUD(); return; } const dx = target.x - this.pos.x; const dy = target.y - this.pos.y; const len = Math.hypot(dx,dy); if(len < this.speed*dt){ this.pos.x = target.x; this.pos.y = target.y; this.segment++; } else { this.pos.x += this.speed*dt*dx/len; this.pos.y += this.speed*dt*dy/len; } } draw(){ ctx.fillStyle = '#ff6666'; ctx.beginPath(); ctx.arc(this.pos.x, this.pos.y, 14, 0, Math.PI*2); ctx.fill(); const w=30, h=5; const pct=this.hp/(60+wave*10); ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(this.pos.x-w/2, this.pos.y-24, w, h); ctx.fillStyle= pct>0.5 ? '#36c38d' : pct>0.25 ? '#ffcc66' : '#ff6666'; ctx.fillRect(this.pos.x-w/2, this.pos.y-24, w*pct, h); } }
+
+    class Tower{ constructor(x,y,kind){ this.grid={x,y}; this.pos=gridToPx(this.grid); this.kind=kind; this.level=1; this.cool=0; const K = { basic:{range:2, dmg:10, rate:0.9, cost:50}, fast:{range:2, dmg:6, rate:0.4, cost:70}, heavy:{range:3, dmg:22, rate:1.5, cost:100} }[kind]; Object.assign(this, K); this.cost = K.cost; } get rangePx(){ return this.range*TILE; } step(dt){ if(this.cool>0) this.cool-=dt; else this.shoot(); } shoot(){ let target=null, best=-Infinity; for(const e of enemies){ if(!e.alive) continue; const d=dist(this.pos,e.pos); if(d<=this.rangePx){ const s=e.segment + d/10000; if(s>best){best=s; target=e;} } } if(target){ this.cool=this.rate; shots.push(new Shot(this, target)); sfx('shot'); } } draw(){ const baseColor = TOWER_COLORS[this.kind] || '#ffffff'; ctx.beginPath(); ctx.fillStyle = baseColor; ctx.arc(this.pos.x, this.pos.y, 16, 0, Math.PI*2); ctx.fill(); ctx.lineWidth = 1 + (this.level - 1); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.stroke(); if(selectedTower===this){ ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(this.pos.x, this.pos.y, this.rangePx, 0, Math.PI*2); ctx.stroke(); } } canUpgrade(){ return this.level<3; } upgradeCost(){ return Math.floor((this.cost*0.6) * this.level); } upgrade(){ this.level++; this.dmg = Math.round(this.dmg*1.35); this.rate = Math.max(0.25, this.rate*0.9); this.range += this.level%2?0:1; } }
+
+    class Shot { constructor(tower, target){ this.pos = {...tower.pos}; this.target = target; this.speed = 420; this.dmg = tower.dmg; this.color = TOWER_COLORS[tower.kind] || '#ffffff'; this.dead = false; } step(dt){ if(!this.target.alive){ this.dead=true; return; } const dx = this.target.pos.x - this.pos.x, dy = this.target.pos.y - this.pos.y; const len = Math.hypot(dx,dy); if(len < this.speed*dt){ this.hit(); return; } this.pos.x += this.speed*dt*dx/len; this.pos.y += this.speed*dt*dy/len; } hit(){ this.dead=true; this.target.hp -= this.dmg; sfx('hit'); if(this.target.hp<=0){ this.target.alive=false; coins += this.target.reward; updateHUD(); } } draw(){ ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.pos.x, this.pos.y, 3, 0, Math.PI*2); ctx.fill(); } }
+
+    let last=0; function loop(ts){ const dt=Math.min(0.033, (ts-last)/1000 || 0); last=ts; if(running){ step(dt); } draw(); requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
+
+    function step(dt){ for(const e of enemies) e.step(dt); for(const t of towers) t.step(dt); for(const s of shots) s.step(dt); for(let i=enemies.length-1;i>=0;i--) if(!enemies[i].alive) enemies.splice(i,1); for(let i=shots.length-1;i>=0;i--) if(shots[i].dead) shots.splice(i,1); if(lives<=0){ running=false; toast('Game Over! Clique em "Nova Partida".'); } if(running && enemies.length===0 && spawnLeft===0){ running=false; toast('Onda vencida! Aperte "Iniciar Onda" para a próxima.'); wave++; updateHUD(); } }
+
+    function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(let y=0;y<GRID_H;y++) for(let x=0;x<GRID_W;x++){ ctx.fillStyle = (x+y)%2? '#211237':'#24153d'; ctx.fillRect(x*TILE, y*TILE, TILE, TILE); if(roadTiles.has(`${x},${y}`)){ ctx.fillStyle = '#3b1d70'; ctx.fillRect(x*TILE, y*TILE, TILE, TILE); } }
+      ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(pathPx[0].x, pathPx[0].y); for(let i=1;i<pathPx.length;i++) ctx.lineTo(pathPx[i].x, pathPx[i].y); ctx.stroke();
+      for(const e of enemies) e.draw(); for(const t of towers) t.draw(); for(const s of shots) s.draw();
+
+      if(placing){ const {x,y}=placing.hover||{}; if(x!=null){ const px=gridToPx({x,y}); ctx.globalAlpha=.8; ctx.fillStyle='#ffd18a'; ctx.beginPath(); ctx.arc(px.x, px.y, 16, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha=1; }
+        const cx = Math.max(0, Math.min(GRID_W-1, cursor.x)); const cy = Math.max(0, Math.min(GRID_H-1, cursor.y)); const cpx = gridToPx({x:cx,y:cy}); ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=2; ctx.beginPath(); ctx.rect(cpx.x - TILE/2 + 6, cpx.y - TILE/2 + 6, TILE - 12, TILE - 12); ctx.stroke();
+      }
+    }
+
+    let spawnTimer=0, spawnLeft=0;
+    function startWave(){ if(running) return; running=true; spawnLeft = 6 + wave*2; spawnTimer=0; toast(`Onda ${wave} iniciada!`); }
+    function updateSpawner(dt){ if(!running) return; spawnTimer-=dt; if(spawnTimer<=0 && spawnLeft>0){ enemies.push(new Enemy()); spawnLeft--; spawnTimer = Math.max(0.6, 1.6 - wave*0.07); } }
+    const _step = step; step = function(dt){ updateSpawner(dt); _step(dt); };
+
+    const shopBtns = document.querySelectorAll('[data-torre]');
+    shopBtns.forEach(btn=> btn.addEventListener('click', ()=> tryBuy(btn.dataset.torre)) );
+    document.getElementById('btnIniciar').addEventListener('click', startWave);
+    document.getElementById('btnVender').addEventListener('click', ()=>{ sellMode = !sellMode; toast(sellMode? 'Modo Vender: clique numa torre.':'Modo Vender desativado.'); });
+
+    function tryBuy(kind){ const cost = {basic:40, fast:60, heavy:100}[kind]; confirmWithQuiz(`Comprar torre ${kind.toUpperCase()} por ${cost}?`, ()=>{ if(coins<cost){ toast('Moedas insuficientes.'); return; } placing = {kind, cost, hover:null}; toast('Clique no tabuleiro para posicionar.'); }); }
+
+    canvas.addEventListener('mousemove', e=>{ if(!placing) return; const {x,y} = canvasToGrid(e); placing.hover = canPlace(x,y)? {x,y}: null; cursor.x = x; cursor.y = y; });
+    canvas.addEventListener('click', e=>{ const g = canvasToGrid(e); const t = towers.find(t=> t.grid.x===g.x && t.grid.y===g.y); if(t){ selectedTower = t; if(sellMode){ coins += Math.floor(t.cost*0.5); towers.splice(towers.indexOf(t),1); sellMode=false; updateHUD(); toast('Torre vendida.'); return; } if(t.canUpgrade()){ const price = t.upgradeCost(); confirmWithQuiz(`Upar torre nível ${t.level+1} por ${price}?`, ()=>{ if(coins<price){ toast('Moedas insuficientes.'); return; } coins -= price; t.upgrade(); toast('Upgrade concluído!'); updateHUD(); }); } else { toast('Torre já no nível máximo.'); } return; }
+      if(placing && placing.hover){ coins -= placing.cost; towers.push(new Tower(placing.hover.x, placing.hover.y, placing.kind)); placing=null; updateHUD(); toast('Torre colocada!'); }
+    });
+
+    function canvasToGrid(e){ const rect=canvas.getBoundingClientRect(); const x=Math.floor((e.clientX-rect.left)/rect.width*canvas.width / TILE); const y=Math.floor((e.clientY-rect.top)/rect.height*canvas.height / TILE); return {x,y}; }
+    function canPlace(x,y){ if(x<0||y<0||x>=GRID_W||y>=GRID_H) return false; if(roadTiles.has(`${x},${y}`)) return false; if(towers.some(t=> t.grid.x===x && t.grid.y===y)) return false; return true; }
+
+    const hudMoedas = document.querySelector('#hudMoedas b');
+    const hudVida = document.querySelector('#hudVida b');
+    const hudWave = document.querySelector('#hudWave b');
+    function updateHUD(){ hudMoedas.textContent=coins; hudVida.textContent=lives; hudWave.textContent=wave; }
+
+    function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1400); }
+
+    const sfxMap = { shot: document.getElementById('sfxShot'), hit: document.getElementById('sfxHit'), bgm: document.getElementById('bgm') };
+    function sfx(name){ if(muted) return; const a=sfxMap[name]; if(!a) return; try{ a.currentTime=0; a.play(); }catch{} }
+    let muted=false;
+
+    document.getElementById('btnNovaPartida').addEventListener('click', newGame);
+    function newGame(){ coins=150; lives=20; wave=1; running=false; placing=null; selectedTower=null; sellMode=false; enemies.length=0; shots.length=0; towers.length=0; updateHUD(); toast('Nova partida iniciada.'); try{sfxMap.bgm.currentTime=0; sfxMap.bgm.play();}catch{} }
+    newGame();
+
+    const modal = document.getElementById('quizModal');
+    const qTitle = document.getElementById('quizTitle');
+    const qText = document.getElementById('quizEnunciado');
+    const qAns = document.getElementById('quizAlternativas');
+
+    function confirmWithQuiz(actionTitle, onSuccess){
+      const item = pickQuestion();
+      qTitle.textContent = actionTitle + ` — Tema: ${item.tag}`;
+      qText.textContent = item.q;
+      qAns.innerHTML='';
+      item.a.forEach((alt, i)=>{
+        const b=document.createElement('button'); b.className='btn primary'; b.textContent=alt; b.addEventListener('click', ()=>{
+          modal.classList.remove('active'); if(i===item.c){ coins += 10; updateHUD(); toast('✔ Resposta correta! +10 moedas'); onSuccess&&onSuccess(); } else { toast('✖ Resposta incorreta. Tente novamente!'); }
+        }); qAns.appendChild(b);
+      });
+      modal.classList.add('active');
+    }
+
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) modal.classList.remove('active'); });
+
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') modal.classList.remove('active'); if(e.key===' ') { e.preventDefault(); startWave(); } });
+
+    // ===== Compatibilidade com Controle (mantida) =====
+    let gpIndex = null;
+    let cursor = {x: 0, y: 0};
+    let uiIndex = 0;
+    let lastMoveX = 0, lastMoveY = 0, lastUIMoveTime = 0, lastQuizMoveTime = 0;
+    const MOVE_DELAY_AXIS = 120;
+    const UI_MOVE_DELAY = 150;
+    const DEADZONE = 0.4;
+
+    // inclui botões do header/loja/lista para D-pad navegar
+    const uiButtons = [ ...document.querySelectorAll('.nav-actions .btn, .shop button, .list button') ];
+
+    let gpPrevButtons = [];
+    let gpPrevAxes = [];
+
+    window.addEventListener("gamepadconnected", (e) => { gpIndex = e.gamepad.index; toast("Controle conectado!"); });
+    window.addEventListener("gamepaddisconnected", () => { gpIndex = null; toast("Controle desconectado!"); });
+
+    let quizIndex = 0;
+    function handleQuizGamepad(gp){
+      const modalEl = document.getElementById("quizModal"); if(!modalEl.classList.contains("active")) return;
+      const alternatives = [...document.querySelectorAll("#quizAlternativas button")]; if(alternatives.length===0) return;
+      const now = Date.now();
+      const ly = gp.axes[1] || 0;
+      const upPressed = gp.buttons[12]?.pressed;
+      const downPressed = gp.buttons[13]?.pressed;
+      if((Math.abs(ly) > DEADZONE || upPressed || downPressed) && now - lastQuizMoveTime > MOVE_DELAY_AXIS){
+        if((Math.abs(ly) > DEADZONE && ly < -DEADZONE) || upPressed) quizIndex = (quizIndex - 1 + alternatives.length) % alternatives.length;
+        else if((Math.abs(ly) > DEADZONE && ly > DEADZONE) || downPressed) quizIndex = (quizIndex + 1) % alternatives.length;
+        alternatives[quizIndex].focus(); lastQuizMoveTime = now;
+      }
+      if(gp.buttons[0]?.pressed && !gpPrevButtons[0]) alternatives[quizIndex].click();
+    }
+
+    function handleGamepad(){
+      if(gpIndex===null) return;
+      const gp = navigator.getGamepads()[gpIndex]; if(!gp) return;
+      if(document.getElementById("quizModal").classList.contains("active")) { handleQuizGamepad(gp); gpPrevButtons = gp.buttons.map(b=>!!b.pressed); gpPrevAxes = (gp.axes||[]).slice(0); return; }
+
+      const now = Date.now();
+      const lx = gp.axes[0] || 0; const ly = gp.axes[1] || 0; const rx = gp.axes[2] || 0; const ry = gp.axes[3] || 0;
+      const dpadUp = !!gp.buttons[12]?.pressed; const dpadDown = !!gp.buttons[13]?.pressed; const dpadLeft = !!gp.buttons[14]?.pressed; const dpadRight = !!gp.buttons[15]?.pressed;
+
+      if(Math.abs(lx) > DEADZONE){ if(now - lastMoveX > MOVE_DELAY_AXIS){ cursor.x = Math.max(0, Math.min(GRID_W-1, cursor.x + Math.sign(lx))); lastMoveX = now; } }
+      if(Math.abs(ly) > DEADZONE){ if(now - lastMoveY > MOVE_DELAY_AXIS){ cursor.y = Math.max(0, Math.min(GRID_H-1, cursor.y + Math.sign(ly))); lastMoveY = now; } }
+
+      if(placing){ placing.hover = canPlace(cursor.x, cursor.y) ? {x: cursor.x, y: cursor.y} : null; }
+
+      const SCROLL_DELAY = 40;
+      if(!window._lastScrollTime) window._lastScrollTime = 0;
+      if(Math.abs(ry) > DEADZONE && now - window._lastScrollTime > SCROLL_DELAY){
+        const amount = Math.round(ry * 80);
+        window.scrollBy({ top: amount, left: 0, behavior: "auto" });
+        window._lastScrollTime = now;
+      }
+
+      if((dpadUp || dpadDown) && now - lastUIMoveTime > UI_MOVE_DELAY){
+        uiIndex = (uiIndex + (dpadDown ? 1 : -1) + uiButtons.length) % uiButtons.length;
+        uiButtons[uiIndex].focus(); lastUIMoveTime = now;
+      }
+      if((dpadLeft || dpadRight) && now - lastUIMoveTime > UI_MOVE_DELAY){
+        uiIndex = (uiIndex + (dpadRight ? 1 : -1) + uiButtons.length) % uiButtons.length;
+        uiButtons[uiIndex].focus(); lastUIMoveTime = now;
+      }
+
+      if(gp.buttons[2]?.pressed && !gpPrevButtons[2]){ const btn = document.activeElement; if(btn && btn.dataset.torre) btn.click(); }
+
+      if(gp.buttons[0]?.pressed && !gpPrevButtons[0]){ const btn = document.activeElement; if(btn && !btn.dataset.torre) btn.click(); }
+
+      if(gp.buttons[1]?.pressed && !gpPrevButtons[1]){
+        if(placing && placing.hover){ coins -= placing.cost; towers.push(new Tower(placing.hover.x, placing.hover.y, placing.kind)); placing = null; updateHUD(); toast("Torre colocada com controle!"); }
+        else {
+          const t = towers.find(t=> t.grid.x===cursor.x && t.grid.y===cursor.y);
+          if(t){ selectedTower = t; if(sellMode){ coins += Math.floor(t.cost*0.5); towers.splice(towers.indexOf(t),1); sellMode=false; updateHUD(); toast('Torre vendida.'); } else { if(t.canUpgrade()){ const price = t.upgradeCost(); confirmWithQuiz(`Upar torre nível ${t.level+1} por ${price}?`, ()=>{ if(coins<price){ toast('Moedas insuficientes.'); return; } coins -= price; t.upgrade(); toast('Upgrade concluído!'); updateHUD(); }); } else { toast('Torre já no nível máximo.'); } } }
+        }
+      }
+
+      gpPrevButtons = gp.buttons.map(b=>!!b.pressed);
+      gpPrevAxes = (gp.axes||[]).slice(0);
+    }
+
+    function gamepadLoop(){ handleGamepad(); requestAnimationFrame(gamepadLoop); }
+    gamepadLoop();
+
+    
+
+  </script>
+</body>
+</html>

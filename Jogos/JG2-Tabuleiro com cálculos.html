@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tabuleiro com Cálculos</title>
+  <meta name="description" content="Corrida com Cálculos — jogo educativo de matemática com tabuleiro em espiral e dado ponderado." />
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --accent:#ff8a00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --danger:#ff5c5c;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Poppins, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: linear-gradient(180deg, #1a0f26 0%, #140a1a 100%);
+      padding-bottom:48px;
+    }
+    .container{width:min(1100px,94%);margin:0 auto}
+    header{position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.04);}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.25rem;color:var(--accent)}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:999px;border:1px solid transparent;transition:.15s ease;font-weight:700}
+    .btn.primary{background:var(--accent);color:#1b0d27}
+    .btn.ghost{background:#ff8a00;border:1px solid #ff8a00;padding:.55rem .85rem}
+
+    main{padding:20px 0}
+    .hero-card{background:linear-gradient(145deg, var(--card), #1a0f2a);border:1px solid rgba(255,255,255,.04);padding:1rem;border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+    .game-hero{display:grid;grid-template-columns:1fr 360px;gap:1rem;align-items:start}
+
+    /* Board as grid (spiral) */
+    .board-area{margin-top:1rem}
+    .board{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-auto-rows: minmax(88px, 1fr);
+      gap:10px;
+      padding:12px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.03);
+    }
+    .square{
+      border-radius:10px;
+      background:linear-gradient(145deg,#2b1943,#241033);
+      border:3px solid rgba(255,255,255,.03);
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      box-shadow:0 8px 18px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+    }
+    .square .idx{font-weight:800;font-size:0.78rem;color:var(--muted)}
+    .square .expr{font-size:0.95rem;font-weight:800;color:#ffdca6;text-align:center;line-height:1.1}
+    .square.home{background:linear-gradient(135deg,var(--primary),#2a1645);border:3px solid rgba(255,255,255,.06)}
+    .square.current{outline:4px solid rgba(255,138,0,.18); box-shadow:0 12px 30px rgba(255,138,0,.06) inset}
+    .token{
+      width:28px;height:28px;border-radius:50%;background:var(--accent);position:absolute;left:8px;top:8px;border:2px solid #1b0d27;display:grid;place-items:center;font-weight:900;color:#1b0d27;font-size:0.85rem;
+      transform:translate(0,0);
+    }
+
+    /* Arrow inside each square */
+    .arrow{
+      position:absolute;
+      right:6px;
+      bottom:6px;
+      width:26px;
+      height:26px;
+      opacity:0.95;
+    }
+    .arrow svg{width:100%;height:100%}
+
+    /* Finish flag */
+    .finish-flag{
+      position:absolute;
+      right:6px;
+      top:6px;
+      font-weight:900;
+      background:linear-gradient(90deg,var(--accent),#ffd386);
+      color:#1b0d27;
+      padding:4px 6px;
+      border-radius:6px;
+      font-size:0.75rem;
+    }
+
+    .controls{display:flex;flex-direction:column;gap:10px}
+    .panel{background:#170c25;border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,.03)}
+    .dice{display:flex;gap:8px;align-items:center}
+    .dice-face{width:56px;height:56px;border-radius:10px;background:linear-gradient(145deg,#3b1f5c,#2b1740);display:grid;place-items:center;font-weight:900;font-size:1.4rem;border:2px solid rgba(255,255,255,.03)}
+    .roll-btn{padding:.7rem 1rem;border-radius:12px;background:var(--accent);border:none;color:#1b0d27;font-weight:900;cursor:pointer}
+    .small{font-size:.85rem;color:var(--muted)}
+    .meta{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:.6rem}
+
+    /* weighted indicator */
+    .weighted-note{font-size:0.78rem;color:var(--muted);margin-top:8px}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:40}
+    .modal{width:min(560px,94%);background:linear-gradient(145deg,#241033,#1b0f26);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,.04)}
+    .modal h3{margin:0 0 .6rem}
+    .modal .question{font-size:1.4rem;font-weight:800;color:#ffdca6;margin:10px 0}
+    .modal input[type="number"]{flex:1;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text)}
+
+    .msg{padding:.6rem .9rem;border-radius:8px;margin-top:.6rem}
+    .win{background:linear-gradient(90deg,#153b2b,#26684d);color:var(--text);padding:14px;border-radius:10px;text-align:center;font-weight:800}
+
+    @media (max-width: 920px){
+      .game-hero{grid-template-columns:1fr}
+      .board{grid-template-columns: repeat(5, 1fr); grid-auto-rows: minmax(80px, 1fr)}
+    }
+    @media (max-width:560px){
+      .board{grid-template-columns: repeat(5, 1fr); gap:8px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="Logo.png" alt="Logo SCALFORCE" style="height:42px;width:auto;display:block;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'grid\'">
+        <div style="width:42px;height:42px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#ffb86b);display:none;place-items:center;font-weight:900;color:#1b0d27">SF</div>
+        <span style=\"margin-left:8px;\">ScalForce</span>
+      </a>
+      <nav>
+     <a class="btn ghost" href="../scalforce.html" style="color:var(--muted); text-decoration:none;color: #2b1943;">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="game-hero">
+      <div class="hero-card">
+        <h1>Corrida com Cálculos</h1>
+        <p>Role o dado, avance pelo tabuleiro em espiral e resolva os cálculos nas casas onde cair. Cada casa mostra uma flecha indicando o próximo passo.</p>
+
+        <div class="board-area">
+          <div id="board" class="board" aria-live="polite" aria-label="Tabuleiro em espiral"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+          <button class="btn primary" id="restartBtn">Reiniciar</button>
+          <div class="small" id="statusInfo">Jogadas: 0 • Posição: 0/24</div>
+        </div>
+      </div>
+
+      <aside class="controls">
+        <div class="panel">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div class="small">Seu jogador</div>
+              <div style="font-weight:900;color:var(--accent);margin-top:6px">Explorador</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small">Objetivo</div>
+              <div style="font-weight:900;margin-top:6px">Chegar ao fim</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="dice">
+              <div class="dice-face" id="diceFace">-</div>
+              <button class="roll-btn" id="rollBtn">Rolar dado</button>
+            </div>
+
+            <div class="weighted-note">Dado ponderado: maior probabilidade para 1, 2 e 3 (jogo mais lento).</div>
+
+            <div class="meta">
+              <div class="small">Último resultado: <span id="lastRoll">-</span></div>
+              <div class="small">Recorde de menor jogadas: <strong id="bestMoves">--</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="small">Regras rápidas</div>
+          <ul class="small" style="margin:.6rem 0 0 1rem;padding:0 0 0 14px;line-height:1.5">
+            <li>Role 1-6 e avance pelo caminho em espiral.</li>
+            <li>Resolva o cálculo da casa onde caiu.</li>
+            <li>Acertou: permanece. Errou: recua 1 casa.</li>
+            <li>Chegou na última casa e acertou — você vence!</li>
+          </ul>
+        </div>
+
+        <!-- Histórico moved here under the rules panel -->
+        <div class="panel" id="historyPanel" style="margin-top:6px">
+          <div class="small">Histórico</div>
+          <div id="logArea" style="margin-top:8px;color:var(--muted);max-height:200px;overflow:auto;font-size:.95rem"></div>
+        </div>
+
+      </aside>
+    </section>
+
+  </main>
+
+  <div id="modalRoot" style="display:none"></div>
+
+  <script>
+    // Board size (must be a perfect square for grid)
+    const N = 5; // grid N x N -> total N*N squares
+    const BOARD_SIZE = N * N; // 25
+    const boardEl = document.getElementById('board');
+    const diceFace = document.getElementById('diceFace');
+    const rollBtn = document.getElementById('rollBtn');
+    const lastRollEl = document.getElementById('lastRoll');
+    const statusInfo = document.getElementById('statusInfo');
+    const restartBtn = document.getElementById('restartBtn');
+    const logArea = document.getElementById('logArea');
+    const bestMovesEl = document.getElementById('bestMoves');
+    const modalRoot = document.getElementById('modalRoot');
+
+    let board = [];
+    let pos = 0;
+    let moves = 0;
+    let rolling = false;
+    let bestMoves = Number(localStorage.getItem('corrida_bestMoves') || 0) || null;
+    if(bestMoves) bestMovesEl.textContent = bestMoves; else bestMovesEl.textContent = '--';
+
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function genExpression(){
+      const ops = ['+','-','×','÷'];
+      const op = ops[randInt(0,ops.length-1)];
+      let a,b;
+      if(op === '÷'){
+        b = randInt(2,10);
+        const c = randInt(1,10);
+        a = b * c;
+        return {expr: a + ' ÷ ' + b, answer: c};
+      } else if(op === '×'){
+        a = randInt(2,12);
+        b = randInt(2,10);
+        return {expr: a + ' × ' + b, answer: a * b};
+      } else if(op === '+'){
+        a = randInt(0,30);
+        b = randInt(0,30);
+        return {expr: a + ' + ' + b, answer: a + b};
+      } else { // -
+        a = randInt(0,40);
+        b = randInt(0,Math.min(a,30));
+        return {expr: a + ' - ' + b, answer: a - b};
+      }
+    }
+
+    // weighted dice function: increase chance of 1,2,3
+    function weightedDice(){
+      // weights for [1,2,3,4,5,6] — sum should be 1
+      const weights = [0.27, 0.27, 0.2, 0.09, 0.09, 0.08];
+      const r = Math.random();
+      let acc = 0;
+      for(let i=0;i<weights.length;i++){
+        acc += weights[i];
+        if(r <= acc) return i+1;
+      }
+      return 6;
+    }
+
+    // generate spiral coordinates mapping: index -> {r,c} 1-based for CSS grid
+    function generateSpiralCoords(n){
+      const grid = Array.from({length:n}, ()=> Array(n).fill(null));
+      let top=0, left=0, right=n-1, bottom=n-1;
+      let idx = 0;
+      while(top<=bottom && left<=right){
+        for(let c=left;c<=right;c++){ grid[top][c] = idx++; }
+        top++;
+        for(let r=top;r<=bottom;r++){ grid[r][right] = idx++; }
+        right--;
+        if(top<=bottom){
+          for(let c=right;c>=left;c--){ grid[bottom][c] = idx++; }
+          bottom--;
+        }
+        if(left<=right){
+          for(let r=bottom;r>=top;r--){ grid[r][left] = idx++; }
+          left++;
+        }
+      }
+      // invert mapping to coords: index -> {r,c}
+      const coords = Array(n*n);
+      for(let r=0;r<n;r++){
+        for(let c=0;c<n;c++){
+          const i = grid[r][c];
+          coords[i] = {row: r+1, col: c+1};
+        }
+      }
+      return coords;
+    }
+
+    const spiralCoords = generateSpiralCoords(N);
+
+    function buildBoard(){
+      board = [];
+      for(let i=0;i<BOARD_SIZE;i++){
+        board.push(genExpression());
+      }
+    }
+
+    function directionBetween(a,b){
+      if(!a || !b) return 'none';
+      if(b.row > a.row) return 'down';
+      if(b.row < a.row) return 'up';
+      if(b.col > a.col) return 'right';
+      if(b.col < a.col) return 'left';
+      return 'none';
+    }
+
+    function arrowSvg(dir){
+      if(dir === 'none') return '';
+      const svg = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M2 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M14 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>`;
+      let rot = 0;
+      if(dir === 'right') rot = 0;
+      if(dir === 'down') rot = 90;
+      if(dir === 'left') rot = 180;
+      if(dir === 'up') rot = -90;
+      return `<div class="arrow" style="transform:rotate(${rot}deg);color:var(--accent)">${svg}</div>`;
+    }
+
+    function renderBoard(){
+      boardEl.innerHTML = '';
+      for(let i=0;i<board.length;i++){
+        const coord = spiralCoords[i];
+        const s = document.createElement('div');
+        s.className = 'square';
+        if(i===0) s.classList.add('home');
+        if(i===pos) s.classList.add('current');
+        s.setAttribute('data-idx', i);
+        // position in grid
+        s.style.gridRow = coord.row;
+        s.style.gridColumn = coord.col;
+        s.innerHTML = `
+          <div class="idx">#${i}</div>
+          <div class="expr">${board[i].expr}</div>
+        `;
+        // token
+        if(i===pos){
+          const token = document.createElement('div');
+          token.className = 'token';
+          token.textContent = 'J';
+          s.appendChild(token);
+        }
+        // arrow pointing to next position, except for last (finish)
+        if(i < board.length - 1){
+          const nextCoord = spiralCoords[i+1];
+          const dir = directionBetween(coord, nextCoord);
+          s.insertAdjacentHTML('beforeend', arrowSvg(dir));
+        } else {
+          // finish flag
+          s.insertAdjacentHTML('beforeend', `<div class="finish-flag">META</div>`);
+        }
+
+        boardEl.appendChild(s);
+      }
+      statusInfo.textContent = `Jogadas: ${moves} • Posição: ${pos}/${board.length-1}`;
+    }
+
+    function log(msg){
+      const time = new Date().toLocaleTimeString();
+      const el = document.createElement('div');
+      el.textContent = `[${time}] ${msg}`;
+      logArea.prepend(el);
+    }
+
+    function showModal(expr, onSubmit){
+      modalRoot.innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal" role="dialog" aria-modal="true">
+            <h3>Resolva o cálculo</h3>
+            <div class="question">${expr}</div>
+            <div style="display:flex;gap:8px">
+              <input id="answerInput" type="number" placeholder="Resposta" />
+              <button id="submitAnswer" class="btn primary">Enviar</button>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+              <button id="cancelBtn" class="btn ghost">Fechar</button>
+            </div>
+          </div>
+        </div>
+      `;
+      modalRoot.style.display = 'block';
+      const answerInput = document.getElementById('answerInput');
+      answerInput.focus();
+      document.getElementById('submitAnswer').onclick = () => {
+        const val = answerInput.value.trim();
+        onSubmit(val === '' ? null : Number(val));
+        closeModal();
+      };
+      document.getElementById('cancelBtn').onclick = () => {
+        closeModal();
+        onSubmit(null);
+      };
+      answerInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          document.getElementById('submitAnswer').click();
+        }
+      });
+    }
+
+    function closeModal(){ modalRoot.style.display = 'none'; modalRoot.innerHTML = ''; }
+
+    function saveBest(){
+      if(!bestMoves || moves < bestMoves){
+        bestMoves = moves;
+        localStorage.setItem('corrida_bestMoves', String(bestMoves));
+        bestMovesEl.textContent = bestMoves;
+        log('Novo recorde: ' + bestMoves + ' jogadas!');
+      }
+    }
+
+    function rollDice(){
+      if(rolling) return;
+      rolling = true;
+      rollBtn.disabled = true;
+      let frames = 8;
+      let last = 1;
+      const anim = setInterval(()=> {
+        // use weightedDice for frames too so animation reflects true distribution
+        last = weightedDice();
+        diceFace.textContent = last;
+        frames--;
+        if(frames<=0){
+          clearInterval(anim);
+          const result = last;
+          lastRollEl.textContent = result;
+          moves++;
+          log('Rolou o dado: ' + result);
+          moveSteps(result);
+        }
+      }, 90);
+    }
+
+    function moveSteps(steps){
+      const target = Math.min(pos + steps, board.length - 1);
+      let stepCount = 0;
+      const stepInterval = setInterval(()=> {
+        if(pos < target){
+          pos++;
+          stepCount++;
+          renderBoard();
+        } else {
+          clearInterval(stepInterval);
+          const {expr, answer} = board[pos];
+          showModal(expr, (userVal)=>{
+            if(userVal === null){
+              wrongAnswer();
+              finalizeTurn();
+              return;
+            }
+            if(Number(userVal) === Number(answer)){
+              log(`Acertou na casa ${pos}: ${expr} = ${answer}`);
+              if(pos === board.length -1){
+                renderBoard();
+                win();
+              } else {
+                renderBoard();
+                finalizeTurn();
+              }
+            } else {
+              log(`Errou na casa ${pos}: ${expr} (resposta ${userVal} ≠ ${answer})`);
+              wrongAnswer();
+              finalizeTurn();
+            }
+          });
+        }
+      }, 220);
+    }
+
+    function wrongAnswer(){
+      const prev = pos;
+      pos = Math.max(0, pos - 1);
+      renderBoard();
+      log(`Penalidade: recuou de ${prev} para ${pos}`);
+    }
+
+    function finalizeTurn(){
+      rolling = false;
+      rollBtn.disabled = false;
+      statusInfo.textContent = `Jogadas: ${moves} • Posição: ${pos}/${board.length-1}`;
+    }
+
+    function win(){
+      log(`VENCEU em ${moves} jogadas!`);
+      saveBest();
+      modalRoot.innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal" role="dialog" aria-modal="true" style="text-align:center">
+            <div class="win">Parabéns! Você chegou ao fim em ${moves} jogadas.</div>
+            <div style="margin-top:12px">
+              <button id="playAgain" class="btn primary">Jogar novamente</button>
+              <button id="closeWin" class="btn ghost">Fechar</button>
+            </div>
+          </div>
+        </div>
+      `;
+      modalRoot.style.display = 'block';
+      document.getElementById('playAgain').onclick = () => { restartGame(); closeModal(); };
+      document.getElementById('closeWin').onclick = () => { closeModal(); };
+      rolling = false;
+      rollBtn.disabled = true;
+    }
+
+    function restartGame(){
+      pos = 0;
+      moves = 0;
+      rolling = false;
+      buildBoard();
+      renderBoard();
+      rollBtn.disabled = false;
+      diceFace.textContent = '-';
+      lastRollEl.textContent = '-';
+      log('Jogo reiniciado');
+      statusInfo.textContent = `Jogadas: ${moves} • Posição: ${pos}/${board.length-1}`;
+    }
+
+    // init
+    buildBoard();
+    renderBoard();
+
+    // events
+    rollBtn.addEventListener('click', rollDice);
+    restartBtn.addEventListener('click', restartGame);
+    document.addEventListener('keydown', (e)=>{
+      if(e.key.toLowerCase() === 'r' && !rolling){
+        rollDice();
+      }
+    });
+
+    log('Bem-vindo à Corrida com Cálculos.');
+
+  </script>
+</body>
+</html>

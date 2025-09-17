@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pac-Man - ScalForce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Poppins, sans-serif;
+      color:var(--text);
+      background: linear-gradient(180deg, #1a0f26 0%, #140a1a 100%);
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1200px, 92%); margin-inline:auto}
+
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.3rem; color:var(--accent)}
+    .nav-actions{display:flex; align-items:center; gap:.6rem}
+    .btn{display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.75rem 1.2rem; border-radius:999px; border:1px solid transparent; transition:.2s ease; font-weight:600; cursor:pointer}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.primary:hover{background:var(--accent-700)}
+    main{flex:1; display:flex; align-items:center; justify-content:center; padding:2rem 0}
+    .box{
+      background:linear-gradient(145deg, var(--card), #1a0f2a);
+      border:2px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:2rem;
+      max-width:600px;
+      text-align:center;
+      box-shadow:0 15px 40px rgba(0,0,0,.35);
+    }
+    .box h1{margin-top:0; font-size:2rem; color:var(--accent)}
+    .box p{color:var(--muted); margin-bottom:1.5rem; line-height:1.6}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="Logo.png" alt="Logo SCALFORCE" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+      <nav class="nav-actions">
+        <a class="btn primary" href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="box">
+      <h1>Pac-Man</h1>
+      <p>Pac-Man é um dos jogos de arcade mais famosos de todos os tempos! Seu objetivo é guiar o personagem amarelo faminto pelos labirintos, comendo todas as bolinhas enquanto foge dos fantasmas. Pegue as super pastilhas para virar o jogo contra eles e conquistar a maior pontuação!</p>
+      <a href="JG28-Pacman.html" class="btn primary">Jogar Agora</a>
+    </div>
+  </main>
+</body>
+</html>

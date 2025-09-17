@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pequenos Experimentos — Ciências | ScalForce</title>
+  <meta name="description" content="Jogo educativo de Ciências: Pequenos Experimentos com níveis e fases interativas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --accent:#ff8a00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+      --error:#ff5b6b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:Poppins, system-ui, sans-serif; background:#1a0f26; color:var(--text); font-size:16px;}
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1200px,92%); margin:auto}
+
+    header{
+      position:sticky; top:0; z-index:30; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.6rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:48px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.1rem; color:var(--accent)}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.55rem .8rem; border-radius:999px; border:1px solid transparent; transition:.15s ease; font-weight:600; cursor:pointer}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.primary:hover{filter:brightness(.95)}
+    .btn.ghost{border-color: #2c1847; background:#ff8a00}
+    .btn.ghost:hover{background:#ff8a00}
+
+    main{padding:1rem 0}
+    h1{margin:.3rem 0; font-size:1.6rem}
+    .subtitle{color:var(--muted)}
+    .grid{display:grid; grid-template-columns:1fr .8fr; gap:1rem}
+    .panel{background:var(--card); padding:1rem; border-radius:14px}
+    .task{background:#170c25; padding:1rem; border-radius:12px; min-height:100px}
+    .row{display:flex; flex-wrap:wrap; gap:.5rem}
+    .chip{background:#392453; padding:.5rem .8rem; border-radius:10px; cursor:grab}
+    .drop{min-height:40px; min-width:100px; background:#120a1a; border:2px dashed #392453; border-radius:10px; padding:.4rem; display:inline-flex; align-items:center; justify-content:center; gap:.4rem}
+    .drop.filled{border-style:solid; background:#190f26}
+    .list{display:grid; gap:.4rem}
+    .card{background:#1b0f31; padding:.6rem .8rem; border-radius:12px}
+    .result{margin-top:.6rem; padding:.6rem; border-radius:10px; display:none}
+    .result.ok{background:#1f3d2c; border:1px solid var(--success)}
+    .result.bad{background:#3d1f26; border:1px solid var(--error)}
+    .footer-cta{margin-top:.6rem; display:flex; gap:.5rem; flex-wrap:wrap}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand"><img src="Logo.png" alt="Logo ScalForce"><span>ScalForce</span></a>
+      <nav class="nav-actions">
+          <a class="btn primary" href="../ScalForce.html">Voltar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>Pequenos Experimentos 🧪</h1>
+    <p class="subtitle">Complete os desafios e aprenda ciências de forma divertida!</p>
+    <div class="grid">
+      <div class="panel">
+        <h2 id="task-title">Fase</h2>
+        <div id="task" class="task"></div>
+        <div id="result" class="result"></div>
+        <div class="footer-cta">
+          <button class="btn primary" id="check">Conferir</button>
+          <button class="btn ghost" id="next">Pular</button>
+        </div>
+      </div>
+      <aside class="panel">
+        <h2>Itens</h2>
+        <div id="pool" class="row"></div>
+        <h2>Dicas da fase 💡</h2>
+        <div id="tips" class="list"></div>
+        <h2>Status</h2>
+        <div class="card">⭐ Pontos: <span id="score">0</span></div>
+        <div class="card">📖 Nível: <span id="nivel">1</span>/5</div>
+        <div class="card">🎯 Fase: <span id="fase">1</span></div>
+        <div class="footer-cta">
+          <label for="faseSelect">Ir para fase:</label>
+          <select id="faseSelect" class="btn ghost"></select>
+          <button class="btn ghost" id="reset">Reiniciar</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- SCRIPT original permanece -->
+  <script>
+    // Código JS original com LEVELS, render, check, nextPhase e populateSelector()
+    
+ const $=s=>document.querySelector(s);
+  const $$=s=>Array.from(document.querySelectorAll(s));
+  const state={nivel:1,fase:1,score:0};
+
+  const LEVELS=[
+    {nivel:1,fases:[
+      {title:"Fase 1 — Vulcão 🌋",type:"drag-to-slots",prompt:"Arraste os materiais para fazer o vulcão.",slots:["Materiais"],correct:{"Materiais":["Bicarbonato","Vinagre","Garrafa PET"]},pool:["Bicarbonato","Vinagre","Garrafa PET","Arroz","Sabonete"],tips:["Use só o que faz a reação.","Arroz e sabonete não servem."]},
+      {title:"Fase 2 — Filtro 💧",type:"order-list",prompt:"Coloque na ordem certa (1→3).",steps:["Cortar a garrafa","Colocar areia","Jogar água suja"],tips:["Primeiro a garrafa","Depois a areia","Por fim a água"]}
+    ]},
+    {nivel:2,fases:[
+      {title:"Fase 3 — Segurança 👓",type:"checklist",prompt:"Marque práticas seguras.",items:[{text:"Usar óculos",ok:true},{text:"Comer perto",ok:false},{text:"Prender cabelo",ok:true}],tips:["Proteger olhos e cabelo","Nunca comer"]},
+      {title:"Fase 4 — Plantas 🌱",type:"checklist",prompt:"O que planta precisa?",items:[{text:"Água",ok:true},{text:"Luz do sol",ok:true},{text:"Refrigerante",ok:false}],tips:["Água e luz","Refrigerante não"]}
+    ]},
+    {nivel:3,fases:[
+      {title:"Fase 5 — Estados da Água 💦",type:"order-list",prompt:"Coloque na ordem correta.",steps:["Congelada","Líquida","Gasosa"],tips:["Gelo > Líquido > Vapor"]},
+      {title:"Fase 6 — Circuito Elétrico 🔋",type:"drag-to-slots",prompt:"Arraste itens para acender a lâmpada.",slots:["Materiais"],correct:{"Materiais":["Pilha","Fio de cobre","Lâmpada"]},pool:["Pilha","Fio de cobre","Lâmpada","Bola","Papel"],tips:["Use energia, fio e luz"]}
+    ]},
+    {nivel:4,fases:[
+      {title:"Fase 7 — Cores 🎨",type:"checklist",prompt:"Selecione misturas corretas.",items:[{text:"Azul+Amarelo=Verde",ok:true},{text:"Vermelho+Azul=Roxo",ok:true},{text:"Preto+Branco=Banana",ok:false}],tips:["Misturas corretas formam cores"]},
+      {title:"Fase 8 — Magnetismo 🧲",type:"drag-to-slots",prompt:"Arraste o que o ímã atrai.",slots:["Atrai"],correct:{"Atrai":["Prego","Clips"]},pool:["Prego","Clips","Borracha","Madeira"],tips:["Ímã atrai metais"]}
+    ]},
+    {nivel:5,fases:[
+      {title:"Fase 9 — Sistema Solar 🌍",type:"order-list",prompt:"Ordene planetas do Sol.",steps:["Mercúrio","Vênus","Terra","Marte"],tips:["Mercúrio primeiro","Depois Vênus e Terra"]},
+      {title:"Fase 10 — Animais 🐾",type:"checklist",prompt:"Marque animais mamíferos.",items:[{text:"Cachorro",ok:true},{text:"Gato",ok:true},{text:"Galinha",ok:false}],tips:["Mamíferos têm pelos"]}
+    ]}
+  ];
+
+  function getCurrentPhase(){const nivel=LEVELS[state.nivel-1];return nivel?nivel.fases[state.fase-1]:null;}
+
+  function render(){
+    const fase=getCurrentPhase();
+    if(!fase){$('#task-title').textContent="Parabéns!";$('#task').innerHTML="Você terminou tudo!";$('#pool').innerHTML="";$('#tips').innerHTML="";return;}
+    $('#nivel').textContent=state.nivel;$('#fase').textContent=state.fase;
+    $('#task-title').textContent=fase.title;$('#task').innerHTML="<p>"+fase.prompt+"</p>";$('#result').style.display="none";
+    $('#tips').innerHTML=fase.tips.map(t=>"<div class='card'>💡 "+t+"</div>").join("");
+    updateSelector();
+
+    if(fase.type==="drag-to-slots"){
+      const row=document.createElement("div");row.className="row";
+      fase.slots.forEach(s=>{const d=document.createElement("div");d.className="drop";d.dataset.accept=s;d.innerHTML="<b>"+s+"</b>";row.appendChild(d)});
+      $('#task').appendChild(row);
+      $('#pool').innerHTML=fase.pool.map(i=>"<div class='chip' draggable='true'>"+i+"</div>").join("");enableDrag();
+    }else if(fase.type==="order-list"){
+      const row=document.createElement("div");row.className="row";
+      fase.steps.forEach(s=>{const c=document.createElement("div");c.className="chip";c.textContent=s;c.draggable=true;row.appendChild(c)});
+      $('#task').appendChild(row);$('#pool').innerHTML="";enableReorder(row);
+    }else if(fase.type==="checklist"){
+      const list=document.createElement("div");list.className="list";
+      fase.items.forEach(it=>{list.innerHTML+=`<label class='card'><input type='checkbox' data-ok='${it.ok}'> ${it.text}</label>`});
+      $('#task').appendChild(list);$('#pool').innerHTML="";
+    }
+  }
+
+  function enableDrag(){$$('.chip').forEach(c=>{c.addEventListener("dragstart",e=>{e.dataTransfer.setData("text",c.textContent)})});$$('.drop').forEach(d=>{d.addEventListener("dragover",e=>e.preventDefault());d.addEventListener("drop",e=>{e.preventDefault();const txt=e.dataTransfer.getData("text");const span=document.createElement("span");span.className="chip";span.textContent=txt;d.appendChild(span);d.classList.add("filled")})});}
+
+  function enableReorder(cont){cont.addEventListener("dragstart",e=>{if(e.target.classList.contains("chip")){e.dataTransfer.setData("text",e.target.textContent);e.target.classList.add("dragging")}});cont.addEventListener("dragend",e=>{e.target.classList.remove("dragging")});cont.addEventListener("dragover",e=>{e.preventDefault();const drag=cont.querySelector(".dragging");if(!drag)return;const after=getAfter(cont,e.clientX);if(after==null)cont.appendChild(drag);else cont.insertBefore(drag,after)});function getAfter(cont,x){const els=[...cont.querySelectorAll(".chip:not(.dragging)")];return els.reduce((c,ch)=>{const box=ch.getBoundingClientRect();const off=x-(box.left+box.width/2);if(off<0&&off>c.off)return{off,el:ch};else return c},{off:-Infinity}).el}}
+
+  function check(){const fase=getCurrentPhase();if(!fase)return;let ok=false;if(fase.type==="drag-to-slots"){const got=$$('.drop .chip').map(c=>c.textContent);const exp=fase.correct["Materiais"]||fase.correct["Atrai"];ok=exp.every(x=>got.includes(x))&&got.length===exp.length;}else if(fase.type==="order-list"){const got=$$('#task .chip').map(c=>c.textContent);ok=JSON.stringify(got)===JSON.stringify(fase.steps);}else if(fase.type==="checklist"){const boxes=$$('#task input[type=checkbox]');ok=true;boxes.forEach(b=>{if((b.checked&&b.dataset.ok==="false")||(!b.checked&&b.dataset.ok==="true"))ok=false})}ok?win():lose();}
+  function win(){state.score+=10;$('#score').textContent=state.score;show("Muito bem! ✅",true);setTimeout(()=>nextPhase(),800)}
+  function lose(){state.score=Math.max(0,state.score-2);$('#score').textContent=state.score;show("Tente de novo ❌",false)}
+  function show(msg,ok){const r=$('#result');r.style.display="block";r.className="result "+(ok?"ok":"bad");r.textContent=msg}
+  function nextPhase(){const nivel=LEVELS[state.nivel-1];if(state.fase<nivel.fases.length){state.fase++;}else{if(state.nivel<LEVELS.length){state.nivel++;state.fase=1;}else{$('#task-title').textContent="Fim do jogo 🎉";$('#task').innerHTML="Você concluiu tudo!";return;}}render();}
+  function populateSelector(){const sel=$('#faseSelect');sel.innerHTML='';LEVELS.forEach((lvl,i)=>{lvl.fases.forEach((f,j)=>{const opt=document.createElement('option');opt.value=`${i+1}-${j+1}`;opt.textContent=`Nível ${i+1} - Fase ${j+1}`;sel.appendChild(opt);});});sel.addEventListener('change',()=>{const [n,f]=sel.value.split('-').map(Number);state.nivel=n;state.fase=f;render();});}
+  function updateSelector(){const sel=$('#faseSelect');sel.value=`${state.nivel}-${state.fase}`;}
+
+  $('#check').addEventListener("click",check);
+  $('#next').addEventListener("click",()=>nextPhase());
+  $('#reset').addEventListener("click",()=>{state.nivel=1;state.fase=1;state.score=0;$('#score').textContent=0;render()});
+  populateSelector();
+  render();
+  </script>
+</body>
+</html>
+
+

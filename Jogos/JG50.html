@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Batalha Naval — Terreno Variável & Turnos</title>
+<style>
+  :root{--tile:36px;--gap:10px;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+  body{background:#0f172a;color:#e6eef8;display:flex;flex-direction:column;align-items:center;padding:18px}
+  h1{margin:4px 0 12px;font-size:20px}
+  .boards{display:flex;gap:20px}
+  .panel{background:linear-gradient(180deg,#0b1220,#071022);padding:12px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,.6)}
+  .grid{display:grid;grid-template-columns:repeat(10, var(--tile));grid-template-rows:repeat(10,var(--tile));gap:2px;padding:8px;background:#071022;border-radius:8px}
+  .cell{width:var(--tile);height:var(--tile);display:flex;align-items:center;justify-content:center;font-size:10px;border-radius:4px;box-sizing:border-box}
+  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .key{font-size:12px;display:flex;align-items:center;gap:6px}
+  .swatch{width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,.06)}
+  button{background:#134e8a;border:none;padding:8px 10px;border-radius:8px;color:white;cursor:pointer}
+  button.secondary{background:#0b3a5a}
+  .controls{display:flex;flex-direction:column;gap:8px;margin-left:12px}
+  .log{height:200px;overflow:auto;background:#021224;padding:8px;border-radius:8px;font-size:12px}
+  .rows{display:flex;gap:12px}
+  .small{font-size:12px;color:#9fb6d4}
+  .grid-title{text-align:center;margin-bottom:6px}
+  .info{margin-top:8px;font-size:13px}
+</style>
+</head>
+<body>
+  <h1>Batalha Naval — Terreno Variável & Turnos</h1>
+  <div class="rows">
+    <div class="panel">
+      <div class="grid-title"><strong>Seu Tabuleiro</strong><div class="small">(clique para posicionar/mover)</div></div>
+      <div id="playerGrid" class="grid"></div>
+      <div class="legend">
+        <div class="key"><div class="swatch" style="background:#145a8a"></div> Água</div>
+        <div class="key"><div class="swatch" style="background:#6b8b6b"></div> Ilha (bloqueia tiros & movimento)</div>
+        <div class="key"><div class="swatch" style="background:#8fa8b3"></div> Recife (desvia tiro — chance de erro)</div>
+        <div class="key"><div class="swatch" style="background:#334b66"></div> Tempestade (esconde chance de erro)</div>
+        <div class="key"><div class="swatch" style="background:#e07b7b"></div> Tiro / dano</div>
+        <div class="key"><div class="swatch" style="background:#ffd27a"></div> Navio</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="grid-title"><strong>Tabuleiro Inimigo</strong><div class="small">(clique para atirar)</div></div>
+      <div id="enemyGrid" class="grid"></div>
+      <div class="legend">
+        <div class="key"><div class="swatch" style="background:#145a8a"></div> Desconhecido</div>
+        <div class="key"><div class="swatch" style="background:#e07b7b"></div> Acerto</div>
+        <div class="key"><div class="swatch" style="background:#536b87"></div> Erro</div>
+      </div>
+    </div>
+
+    <div class="panel controls">
+      <div><strong>Fase:</strong> <span id="phase">Posicionamento</span></div>
+      <div><strong>Turno:</strong> <span id="turnOwner">Jogador</span></div>
+      <div style="display:flex;gap:8px;flex-direction:column">
+        <button id="startBtn">Iniciar Partida</button>
+        <div style="display:flex;gap:8px">
+          <button id="undoBtn" class="secondary">Repor posicionamento</button>
+          <button id="autoPlace" class="secondary">Auto posicionar</button>
+        </div>
+      </div>
+
+      <div class="info"><strong>Comandos:</strong>
+        <ul>
+          <li>Clique no seu tabuleiro para posicionar (horizontal por padrão). Shift + clique para girar o navio.</li>
+          <li>Depois de iniciar: clique em um navio no seu tabuleiro e clique em uma célula adjacente para mover (máx 1 tile por turno por navio).</li>
+          <li>Clique no tabuleiro inimigo para atirar.</li>
+        </ul>
+      </div>
+
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+<script>
+// ---- Configurações ----
+const SIZE = 10;
+const TERRAIN = {WATER:0, ISLAND:1, REEF:2, STORM:3};
+const TILE_SIZES = [3,3,2]; //fleet sizes
+const terrainChance = {ISLAND:0.06, REEF:0.10, STORM:0.05};
+
+let player = {grid:[], shots:[], ships:[]};
+let enemy = {grid:[], shots:[], ships:[]};
+let phase = 'placement'; // 'placement' | 'battle' | 'finished'
+let turn = 'player';
+let selectedShip = null;
+
+const playerGridEl = document.getElementById('playerGrid');
+const enemyGridEl = document.getElementById('enemyGrid');
+const logEl = document.getElementById('log');
+const phaseEl = document.getElementById('phase');
+const turnOwnerEl = document.getElementById('turnOwner');
+
+function log(msg){
+  const p = document.createElement('div'); p.textContent = '['+new Date().toLocaleTimeString()+'] '+msg; logEl.prepend(p);
+}
+
+function createEmptyGrid(){ return Array.from({length:SIZE},()=>Array(SIZE).fill(TERRAIN.WATER)); }
+
+function generateTerrain(grid){
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    const rnd = Math.random();
+    if(rnd < terrainChance.ISLAND) grid[r][c]=TERRAIN.ISLAND;
+    else if(rnd < terrainChance.ISLAND+terrainChance.REEF) grid[r][c]=TERRAIN.REEF;
+    else if(rnd < terrainChance.ISLAND+terrainChance.REEF+terrainChance.STORM) grid[r][c]=TERRAIN.STORM;
+    else grid[r][c]=TERRAIN.WATER;
+  }
+}
+
+function init(){
+  player.grid = createEmptyGrid();
+  enemy.grid = createEmptyGrid();
+  generateTerrain(player.grid);
+  generateTerrain(enemy.grid);
+  player.ships = [];
+  enemy.ships = [];
+  player.shots = createEmptyGrid().map(r=>r.map(()=>null));
+  enemy.shots = createEmptyGrid().map(r=>r.map(()=>null));
+  phase='placement'; turn='player'; selectedShip=null;
+  phaseEl.textContent='Posicionamento'; turnOwnerEl.textContent='Jogador';
+  createGridElements();
+  createFleetPlaceholder(player);
+  createFleetPlaceholder(enemy);
+  drawAll();
+  log('Novo tabuleiro gerado. Posicione seus navios ou use Auto posicionar.');
+}
+
+function createGridElements(){
+  playerGridEl.innerHTML=''; enemyGridEl.innerHTML='';
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    const pCell = document.createElement('div'); pCell.className='cell'; pCell.dataset.r=r; pCell.dataset.c=c; pCell.dataset.board='player';
+    pCell.addEventListener('click', onPlayerCellClick);
+    playerGridEl.appendChild(pCell);
+    const eCell = document.createElement('div'); eCell.className='cell'; eCell.dataset.r=r; eCell.dataset.c=c; eCell.dataset.board='enemy';
+    eCell.addEventListener('click', onEnemyCellClick);
+    enemyGridEl.appendChild(eCell);
+  }
+}
+
+function createFleetPlaceholder(obj){
+  obj.ships = TILE_SIZES.map((size,i)=>({id:i,size,coords:[],orientation:'h',hp:size,placed:false,moved:false}));
+}
+
+// Placement: place ships on player's board by clicking
+let nextPlacingIndex = 0;
+function onPlayerCellClick(e){
+  const r=+e.currentTarget.dataset.r, c=+e.currentTarget.dataset.c;
+  if(phase!=='placement'){ // movement selection
+    handleShipSelection(r,c);
+    return;
+  }
+  const ship = player.ships[nextPlacingIndex];
+  if(!ship) return;
+  const orientation = e.shiftKey ? 'v' : 'h';
+  if(canPlace(player.grid, r, c, ship.size, orientation)){
+    placeShip(player, ship, r, c, orientation); nextPlacingIndex++;
+    log('Navio colocado: tamanho '+ship.size+' em '+r+','+c+' ('+orientation+')');
+    if(nextPlacingIndex>=player.ships.length) log('Posicionamento concluído. Clique Iniciar Partida.');
+  } else log('Posição inválida (colisão/ilha). Use outra célula ou gire com Shift).');
+  drawAll();
+}
+
+function canPlace(grid,r,c,size,orientation){
+  for(let i=0;i<size;i++){
+    const rr = r + (orientation==='v'?i:0);
+    const cc = c + (orientation==='h'?i:0);
+    if(rr<0||cc<0||rr>=SIZE||cc>=SIZE) return false;
+    if(grid[rr][cc]===TERRAIN.ISLAND) return false;
+    // check overlap with existing ships
+    for(const s of player.ships) if(s.placed) for(const p of s.coords) if(p[0]===rr && p[1]===cc) return false;
+  }
+  return true;
+}
+
+function placeShip(obj, ship, r, c, orientation){
+  ship.coords = [];
+  for(let i=0;i<ship.size;i++){
+    const rr = r + (orientation==='v'?i:0);
+    const cc = c + (orientation==='h'?i:0);
+    ship.coords.push([rr,cc]);
+  }
+  ship.orientation = orientation; ship.placed=true; ship.hp=ship.size; ship.moved=false;
+}
+
+function autoPlacePlayer(){
+  player.ships.forEach(s=>s.placed=false);
+  for(const s of player.ships){
+    let tries=0; while(!s.placed && tries<200){
+      const r=Math.floor(Math.random()*SIZE); const c=Math.floor(Math.random()*SIZE);
+      const ori=Math.random()<0.5?'h':'v';
+      if(canPlace(player.grid,r,c,s.size,ori)) placeShip(player,s,r,c,ori);
+      tries++;
+    }
+  }
+  nextPlacingIndex = player.ships.length;
+  drawAll(); log('Navios do jogador posicionados automaticamente.');
+}
+
+function autoPlaceEnemy(){
+  enemy.ships.forEach(s=>s.placed=false);
+  for(const s of enemy.ships){
+    let tries=0; while(!s.placed && tries<500){
+      const r=Math.floor(Math.random()*SIZE); const c=Math.floor(Math.random()*SIZE);
+      const ori=Math.random()<0.5?'h':'v';
+      if(canPlaceEnemy(enemy.grid,r,c,s.size,ori)) placeShip(enemy,s,r,c,ori);
+      tries++;
+    }
+  }
+  log('Inimigo posicionou navios.');
+}
+
+function canPlaceEnemy(grid,r,c,size,orientation){
+  for(let i=0;i<size;i++){
+    const rr = r + (orientation==='v'?i:0);
+    const cc = c + (orientation==='h'?i:0);
+    if(rr<0||cc<0||rr>=SIZE||cc>=SIZE) return false;
+    if(grid[rr][cc]===TERRAIN.ISLAND) return false;
+    // check enemy ships
+    for(const s of enemy.ships) if(s.placed) for(const p of s.coords) if(p[0]===rr && p[1]===cc) return false;
+  }
+  return true;
+}
+
+// Drawing
+function drawAll(){
+  drawBoard(playerGridEl, player.grid, player.ships, player.shots, true);
+  drawBoard(enemyGridEl, enemy.grid, enemy.ships, enemy.shots, false);
+}
+
+function drawBoard(container, grid, ships, shots, showShips){
+  const cells = container.querySelectorAll('.cell');
+  cells.forEach(cell=>{
+    const r=+cell.dataset.r, c=+cell.dataset.c;
+    cell.style.background=''; cell.textContent=''; cell.style.border='1px solid rgba(255,255,255,0.02)';
+    // base terrain (for player's board show terrain, for enemy hide)
+    if(showShips){
+      switch(grid[r][c]){
+        case TERRAIN.WATER: cell.style.background='linear-gradient(180deg,#0f3b5a,#0e2b44)'; break;
+        case TERRAIN.ISLAND: cell.style.background='#6b8b6b'; break;
+        case TERRAIN.REEF: cell.style.background='#8fa8b3'; break;
+        case TERRAIN.STORM: cell.style.background='#334b66'; break;
+      }
+    } else {
+      cell.style.background='linear-gradient(180deg,#08182a,#071022)';
+    }
+    // show ships
+    for(const s of ships){
+      if(s.placed) for(const p of s.coords) if(p[0]===r && p[1]===c){
+        if(showShips) cell.style.boxShadow='inset 0 0 0 2px rgba(0,0,0,0.25)';
+        if(showShips) cell.style.background='linear-gradient(180deg,#ffd27a,#e6b55b)';
+      }
+    }
+    // shots
+    const shot = shots[r][c];
+    if(shot==='hit'){
+      cell.style.background='#e07b7b'; cell.textContent='✖';
+    } else if(shot==='miss'){
+      cell.style.background='#536b87'; cell.textContent='•';
+    }
+    // highlight selected ship cell
+    if(showShips && selectedShip && selectedShip.coords.some(p=>p[0]===r && p[1]===c)){
+      cell.style.outline='2px solid rgba(255,255,123,0.9)';
+    } else cell.style.outline='';
+  });
+}
+
+// After placement - start
+document.getElementById('startBtn').addEventListener('click',()=>{
+  if(player.ships.some(s=>!s.placed)) return log('Coloque todos os navios antes de iniciar.');
+  autoPlaceEnemy();
+  phase='battle'; phaseEl.textContent='Batalha';
+  log('Partida iniciada! Jogador começa.');
+  drawAll();
+});
+
+document.getElementById('autoPlace').addEventListener('click',autoPlacePlayer);
+document.getElementById('undoBtn').addEventListener('click',()=>{ init(); });
+
+// Firing
+function onEnemyCellClick(e){
+  if(phase!=='battle') return log('Aperte Iniciar Partida antes de atirar.');
+  if(turn!=='player') return log('Não é seu turno.');
+  const r=+e.currentTarget.dataset.r, c=+e.currentTarget.dataset.c;
+  if(player.shots[r][c]) return log('Você já atirou nessa célula.');
+  playerFire(r,c);
+}
+
+function getTerrainModifier(grid,r,c){
+  const t = grid[r][c];
+  if(t===TERRAIN.ISLAND) return {blocked:true};
+  if(t===TERRAIN.REEF) return {hitChance:0.65};
+  if(t===TERRAIN.STORM) return {hitChance:0.55};
+  return {hitChance:0.9};
+}
+
+function playerFire(r,c){
+  const mod = getTerrainModifier(enemy.grid,r,c);
+  if(mod.blocked){ player.shots[r][c]='miss'; log('Tiro bloqueado por ilha. Não faz nada.'); drawAll(); enemyTurn(); return; }
+  const roll = Math.random();
+  const chance = mod.hitChance;
+  if(roll < chance){
+    // check enemy ships
+    const shipHit = enemy.ships.find(s=>s.coords.some(p=>p[0]===r&&p[1]===c));
+    if(shipHit){
+      player.shots[r][c]='hit'; shipHit.hp--; log('Acertou inimigo! Navio '+shipHit.id+' HP restante: '+shipHit.hp);
+      if(shipHit.hp<=0){ log('Navio inimigo afundou!'); shipHit.placed=false; }
+      drawAll(); if(checkVictory(enemy)) return endGame('player');
+    } else { player.shots[r][c]='miss'; log('Tiro acertou água.'); drawAll(); }
+  } else { player.shots[r][c]='miss'; log('Tiro foi desviado (recife/tempestade).'); drawAll(); }
+  enemyTurn();
+}
+
+function checkVictory(side){
+  return !side.ships.some(s=>s.placed);
+}
+
+function endGame(winner){ phase='finished'; phaseEl.textContent='Finalizado'; turnOwnerEl.textContent='—'; log('Partida encerrada. Vencedor: '+winner); }
+
+// Enemy logic: move each ship slowly then fire
+function enemyTurn(){
+  turn='enemy'; turnOwnerEl.textContent='Inimigo';
+  // move ships (each can move once per enemy turn)
+  enemy.ships.forEach(s=>{ if(!s.placed) return; if(Math.random()<0.6){ // 60% chance to move
+    const dir = [[1,0],[-1,0],[0,1],[0,-1]][Math.floor(Math.random()*4)];
+    const can = s.coords.every(p=>{
+      const nr=p[0]+dir[0]; const nc=p[1]+dir[1];
+      return nr>=0&&nc>=0&&nr<SIZE&&nc<SIZE && enemy.grid[nr][nc]!==TERRAIN.ISLAND && !s.coords.some(x=>x[0]===nr&&x[1]===nc);
+    });
+    if(can){ s.coords = s.coords.map(p=>[p[0]+dir[0], p[1]+dir[1]]); }
+  }});
+
+  // choose a firing target — simple AI: if any recent player shot hit, target vicinity; else random with weighting
+  const target = enemyChooseTarget();
+  setTimeout(()=>{
+    resolveEnemyShot(target.r,target.c);
+  }, 400);
+}
+
+function enemyChooseTarget(){
+  // try to predict by looking at player's last shots
+  for(let rr=0;rr<SIZE;rr++) for(let cc=0;cc<SIZE;cc++){
+    if(player.shots[rr][cc]==='hit'){
+      // target neighbors
+      const neigh = [[1,0],[-1,0],[0,1],[0,-1]].map(d=>[rr+d[0],cc+d[1]]).filter(p=>p[0]>=0&&p[1]>=0&&p[0]<SIZE&&p[1]<SIZE);
+      for(const n of neigh) if(!enemy.shots[n[0]][n[1]]) return {r:n[0],c:n[1]};
+    }
+  }
+  // else choose weighted random for player's known ship tiles (if any) — otherwise random
+  let tries=0; while(tries<200){ const r=Math.floor(Math.random()*SIZE); const c=Math.floor(Math.random()*SIZE); if(!enemy.shots[r][c]) return {r,c}; tries++; }
+  // fallback
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) if(!enemy.shots[r][c]) return {r,c};
+}
+
+function resolveEnemyShot(r,c){
+  const mod = getTerrainModifier(player.grid,r,c);
+  if(mod.blocked){ enemy.shots[r][c]='miss'; log('Inimigo atirou em '+r+','+c+' — tiro bloqueado por ilha.'); drawAll(); afterEnemyFire(); return; }
+  const roll=Math.random(); const chance = mod.hitChance*0.9; // slightly less accurate
+  if(roll < chance){
+    const shipHit = player.ships.find(s=>s.coords.some(p=>p[0]===r&&p[1]===c));
+    if(shipHit){ enemy.shots[r][c]='hit'; shipHit.hp--; log('Inimigo acertou seu navio! ID '+shipHit.id+' HP: '+shipHit.hp);
+      if(shipHit.hp<=0){ shipHit.placed=false; log('Seu navio foi afundado!'); }
+      drawAll(); if(checkVictory(player)) return endGame('inimigo');
+    } else { enemy.shots[r][c]='miss'; log('Inimigo errou (acertou água).'); drawAll(); }
+  } else { enemy.shots[r][c]='miss'; log('Inimigo errou — recife/tempestade atrapalhou.'); drawAll(); }
+  afterEnemyFire();
+}
+
+function afterEnemyFire(){ turn='player'; turnOwnerEl.textContent='Jogador'; // reset moved flags
+  player.ships.forEach(s=>s.moved=false); enemy.ships.forEach(s=>s.moved=false);
+}
+
+// Player move/select ship during battle
+function handleShipSelection(r,c){
+  const ship = player.ships.find(s=>s.placed && s.coords.some(p=>p[0]===r&&p[1]===c));
+  if(ship && !ship.moved){ selectedShip = ship; drawAll(); log('Navio selecionado. Clique em célula adjacente para mover 1 tile.'); return; }
+  if(selectedShip){
+    // check adjacency and if move valid
+    const adj = selectedShip.coords.some(p=>Math.abs(p[0]-r)+Math.abs(p[1]-c)===1);
+    if(!adj){ log('Movimento inválido: clique em célula adjacente.'); selectedShip=null; drawAll(); return; }
+    // compute shift vector (from first coord)
+    const dx = r - selectedShip.coords[0][0]; const dy = c - selectedShip.coords[0][1];
+    const can = selectedShip.coords.every(p=>{
+      const nr=p[0]+dx; const nc=p[1]+dy;
+      return nr>=0&&nc>=0&&nr<SIZE&&nc<SIZE && player.grid[nr][nc]!==TERRAIN.ISLAND && !overlapsOtherShip(player, selectedShip, nr,nc);
+    });
+    if(!can){ log('Movimento bloqueado (ilha/colisão).'); selectedShip=null; drawAll(); return; }
+    selectedShip.coords = selectedShip.coords.map(p=>[p[0]+dx,p[1]+dy]); selectedShip.moved=true; selectedShip=null; drawAll(); log('Navio movido. Inimigo fará seu turno.');
+    // after moving, enemy fires (end player action)
+    setTimeout(enemyTurn,300);
+  }
+}
+
+function overlapsOtherShip(obj, movingShip, nr,nc){
+  // for each part check collision
+  for(const s of obj.ships) if(s.placed && s!==movingShip) for(const p of s.coords) for(const mp of movingShip.coords){
+    const testR = mp[0] + (nr - movingShip.coords[0][0]);
+    const testC = mp[1] + (nc - movingShip.coords[0][1]);
+    if(p[0]===testR && p[1]===testC) return true;
+  }
+  return false;
+}
+
+// setup on load
+init();
+</script>
+</body>
+</html>

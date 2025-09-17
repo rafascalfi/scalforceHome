@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Formas e Figuras — ScalForce</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#5E2497;
+    --accent:#ff8a00;
+    --accent-700:#cc6d00;
+    --muted:#cfc6d9;
+    --card:#2b1943;
+    --text:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:Poppins, sans-serif;
+    color:var(--text);
+    background: linear-gradient(180deg,#1a0f26 0%, #140a1a 100%);
+    padding-bottom:40px;
+  }
+  .container{width:min(1100px,94%);margin:0 auto}
+
+  /* HEADER */
+  header{
+    position:sticky;top:0;z-index:10;
+    background:linear-gradient(180deg, rgba(20,10,26,.95), rgba(20,10,26,.7) 80%, rgba(20,10,26,0));
+    border-bottom:1px solid rgba(255,255,255,.06);
+    padding-bottom:10px;
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 0}
+  .brand{display:flex;align-items:center;gap:.8rem;font-weight:800;letter-spacing:.5px}
+  .brand img{height:42px;width:auto;display:block;filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+  .brand span{font-size:1.3rem;color:var(--accent)}
+  .nav-actions .btn.primary{background:var(--accent);color:#1b0d27;font-weight:700;padding:.6rem 1rem;border-radius:999px;border:none;cursor:pointer;text-decoration:none;display:inline-block}
+  .nav-actions .btn.primary:hover{background:var(--accent-700)}
+
+  .hero h1{margin:0;font-size:2rem}
+  .hero p{color:var(--muted)}
+
+  /* GAME */
+  .game-card{background:linear-gradient(145deg,var(--card),#1a0f2a);border-radius:18px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,.5)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .score{display:flex;gap:.8rem}
+  .badge{background:#170c25;padding:.5rem .75rem;border-radius:12px}
+  .stage{display:grid;grid-template-columns:1fr 300px;gap:18px}
+  @media(max-width:900px){.stage{grid-template-columns:1fr}}
+  .play-area{min-height:300px;border-radius:12px;padding:12px;background:#1d0d2b;display:flex;flex-direction:column;gap:12px}
+  .targets{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .target{background:#2a1a40;border-radius:12px;min-height:100px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;color:var(--accent);padding:8px;text-align:center}
+  .shape-bank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px;background:#170c25;border-radius:10px}
+  .shape{width:80px;height:80px;border-radius:12px;display:grid;place-items:center;background:#fff;cursor:grab;position:relative}
+  .shape svg{width:60%;height:60%}
+  .controls{display:flex;flex-direction:column;gap:12px}
+  .panel{background:#170c25;padding:12px;border-radius:12px}
+  .btn{padding:.6rem .9rem;border-radius:999px;cursor:pointer;font-weight:700}
+  .btn{background:var(--accent);color:#1b0d27;border:none}
+  .btn.secondary{background:transparent;border:1px solid #2a1645;color:var(--muted)}
+  .progress{height:10px;background:#12071a;border-radius:999px;overflow:hidden}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ffb16a);width:0%}
+  .message{padding:.7rem .9rem;border-radius:10px;background:rgba(0,0,0,.4);color:var(--muted);text-align:center}
+  footer{margin-top:20px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a class="brand">
+      <img src="Logo.png" alt="Logo SCALFORCE" onerror="this.style.display='none'">
+      <span>ScalForce</span>
+    </a>
+    <nav class="nav-actions">
+      <a class="btn primary" href="../ScalForce.html">Voltar</a>
+    </nav>
+</header>
+  </div>
+  <div class="container hero">
+    <h1>Formas e Figuras</h1>
+    <p>Arraste ou clique para combinar as formas com a <strong>descrição</strong> correta!</p>
+  </div>
+
+<main class="container" style="padding-top:18px">
+  <div class="game-card">
+    <div class="topbar">
+      <div class="score">
+        <div class="badge">Fase <strong id="fase-num">1</strong>/10</div>
+        <div class="badge">Pontos <strong id="pontos">0</strong></div>
+        <div class="badge">Erros <strong id="erros">0</strong></div>
+      </div>
+      <div>
+        <button class="btn secondary" id="reiniciar">Reiniciar</button>
+        <button class="btn" id="prox-fase">Próxima Fase</button>
+      </div>
+    </div>
+
+    <div class="stage">
+      <section class="play-area">
+        <div class="targets" id="targets"></div>
+        <div class="shape-bank" id="shape-bank"></div>
+      </section>
+      <aside class="controls">
+        <div class="panel">
+          <div>Modo:</div>
+          <button class="btn secondary" id="modo-arrastar">Arrastar</button>
+          <button class="btn secondary" id="modo-clique">Clique</button>
+          <div style="margin-top:8px">Progresso</div>
+          <div class="progress"><i id="progress-bar"></i></div>
+          <div id="progresso-text">0/0</div>
+        </div>
+      </aside>
+    </div>
+
+    <div style="margin-top:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div id="feedback" class="message">Escolha uma forma para começar!</div>
+      <div>
+        <button class="btn secondary" id="mostrar-resposta">Mostrar resposta</button>
+        <button class="btn" id="reiniciar-fase">Reiniciar fase</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="container">Formas e Figuras • ScalForce</footer>
+<script>
+const FORMS = {
+  circulo:{
+    label:'Círculo',
+    desc:'Forma redonda, sem cantos (apenas uma borda contínua).',
+    svg:'<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="#ff4c4c"/></svg>'
+  },
+  quadrado:{
+    label:'Quadrado',
+    desc:'Quatro lados iguais e quatro ângulos retos.',
+    svg:'<svg viewBox="0 0 100 100"><rect x="18" y="18" width="64" height="64" fill="#4caf50"/></svg>'
+  },
+  triangulo:{
+    label:'Triângulo',
+    desc:'Forma com três lados e três ângulos.',
+    svg:'<svg viewBox="0 0 100 100"><polygon points="50,14 86,82 14,82" fill="#2196f3"/></svg>'
+  },
+  retangulo:{
+    label:'Retângulo',
+    desc:'Quatro lados; os lados opostos são iguais (mais comprido e mais curto).',
+    svg:'<svg viewBox="0 0 100 100"><rect x="12" y="28" width="76" height="44" fill="#ff9800"/></svg>'
+  },
+  pentagono:{
+    label:'Pentágono',
+    desc:'Figura com cinco lados.',
+    svg:'<svg viewBox="0 0 100 100"><polygon points="50,10 82,36 67,80 33,80 18,36" fill="#9c27b0"/></svg>'
+  },
+  hexagono:{
+    label:'Hexágono',
+    desc:'Figura com seis lados.',
+    svg:'<svg viewBox="0 0 100 100"><polygon points="50,8 82,30 82,70 50,92 18,70 18,30" fill="#00bcd4"/></svg>'
+  },
+  estrela:{
+    label:'Estrela',
+    desc:'Forma com pontas (normalmente cinco pontas).',
+    svg:'<svg viewBox="0 0 100 100"><polygon points="50,10 61,39 92,39 67,58 76,88 50,70 24,88 33,58 8,39 39,39" fill="#ffc107"/></svg>'
+  },
+  losango:{
+    label:'Losango',
+    desc:'Quatro lados iguais inclinados — parece um quadrado inclinado.',
+    svg:'<svg viewBox="0 0 100 100"><polygon points="50,6 94,50 50,94 6,50" fill="#8bc34a"/></svg>'
+  },
+  trapezio:{
+    label:'Trapézio',
+    desc:'Quatro lados com apenas um par de lados paralelos.',
+    svg:'<svg viewBox="0 0 100 100"><polygon points="20,80 80,80 90,40 10,40" fill="#e91e63"/></svg>'
+  },
+  oval:{
+    label:'Oval',
+    desc:'Forma alongada, parecida com um círculo esticado.',
+    svg:'<svg viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="36" ry="26" fill="#3f51b5"/></svg>'
+  }
+};
+
+const FASES = [
+  {nAlvos:1,pool:['circulo','quadrado','triangulo'],chances:3},
+  {nAlvos:2,pool:['circulo','quadrado','triangulo','retangulo'],chances:3},
+  {nAlvos:3,pool:['circulo','quadrado','triangulo','retangulo','pentagono'],chances:3},
+  {nAlvos:3,pool:['quadrado','triangulo','pentagono','hexagono'],chances:3},
+  {nAlvos:4,pool:['circulo','quadrado','triangulo','retangulo','pentagono','hexagono','estrela'],chances:3},
+  {nAlvos:4,pool:['losango','trapezio','oval','estrela'],chances:3},
+  {nAlvos:5,pool:['circulo','quadrado','triangulo','retangulo','losango','pentagono'],chances:3},
+  {nAlvos:5,pool:['estrela','hexagono','oval','trapezio','pentagono'],chances:2},
+  {nAlvos:6,pool:['circulo','quadrado','triangulo','losango','hexagono','trapezio'],chances:2},
+  {nAlvos:6,pool:Object.keys(FORMS),chances:2}
+];
+
+let estado={fase:1,pontos:0,erros:0,modo:'arrastar',alvos:[],acertosNaFase:0,totalNaFase:0,chancesRestantes:3,selecionada:null};
+
+const el={
+  faseNum:document.getElementById('fase-num'),
+  pontos:document.getElementById('pontos'),
+  erros:document.getElementById('erros'),
+  targets:document.getElementById('targets'),
+  bank:document.getElementById('shape-bank'),
+  feedback:document.getElementById('feedback'),
+  progressBar:document.getElementById('progress-bar'),
+  progressoText:document.getElementById('progresso-text'),
+  reiniciar:document.getElementById('reiniciar'),
+  proxFase:document.getElementById('prox-fase'),
+  reiniciarFase:document.getElementById('reiniciar-fase'),
+  mostrarResposta:document.getElementById('mostrar-resposta'),
+  modoArrastarBtn:document.getElementById('modo-arrastar'),
+  modoCliqueBtn:document.getElementById('modo-clique')
+};
+
+function init(){
+  el.reiniciar.onclick=resetGame;
+  el.proxFase.onclick=nextPhase;
+  el.reiniciarFase.onclick=startPhase;
+  el.mostrarResposta.onclick=mostrarResposta;
+  el.modoArrastarBtn.onclick=()=>setModo('arrastar');
+  el.modoCliqueBtn.onclick=()=>setModo('clique');
+  setModo('arrastar'); startPhase();
+}
+
+function setModo(m){
+  estado.modo=m;
+  el.feedback.textContent='Modo '+m+' ativado';
+}
+
+function startPhase(){
+  const cfg=FASES[estado.fase-1];
+  estado.alvos=[];estado.acertosNaFase=0;estado.totalNaFase=cfg.nAlvos;estado.chancesRestantes=cfg.chances;
+  const escolhidas=pickN(cfg.pool,cfg.nAlvos);
+  escolhidas.forEach((f,i)=>estado.alvos.push({id:'alvo-'+i,forma:f}));
+  renderPhase(); updateUI();
+}
+
+function renderPhase(){
+  el.targets.innerHTML='';
+  estado.alvos.forEach(a=>{
+    const d=document.createElement('div');
+    d.className='target'; d.dataset.forma=a.forma;
+    // Mostrar a descrição no alvo (ao invés do rótulo/nome)
+    d.textContent=FORMS[a.forma].desc;
+    d.ondragover=e=>e.preventDefault();
+    d.ondrop=e=>attemptPlace(dragFormaKey,d);
+    d.onclick=()=>{if(estado.modo==='clique'&&estado.selecionada)attemptPlace(estado.selecionada,d)};
+    el.targets.appendChild(d);
+  });
+  const bankList=shuffleArray(Object.keys(FORMS));
+  el.bank.innerHTML='';
+  bankList.forEach(k=>{
+    const b=document.createElement('button');
+    b.className='shape'; b.draggable=true; b.dataset.forma=k;
+    b.innerHTML=FORMS[k].svg;
+    b.ondragstart=e=>dragFormaKey=k;
+    b.onclick=()=>{if(estado.modo==='clique'){estado.selecionada=k;el.feedback.textContent='Selecionou '+FORMS[k].label;}};
+    el.bank.appendChild(b);
+  });
+}
+
+let dragFormaKey=null;
+function attemptPlace(key,target){
+  if(!key||!target||target.classList.contains('filled'))return;
+  if(key===target.dataset.forma){
+    target.classList.add('filled'); target.innerHTML=FORMS[key].svg;
+    estado.pontos+=10;estado.acertosNaFase++;el.feedback.textContent='Acertou! +10 pontos';
+  }else{
+    estado.erros++;estado.chancesRestantes--;el.feedback.textContent='Errou!';
+  }
+  updateUI();
+}
+
+function updateUI(){
+  el.faseNum.textContent=estado.fase;
+  el.pontos.textContent=estado.pontos;
+  el.erros.textContent=estado.erros;
+  el.progressoText.textContent=estado.acertosNaFase+'/'+estado.totalNaFase;
+  el.progressBar.style.width=(estado.acertosNaFase/estado.totalNaFase*100)+'%';
+}
+
+function mostrarResposta(){document.querySelectorAll('.target').forEach(t=>{if(!t.classList.contains('filled'))t.innerHTML=FORMS[t.dataset.forma].svg});}
+function nextPhase(){if(estado.fase<FASES.length){estado.fase++;startPhase();}else{el.feedback.textContent='Fim do jogo!';}}
+function resetGame(){estado.fase=1;estado.pontos=0;estado.erros=0;startPhase();}
+function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pickN(arr,n){return shuffleArray(arr.slice()).slice(0,n);}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Planeta e Estrelas — ScalForce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+      --font-scale: 1;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Poppins, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,#1a0f26 100%,#140a1a 100%);
+      font-size: calc(16px * var(--font-scale));
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:18px 12px;
+    }
+
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1200px, 94%); margin-inline:auto}
+
+    /* Header (copied from ScalForce) */
+    .container{width:min(1300 px,100%);margin-inline:auto}
+    header{
+      position:sticky; top:0; z-index:30; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.6rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.1rem; color:var(--accent)}
+    .nav-actions{display:flex; align-items:center; gap:.6rem}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.45rem .7rem; border-radius:999px; border:1px solid transparent; transition:.15s ease; font-weight:700; cursor:pointer; background:var(--accent); color:#1b0d27}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--text)}
+    .nav-user{display:flex;align-items:center;gap:8px}
+    .nav-user img.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.06)}
+
+    /* Game styles adapted to ScalForce theme */
+    .card > header {
+  position: sticky;
+  top: 0; /* fixa no topo do card */
+  z-index: 10;
+  background: linear-gradient(180deg, rgba(20,10,26,0.95), rgba(20,10,26,0.8));
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+    .question-area{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start}
+    .qtext{font-size:1.05rem;margin-bottom:12px;color:var(--text)}
+    .img-wrap{background:linear-gradient(180deg,#0b0b12,#121018);border-radius:8px;padding:8px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.03);position:relative}
+    .img-wrap img{max-width:100%;max-height:520px;border-radius:6px;display:block}
+
+    .choices{display:grid;gap:10px;margin-top:8px}
+    .choice{background:#301b52;border:1px solid rgba(255,255,255,.03);padding:12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px}
+    .choice.selected{outline:3px solid rgba(255,138,0,.18);border-color:rgba(255,138,0,.35)}
+    .choice.correct{background:linear-gradient(90deg,#143b1f,#0d2b18);border-color:rgba(54,195,141,.35)}
+    .choice.wrong{background:linear-gradient(90deg,#38121b,#2a0f16)}
+
+    .meta{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--muted)}
+    .controls{display:flex;gap:8px}
+
+    .progress{height:10px;background:rgba(255,255,255,.04);border-radius:999px;overflow:hidden;margin-top:10px}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,#ffb46b,var(--accent));width:0%}
+
+    .footer-note{margin-top:12px;color:var(--muted);font-size:.9rem}
+
+    /* Board tiles overlay (global) */
+    .board-wrap{position:relative; width:100%;}
+    .board-overlay{position:absolute;inset:8px;border-radius:6px;display:grid;pointer-events:none}
+    .board-tile{background:linear-gradient(180deg, rgba(20,10,26,0.95), rgba(20,10,26,0.98));border:1px solid rgba(255,255,255,.03);opacity:1;transition:opacity .35s ease, transform .25s;pointer-events:auto}
+    .board-tile.revealed{opacity:0;visibility:hidden;transform:scale(.98)}
+
+    .hud{display:flex;gap:12px;align-items:center;color:var(--muted);font-weight:700}
+    .hud .stat{background:transparent;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.04)}
+
+    @media (max-width:920px){
+      .question-area{grid-template-columns:1fr}
+      .img-wrap img{max-height:320px}
+      .board-overlay{display:none}
+    }
+
+    /* focus visible */
+    :focus{outline:none}
+    :focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+     .volta {
+  padding: 0.7rem 1.3rem;
+  border-radius: 999px;
+  border: none;
+  background: #ff8a00;
+  color: #1e1130;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  transition: background 0.3s, transform 0.2s;
+}
+
+/* New controls box styles */
+.controls-box {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.03);
+  padding:12px;
+  border-radius:10px;
+}
+.control-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:block;
+}
+.control-list li{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:10px 8px;
+  border-radius:8px;
+  border-bottom:1px solid rgba(255,255,255,0.02);
+}
+.control-key{
+  width:64px;
+  min-width:64px;
+  height:44px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.04);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,0.03);
+}
+.control-desc{font-size:0.95rem;color:var(--muted);line-height:1.2}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav" role="banner">
+      <a class="brand" aria-label="Ir para página inicial">
+        <img src="Logo.png" alt="Logo SCALFORCE" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+
+      <nav class="nav-actions" aria-label="Ações principais">
+        <a class="volta" href="../ScalForce.html">Voltar</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+<br>
+  <div class="container">
+    <main>
+      <div class="card" role="application" aria-labelledby="quizTitle">
+        <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h1 id="quizTitle" style="font-size:1.25rem;margin:0">Planeta e Estrelas — Questionário (30 perguntas)</h1>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="hud">
+              <div class="stat">Foco: <span id="focusPts">0</span></div>
+              <div class="stat">Streak: <span id="streak">0</span></div>
+              <div class="stat">Tiles: <span id="tilesLeft">30</span></div>
+            </div>
+            <button id="btn-hint" class="btn ghost" title="Revelar um tile (custa 1 ponto de foco)">Hint</button>
+            <button id="btn-reset" class="btn ghost">Reiniciar</button>
+          </div>
+        </header>
+
+        <div id="quiz" >
+          <!-- Content injected by JS -->
+        </div>
+
+        <div>
+          <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+          <div class="meta">
+            <div id="infoText">Pergunta <span id="cur">1</span> de <span id="total">30</span></div>
+            <div class="controls">
+              <button id="btn-prev" class="btn ghost">Anterior</button>
+              <button id="btn-next" class="btn">Próxima</button>
+            </div>
+          </div>
+          <div class="footer-note">Dica: use as teclas <strong>1–4</strong> para selecionar uma alternativa, <strong>H</strong> para usar Hint e <strong>Enter</strong> para confirmar.</div>
+        </div>
+      </div>
+
+      <!-- NEW: Box com comandos do controle (fica acima do 'Como funciona o jogo') -->
+      <div class="card" style="margin-top:12px" id="gamepad-commands">
+        <h2 style="margin:0 0 8px">Comandos do Controle</h2>
+        <p style="margin:0 0 8px; color:var(--muted)">Use um gamepad (Xbox/PS/Genérico). Mapeamento padrão:</p>
+        <div class="controls-box">
+          <ul class="control-list">
+            <li>
+              <div class="control-key">LS</div>
+              <div>
+                <div class="control-desc"><strong>Analógico Esquerdo</strong></div>
+                <div class="control-desc">Navega entre alternativas (se houver). Caso contrário, navega entre os botões: Hint, Reiniciar, Anterior, Próxima, Voltar e Rever Perguntas.</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="control-key">RS</div>
+              <div>
+                <div class="control-desc"><strong>Analógico Direito</strong></div>
+                <div class="control-desc">Scroll vertical suave da página (subir/descer).</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="control-key">A</div>
+              <div>
+                <div class="control-desc"><strong>Botão A</strong></div>
+                <div class="control-desc">Seleciona alternativa. Se já estiver selecionada, confirma (mesma ação do Enter).</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="control-key">X</div>
+              <div>
+                <div class="control-desc"><strong>Botão X</strong></div>
+                <div class="control-desc">Hint (revela um tile, custa 1 ponto de foco).</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="control-key">Y</div>
+              <div>
+                <div class="control-desc"><strong>Botão Y</strong></div>
+                <div class="control-desc">Reiniciar o jogo (apaga progresso salvo).</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="control-key">B</div>
+              <div>
+                <div class="control-desc"><strong>Botão B</strong></div>
+                <div class="control-desc">Voltar ao menu/janela anterior.</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="control-key">Back</div>
+              <div>
+                <div class="control-desc"><strong>Botão Back</strong></div>
+                <div class="control-desc">Ir para a pergunta anterior.</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="control-key">Start</div>
+              <div>
+                <div class="control-desc"><strong>Botão Start</strong></div>
+                <div class="control-desc">Ir para a próxima pergunta.</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="control-key">A</div>
+              <div>
+                <div class="control-desc"><strong>Rever Perguntas (Resultados)</strong></div>
+                <div class="control-desc">Na tela de resultados, pressione A para abrir a revisão das perguntas.</div>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+
+      <!-- Caixa explicativa: como funciona o jogo -->
+      <div class="card" style="margin-top:12px">
+        <h2 style="margin:0 0 8px">Como funciona o jogo</h2>
+        <p style="margin:0 0 8px; color:var(--muted)">Resumo rápido da mecânica e dicas para jogar:</p>
+        <ul style="margin:0 0 8px 1rem; color:var(--muted)">
+          <li><strong>Objetivo:</strong> Responda 30 perguntas e obtenha o maior número de acertos.</li>
+          <li><strong>Novo — Tabuleiro Único:</strong> Há uma única imagem (tabuleiro) coberta por <strong>30 tiles</strong>. A cada resposta correta um tile aleatório do tabuleiro é revelado.</li>
+          <li><strong>Pontos de Foco:</strong> Você ganha 1 ponto de foco por acerto; pontos podem ser gastos para usar <em>Hints</em> (cada Hint remove 1 tile).</li>
+          <li><strong>Streak / Combo:</strong> Acertos consecutivos aumentam seu streak — ao atingir streak ≥ 3 você recebe tiles extras como bônus.</li>
+          <li><strong>Penalidade:</strong> Errar reduz 1 ponto de foco (não fica negativo) e zera o streak.</li>
+          <li><strong>Aleatorização das alternativas:</strong> As alternativas são embaralhadas aleatoriamente quando a pergunta é mostrada; a resposta correta é rastreada mesmo após o embaralhamento.</li>
+          <li><strong>Controles:</strong> Teclas <kbd>1</kbd>–<kbd>4</kbd> para selecionar, <kbd>Enter</kbd> para confirmar, <kbd>H</kbd> para usar Hint.</li>
+          <li><strong>Persistência:</strong> Progresso, pontos de foco, streak e tiles revelados são salvos automaticamente no navegador.</li>
+        </ul>
+        <p style="margin:6px 0 0; color:var(--muted)">Dica: mantenha streaks para revelar mais do tabuleiro e acumular foco — use Hints com moderação!</p>
+      </div>
+
+      <div style="margin-top:14px;color:var(--muted);font-size:.95rem">
+        <p><strong>Salvar/Retomar:</strong> O progresso é salvo automaticamente no navegador. Para começar do zero clique em "Reiniciar".</p>
+      </div>
+    </main>
+  </div>
+<footer>
+  <br>
+  <br>
+  <br>
+</footer>
+  <script>
+    // CONFIG
+    const BOARD_IMG = 'imagens7/Universo.png'; // coloque aqui a imagem que contém o tabuleiro com todos os itens
+    let BOARD_ROWS = 5;
+    let BOARD_COLS = 6;
+    const TOTAL_TILES = 30; // sempre 30 tiles no total
+
+    function adjustGridToImage(img) {
+  const aspect = img.naturalWidth / img.naturalHeight;
+  // Queremos TOTAL_TILES no total, escolhemos linhas/colunas próximos da proporção
+  let bestRows = 5, bestCols = 6;
+  let bestDiff = Infinity;
+  for (let rows = 2; rows <= TOTAL_TILES; rows++) {
+    if (TOTAL_TILES % rows !== 0) continue;
+    const cols = TOTAL_TILES / rows;
+    const gridAspect = cols / rows;
+    const diff = Math.abs(gridAspect - aspect);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestRows = rows;
+      bestCols = cols;
+    }
+  }
+  BOARD_ROWS = bestRows;
+  BOARD_COLS = bestCols;
+}
+
+
+
+    // Questions (core data only); alternatives will be randomized on display
+    const QUESTIONS = [
+      {q: 'Qual planeta é conhecido como o Planeta Vermelho?', choices: ['Vênus','Marte','Júpiter','Saturno'], answer:1},
+      {q: 'Qual é a estrela mais próxima da Terra?', choices:['Sirius','Próxima Centauri','Sol','Vega'], answer:2},
+      {q: 'Qual planeta é chamado de Blue Marble por sua aparência?', choices:['Terra','Netuno','Urano','Saturno'], answer:0},
+      {q: 'Qual é o nome da galáxia onde está o nosso Sistema Solar?', choices:['Andrômeda','Via Láctea','Triângulo','Grande Nuvem de Magalhães'], answer:1},
+      {q: 'Qual planeta possui a famosa Mancha Vermelha?', choices:['Marte','Netuno','Júpiter','Vênus'], answer:2},
+      {q: 'Qual planeta é caracterizado por um sistema de anéis muito visível?', choices:['Urano','Saturno','Júpiter','Marte'], answer:1},
+      {q: 'Como é chamada a fase da Lua quando ela parece um disco completo?', choices:['Quarto Crescente','Lua Nova','Lua Cheia','Quarto Minguante'], answer:2},
+      {q: 'Qual planeta é conhecido por sua cor azul esverdeada devido ao metano?', choices:['Urano','Mercúrio','Vênus','Marte'], answer:0},
+      {q: 'Qual planeta é o mais distante do Sol (considerando apenas os 8 planetas)?', choices:['Netuno','Plutão','Urano','Mercúrio'], answer:0},
+      {q: 'Qual planeta é o mais próximo do Sol?', choices:['Mercúrio','Vênus','Terra','Marte'], answer:0},
+      {q: 'Qual planeta é conhecido por sua densa atmosfera e efeito estufa extremo?', choices:['Vênus','Terra','Marte','Mercúrio'], answer:0},
+      {q: 'Como chamamos um corpo celeste que desenvolve uma cauda ao aquecer perto do Sol?', choices:['Asteroide','Meteoroide','Cometa','Planeta anão'], answer:2},
+      {q: 'Onde se encontra o cinturão principal de asteroides do Sistema Solar?', choices:['Entre Marte e Júpiter','Entre Terra e Marte','Além de Netuno','Próximo ao Sol'], answer:0},
+      {q: 'Qual é o nome de uma famosa nebulosa que pode ser vista a olho nu na direção de Orion?', choices:['Nebulosa de Órion','Nebulosa da Águia','Nebulosa do Caranguejo','Nebulosa de Carina'], answer:0},
+      {q: 'Qual instrumento usamos para observar objetos distantes no espaço?', choices:['Microscópio','Telescópio','Periscópio','Espectrógrafo'], answer:1},
+      {q: 'Qual constelação é famosa por ter o cinturão formado por três estrelas alinhadas?', choices:['Órion','Ursa Maior','Escorpião','Cassiopeia'], answer:0},
+      {q: 'O que são manchas solares?', choices:['Buracos na Terra','Regiões mais frias no Sol','Pequenos planetas','Luzes na atmosfera'], answer:1},
+      {q: 'Qual termo descreve o caminho que um planeta segue ao redor do Sol?', choices:['Rotação','Translação','Órbita','Precessão'], answer:2},
+      {q: 'Como chamamos uma estrela muito grande e fria, com cor avermelhada?', choices:['Anã branca','Estrela de nêutrons','Gigante vermelha','Supernova'], answer:2},
+      {q: 'Qual é o destino final esperado de uma estrela de massa pequena como o Sol?', choices:['Buraco negro','Gigante vermelha','Anã branca','Pulsar'], answer:2},
+      {q: 'Qual dos seguintes é classificado como planeta anão?', choices:['Júpiter','Plutão','Mercúrio','Vênus'], answer:1},
+      {q: 'Que tipo de galáxia tem braços espirais?', choices:['Elíptica','Irregular','Espiral','Lenticular'], answer:2},
+      {q: 'O que um espectro estelar pode nos dizer sobre uma estrela?', choices:['Só a distância','Composição química e temperatura','A cor do planeta mais próximo','A idade da galáxia'], answer:1},
+      {q: 'O que é um exoplaneta?', choices:['Um planeta fora do Sistema Solar','Um planeta primordial','Um satélite natural','Uma estrela fracassada'], answer:0},
+      {q: 'Onde está localizado o Cinturão de Kuiper?', choices:['Entre Marte e Júpiter','Além de Netuno','Entre Terra e Marte','No núcleo do Sol'], answer:1},
+      {q: 'O que acontece durante um eclipse solar?', choices:['A Terra bloqueia a Lua','A Lua bloqueia o Sol','O Sol bloqueia a Terra','Um planeta passa na frente do Sol'], answer:1},
+      {q: 'O que significa um alinhamento planetário?', choices:['Todos os planetas colidem','Vários planetas aparecem aproximadamente na mesma direção','Planetas trocam órbitas','Um planeta deixa de existir'], answer:1},
+      {q: 'Qual fenômeno é observado quando fragmentos entram na atmosfera e queimam?', choices:['Aurora','Eclipse','Meteoro (estrela cadente)','Cometa'], answer:2},
+      {q: 'O que é um pulsa r / estrela de nêutrons (simplificado)?', choices:['Um tipo de planeta','Um núcleo estelar extremamente denso','Uma galáxia pequena','Um cometa especial'], answer:1},
+      {q: 'Qual imagem mostra o Sistema Solar inteiro?', choices:['Uma visão em escala do Sistema Solar','Um close em uma estrela','A superfície lunar','A atmosfera terrestre'], answer:0}
+    ];
+
+    const TOTAL = QUESTIONS.length;
+
+    // state contains dynamic gameplay info and is saved to localStorage
+    let state = {
+      index: 0,
+      answers: Array(TOTAL).fill(null), // user's selected displayed-index per question
+      score: 0,
+      focus: 0,
+      streak: 0,
+      tilesRevealed: Array(BOARD_ROWS*BOARD_COLS).fill(false), // global board
+      displayOrders: Array(TOTAL).fill(null) // store shuffled display orders so they persist
+    };
+
+    const STORAGE_KEY = 'planeta_global_board_v1';
+
+    // Elements refs
+    const quizEl = document.getElementById('quiz');
+    const progressBar = document.getElementById('progressBar');
+    const cur = document.getElementById('cur');
+    const totalEl = document.getElementById('total');
+    const focusPtsEl = document.getElementById('focusPts');
+    const streakEl = document.getElementById('streak');
+    const tilesLeftEl = document.getElementById('tilesLeft');
+    const hintBtn = document.getElementById('btn-hint');
+
+    totalEl.textContent = TOTAL;
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw){
+          const parsed = JSON.parse(raw);
+          if(parsed){
+            // merge but keep structure if old versions exist
+            state = Object.assign(state, parsed);
+            // ensure arrays lengths match
+            state.answers = state.answers && state.answers.length===TOTAL ? state.answers : Array(TOTAL).fill(null);
+            state.displayOrders = state.displayOrders && state.displayOrders.length===TOTAL ? state.displayOrders : Array(TOTAL).fill(null);
+            state.tilesRevealed = state.tilesRevealed && state.tilesRevealed.length===BOARD_ROWS*BOARD_COLS ? state.tilesRevealed : Array(BOARD_ROWS*BOARD_COLS).fill(false);
+          }
+        }
+      }catch(e){ console.warn('loadState failed', e); }
+    }
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    // shuffle util
+    function shuffleArray(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // Board overlay (global)
+    function createBoardOverlay(rows=BOARD_ROWS, cols=BOARD_COLS){
+      const overlay = document.createElement('div');
+      overlay.className = 'board-overlay';
+      overlay.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+      overlay.style.gridTemplateRows = `repeat(${rows},1fr)`;
+      overlay.dataset.rows = rows; overlay.dataset.cols = cols;
+      const total = rows*cols;
+      for(let i=0;i<total;i++){
+        const t = document.createElement('div');
+        t.className = 'board-tile';
+        t.dataset.index = i;
+        overlay.appendChild(t);
+      }
+      return overlay;
+    }
+
+   function renderBoardOverlay(){
+  const boardWrap = document.querySelector('.board-wrap');
+  if(!boardWrap) return;
+
+  const img = boardWrap.querySelector('#boardImage');
+  if (img && img.complete) {
+    adjustGridToImage(img);
+  } else if (img) {
+    img.onload = () => {
+      adjustGridToImage(img);
+      renderBoardOverlay(); // refaz overlay já com grid correta
+    };
+    return;
+  }
+
+  const existing = boardWrap.querySelector('.board-overlay');
+  if(existing) existing.remove();
+  const overlay = createBoardOverlay(BOARD_ROWS, BOARD_COLS);
+  boardWrap.appendChild(overlay);
+
+  // refletir tiles revelados
+  overlay.querySelectorAll('.board-tile').forEach(t=>{
+    const idx = Number(t.dataset.index);
+    if(state.tilesRevealed[idx]) t.classList.add('revealed');
+  });
+}
+
+
+    function tilesLeft(){ return state.tilesRevealed.filter(x=>!x).length; }
+
+    function revealRandomGlobalTile(count=1){
+      const available = state.tilesRevealed.map((v,i)=> v ? null : i).filter(v=>v!==null);
+      for(let k=0;k<count && available.length>0;k++){
+        const pickIndex = Math.floor(Math.random()*available.length);
+        const tileIdx = available[pickIndex];
+        state.tilesRevealed[tileIdx] = true;
+        // update DOM if overlay exists
+        const tileEl = document.querySelector(`.board-tile[data-index='${tileIdx}']`);
+        if(tileEl) tileEl.classList.add('revealed');
+        available.splice(pickIndex,1);
+      }
+      tilesLeftEl.textContent = tilesLeft();
+    }
+
+    // When showing a question, create or reuse a shuffled order for alternatives
+    function ensureDisplayOrderFor(index){
+      if(state.displayOrders[index]) return state.displayOrders[index];
+      const ord = shuffleArray([0,1,2,3]);
+      state.displayOrders[index] = ord;
+      saveState();
+      return ord;
+    }
+
+    function renderQuestion(){
+      const q = QUESTIONS[state.index];
+      cur.textContent = (state.index+1).toString();
+      const percent = Math.round(((state.index)/ (TOTAL))*100);
+      progressBar.style.width = percent + '%';
+
+      // build display order (persisted)
+      const order = ensureDisplayOrderFor(state.index);
+      // displayed choices in shuffled order
+      const displayedChoices = order.map(i=> q.choices[i]);
+      // find which displayed index corresponds to the correct original answer
+      const correctDisplayedIndex = order.indexOf(q.answer);
+
+      quizEl.innerHTML = `
+      <div class="question-area">
+        <div>
+          <div class="qtext" id="qtext">${escapeHtml(q.q)}</div>
+          <div class="choices" id="choices" role="list">
+            ${displayedChoices.map((c, i)=>`<div tabindex="0" role="button" data-index="${i}" class="choice" aria-pressed="false"><strong style="width:18px;display:inline-block">${i+1}.</strong> <span>${escapeHtml(c)}</span></div>`).join('')}
+          </div>
+        </div>
+        <div class="img-wrap" aria-hidden="false">
+          <div class="board-wrap">
+            <img id="boardImage" src="${BOARD_IMG}" alt="Tabuleiro Planeta e Estrelas" onerror="this.style.opacity=.25;">
+          </div>
+        </div>
+      </div>
+      `;
+
+      // attach overlay and sync it to state
+      renderBoardOverlay();
+
+      // attach choice events
+      document.querySelectorAll('.choice').forEach(el=>{
+        el.addEventListener('click', ()=> selectChoice(Number(el.dataset.index)));
+        el.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'||ev.key===' ') { ev.preventDefault(); selectChoice(Number(el.dataset.index)); } });
+      });
+
+      // restore previous selection if any (user selection stored as displayed index)
+      const sel = state.answers[state.index];
+      if(sel != null) { markSelected(sel); }
+
+      // save the correctDisplayedIndex on the question (for evaluation later)
+      q._correctDisplayedIndex = correctDisplayedIndex;
+
+      // update buttons
+      const nextBtn = document.getElementById('btn-next');
+      nextBtn.textContent = state.index === TOTAL-1 ? 'Terminar' : 'Próxima';
+
+      // update HUD
+      updateHud();
+      // notifica que a pergunta foi renderizada (para o gamepad atualizar índices)
+      window.dispatchEvent(new CustomEvent('quiz:rendered'));
+    }
+
+    function updateHud(){ focusPtsEl.textContent = state.focus; streakEl.textContent = state.streak; tilesLeftEl.textContent = tilesLeft(); }
+
+    function selectChoice(displayedIdx){
+      state.answers[state.index] = displayedIdx; // stored as displayed index (0..3)
+      saveState();
+      markSelected(displayedIdx);
+    }
+
+    function markSelected(choiceIdx){
+      document.querySelectorAll('.choice').forEach(c=> c.classList.remove('selected','correct','wrong'));
+      const chosen = document.querySelector(`.choice[data-index='${choiceIdx}']`);
+      if(chosen) chosen.classList.add('selected');
+    }
+
+    function submitAndNext(){
+      const selectedDisplayed = state.answers[state.index];
+      const q = QUESTIONS[state.index];
+      const correctDisplayed = q._correctDisplayedIndex;
+
+      if(selectedDisplayed == null){ // skip moving forward without answering
+        state.index = Math.min(TOTAL-1, state.index+1);
+        saveState(); renderQuestion(); return;
+      }
+
+      // mark choices
+      document.querySelectorAll('.choice').forEach(el=>{
+        const idx = Number(el.dataset.index);
+        if(idx === correctDisplayed) el.classList.add('correct');
+        else if(idx === selectedDisplayed && idx !== correctDisplayed) el.classList.add('wrong');
+      });
+
+      // scoring & board mechanics
+      if(!q.revealed){
+        q.revealed = true; // mark question as processed
+        if(selectedDisplayed === correctDisplayed){
+          state.score += 1;
+          state.streak += 1;
+          state.focus += 1;
+          // reveal one random tile globally
+          revealRandomGlobalTile(1);
+          if(state.streak >= 3) revealRandomGlobalTile(1); // bonus for streak
+        } else {
+          state.focus = Math.max(0, state.focus - 1);
+          state.streak = 0;
+        }
+      }
+
+      updateHud();
+      saveState();
+
+      setTimeout(()=>{
+        if(state.index < TOTAL-1){ state.index += 1; saveState(); renderQuestion(); }
+        else { showResults(); }
+      }, 900);
+    }
+
+    function showResults(){
+      const pct = Math.round((state.score / TOTAL) * 100);
+      progressBar.style.width = '100%';
+      quizEl.innerHTML = `
+        <div style="text-align:center;padding:28px">
+          <h2>Resultado: ${state.score} / ${TOTAL}</h2>
+          <p style="color:var(--muted)">Acertos: ${pct}%</p>
+          <p style="color:var(--muted)">Foco acumulado: ${state.focus} — Streak atual: ${state.streak}</p>
+          <p style="color:var(--muted)">Tiles revelados: ${BOARD_ROWS*BOARD_COLS - tilesLeft()} / ${BOARD_ROWS*BOARD_COLS}</p>
+          <div style="margin-top:18px;display:flex;gap:8px;justify-content:center">
+            <button id="btn-review" class="btn ghost">Rever Perguntas</button>
+            <button id="btn-clear" class="btn">Reiniciar</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btn-review').addEventListener('click', ()=> { state.index = 0; renderQuestion(); });
+      document.getElementById('btn-clear').addEventListener('click', ()=> { resetAll(); });
+    }
+
+    function resetAll(){
+      state = {
+        index: 0,
+        answers: Array(TOTAL).fill(null),
+        score: 0,
+        focus: 0,
+        streak: 0,
+        tilesRevealed: Array(BOARD_ROWS*BOARD_COLS).fill(false),
+        displayOrders: Array(TOTAL).fill(null)
+      };
+      QUESTIONS.forEach(q=> q.revealed = false);
+      localStorage.removeItem(STORAGE_KEY);
+      renderQuestion();
+      updateHud();
+    }
+
+    function useHint(){
+      if(state.focus < 1) { alert('Você precisa de pelo menos 1 ponto de foco para usar um Hint.'); return; }
+      state.focus -= 1;
+      revealRandomGlobalTile(1);
+      updateHud();
+      saveState();
+    }
+
+    // Utils
+    function escapeHtml(s){ return String(s).replace(/[&<>\"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]; }); }
+
+    // Controls
+    document.getElementById('btn-next').addEventListener('click', ()=> submitAndNext());
+    document.getElementById('btn-prev').addEventListener('click', ()=> { state.index = Math.max(0, state.index-1); renderQuestion(); saveState(); });
+    document.getElementById('btn-reset').addEventListener('click', ()=> { if(confirm('Reiniciar o jogo e apagar progresso salvo?')) resetAll(); });
+    hintBtn.addEventListener('click', ()=> useHint());
+
+    // Keyboard shortcuts: 1-4 select, Enter submit, H for hint
+    window.addEventListener('keydown', (e)=>{
+      if(document.activeElement && (document.activeElement.tagName==='INPUT' || document.activeElement.tagName==='TEXTAREA')) return;
+      if(e.key >= '1' && e.key <= '4'){
+        const idx = Number(e.key) - 1;
+        selectChoice(idx);
+      }
+      if(e.key === 'Enter'){
+        submitAndNext();
+      }
+      if(e.key.toLowerCase() === 'h'){
+        useHint();
+      }
+    });
+
+    // Init
+    loadState();
+    renderQuestion();
+
+
+    // ================== GAMEPAD API (CORRIGIDO) ==================
+let gamepadIndex = null;
+let selectedBtnIndex = 0;
+let selectedChoiceIndex = 0;
+let mode = "choices"; // "choices" ou "buttons"
+const controlButtons = ["btn-hint", "btn-reset", "btn-prev", "btn-next", "btn-review", "btn-clear", "volta", "voltar"]; // inclui variantes
+
+function getActiveButtons() {
+  return controlButtons
+    .map(id => document.getElementById(id))
+    .filter(el => el !== null);
+}
+
+function getChoices() {
+  return Array.from(document.querySelectorAll(".choice"));
+}
+
+function highlightChoice(idx) {
+  const choices = getChoices();
+  choices.forEach((c, i) => {
+    c.style.outline = (i === idx) ? "3px solid white" : "none";
+  });
+}
+
+function highlightButton(idx) {
+  const btns = getActiveButtons();
+  btns.forEach((b, i) => {
+    b.style.outline = (i === idx) ? "3px solid white" : "none";
+  });
+}
+
+function refreshGamepadState() {
+  const choices = getChoices();
+  if (choices.length > 0) {
+    mode = "choices";
+    // se já existe uma resposta salva para essa pergunta, posicione o cursor nela
+    try {
+      const saved = state.answers[state.index];
+      if (saved != null && saved >= 0 && saved < choices.length) selectedChoiceIndex = saved;
+      else selectedChoiceIndex = Math.min(selectedChoiceIndex, Math.max(0, choices.length - 1));
+    } catch (e) {
+      selectedChoiceIndex = 0;
+    }
+    highlightChoice(selectedChoiceIndex);
+  } else {
+    mode = "buttons";
+    selectedBtnIndex = Math.min(selectedBtnIndex, Math.max(0, getActiveButtons().length - 1));
+    highlightButton(selectedBtnIndex);
+  }
+}
+
+// Atualize ao renderizar pergunta
+window.addEventListener('quiz:rendered', () => {
+  refreshGamepadState();
+});
+
+// conectar/desconectar
+window.addEventListener("gamepadconnected", (e) => {
+  gamepadIndex = e.gamepad.index;
+  console.log("Gamepad conectado:", e.gamepad.id);
+  // sincroniza estado inicial
+  refreshGamepadState();
+});
+
+window.addEventListener("gamepaddisconnected", () => {
+  gamepadIndex = null;
+  console.log("Gamepad desconectado");
+});
+
+// debounce / controle de repetição
+let lastMoveTime = 0;
+const MOVE_DELAY = 160; // ms entre movimentos do stick
+let lastButtonState = {};
+
+function handleAButtonPress() {
+  const choices = getChoices();
+  if (mode === "choices" && choices.length > 0) {
+    // se a escolha atual já está marcada como selecionada, confirma (submit)
+    const currentSaved = state.answers[state.index];
+    if (currentSaved === selectedChoiceIndex) {
+      // confirmar resposta
+      if (typeof submitAndNext === "function") submitAndNext();
+    } else {
+      // selecionar a alternativa sem confirmar
+      if (typeof selectChoice === "function") selectChoice(selectedChoiceIndex);
+      // Se quiser confirmar automaticamente ao pressionar A, descomente a linha abaixo:
+      // if (typeof submitAndNext === "function") setTimeout(submitAndNext, 180);
+    }
+  } else {
+    // modo botões: clique no botão selecionado
+    const btns = getActiveButtons();
+    if (btns[selectedBtnIndex]) btns[selectedBtnIndex].click();
+  }
+}
+
+function updateGamepad() {
+  if (gamepadIndex === null) {
+    requestAnimationFrame(updateGamepad);
+    return;
+  }
+
+  const gp = navigator.getGamepads()[gamepadIndex];
+  if (!gp) {
+    requestAnimationFrame(updateGamepad);
+    return;
+  }
+
+  const now = Date.now();
+
+  // --------- Analógico esquerdo (navegação) ---------
+  const v = gp.axes[1]; // vertical do stick esquerdo
+  if (Math.abs(v) > 0.45 && (now - lastMoveTime) > MOVE_DELAY) {
+    if (mode === "choices" && getChoices().length > 0) {
+      if (v > 0) selectedChoiceIndex = (selectedChoiceIndex + 1) % getChoices().length;
+      else selectedChoiceIndex = (selectedChoiceIndex - 1 + getChoices().length) % getChoices().length;
+      highlightChoice(selectedChoiceIndex);
+    } else {
+      const btns = getActiveButtons();
+      if (btns.length > 0) {
+        if (v > 0) selectedBtnIndex = (selectedBtnIndex + 1) % btns.length;
+        else selectedBtnIndex = (selectedBtnIndex - 1 + btns.length) % btns.length;
+        highlightButton(selectedBtnIndex);
+      }
+    }
+    lastMoveTime = now;
+  }
+
+  // --------- Analógico direito (scroll vertical apenas) ---------
+  // eixo 3 é vertical direito na maioria dos controles; ajuste sensibilidade se necessário
+  const rightV = gp.axes[3] ?? 0;
+  if (Math.abs(rightV) > 0.15) {
+    // notar que sinais podem variar entre controles; se subir/ descer estiver invertido, multiplique por -1
+    window.scrollBy({ top: rightV * 16, behavior: "smooth" });
+  }
+
+  // --------- Botões com mapeamento pedido ---------
+  // Usamos lastButtonState para detectar bordas (pressed && !prev)
+  gp.buttons.forEach((btn, i) => {
+    const pressed = !!btn.pressed;
+    const prev = !!lastButtonState[i];
+
+    if (pressed && !prev) {
+      // botão foi pressionado agora
+      switch (i) {
+        case 0: // A
+          // se estivermos na tela de resultados, btn-review pode existir; se existir, prioriza rever
+          const reviewBtn = document.getElementById("btn-review");
+          if (reviewBtn && document.getElementById("btn-review") !== null && reviewBtn.offsetParent !== null && mode !== "choices") {
+            // se estiver na tela de resultados e modo não choices, A = Rever Perguntas
+            reviewBtn.click();
+          } else {
+            handleAButtonPress();
+          }
+          break;
+        case 1: // B
+          // botão de voltar (B)
+          const backBtn = document.querySelector(".volta") || document.querySelector(".voltar");
+          if (backBtn) backBtn.click();
+          break;
+        case 2: // X
+          // Hint
+          const hintBtn = document.getElementById("btn-hint");
+          if (hintBtn) hintBtn.click();
+          break;
+        case 3: // Y
+          // Reiniciar
+          const resetBtn = document.getElementById("btn-reset");
+          if (resetBtn) resetBtn.click();
+          break;
+        case 8: // Back (botão 'select' / back)
+          const prevBtn = document.getElementById("btn-prev");
+          if (prevBtn) prevBtn.click();
+          break;
+        case 9: // Start
+          const nextBtn = document.getElementById("btn-next");
+          if (nextBtn) nextBtn.click();
+          break;
+        default:
+          // outros botões não mapeados
+          break;
+      }
+    }
+
+    lastButtonState[i] = pressed;
+  });
+
+  requestAnimationFrame(updateGamepad);
+}
+
+requestAnimationFrame(updateGamepad);
+
+  </script>
+</body>
+</html>

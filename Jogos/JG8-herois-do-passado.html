@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Heróis do Passado — ScalForce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Poppins, system-ui, Arial, sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg, #1a0f26 100%, #140a1a 100%);
+    }
+    a{color:inherit;text-decoration:none}
+    .container{width:min(1100px, 92%); margin-inline:auto;}
+
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.3rem; color:var(--accent)}
+
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.65rem 1rem; border-radius:999px; border:1px solid transparent; transition:.2s ease; font-weight:600; cursor:pointer}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.primary:hover{background:var(--accent-700)}
+    .btn.ghost{border-color:#2c1847; background:#170c25; color:var(--muted)}
+    .btn.ghost:hover{background:#1f0f32}
+
+    main{padding:2rem 0}
+    .card{
+      background:linear-gradient(145deg, var(--card), #1a0f2a);
+      border:3px solid rgba(255,255,255,.06);
+      border-radius:22px;
+      box-shadow:0 20px 50px rgba(0,0,0,.35);
+      padding:1.5rem;
+      margin-bottom:2rem;
+    }
+
+    .game-hero{display:flex; gap:1.2rem; align-items:center; margin-bottom:1rem}
+    .game-hero img{width:96px; height:96px; border-radius:12px; object-fit:cover}
+    .game-hero h2{margin:0; font-size:1.6rem; font-weight:800}
+    .game-hero p{color:var(--muted); margin-top:.4rem}
+
+    .question{font-size:1.2rem; margin-bottom:.8rem}
+    .choices{display:grid; grid-template-columns:1fr 1fr; gap:.8rem}
+    .choice{background:#fff; color:#1b0d27; border-radius:12px; padding:.8rem 1rem; cursor:pointer; border:none; font-weight:600; text-align:left; transition:.2s ease}
+    .choice:hover{transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.25)}
+    .choice.correct{border:2px solid var(--success);}
+    .choice.wrong{border:2px solid #ff5555;}
+    .choice.disabled{pointer-events:none; opacity:.85}
+
+    .time-wrap{margin-top:1rem}
+    .time-label{font-size:.85rem; color:var(--muted); margin-bottom:.4rem}
+    .time-bar{height:10px;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden}
+    .time-bar > span{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent-700));transition:width linear}
+
+    .side{margin-top:1.5rem}
+    .score{display:flex; align-items:center; justify-content:space-between; gap:1rem}
+    .progress{height:10px;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden}
+    .progress > span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-700));width:0%}
+
+    .controls{display:flex; gap:.8rem; margin-top:1rem}
+    .controls .btn{flex:1; justify-content:center}
+
+    .result{text-align:center; padding:2rem}
+    .big-score{font-size:2.2rem; margin:1rem 0}
+
+    footer{padding:2rem 0; text-align:center; color:var(--muted); font-size:.9rem}
+
+    @media(max-width:768px){.choices{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="../Logo.png" alt="Logo">
+        <span>ScalForce</span>
+      </a>
+      <button id="backBtn" class="btn primary">Voltar</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="startScreen" class="card" style="text-align:center;">
+      <h2>Heróis do Passado</h2>
+      <p>Teste seu conhecimento sobre figuras históricas que mudaram o mundo. Clique abaixo para começar.</p>
+      <button id="startBtn" class="btn primary">Iniciar Jogo</button>
+    </div>
+
+    <div id="gameScreen" style="display:none;">
+      <div class="card">
+        <div class="question-wrap">
+          <div class="question" id="questionText">Carregando pergunta...</div>
+          <div class="choices" id="choicesList"></div>
+
+          <div class="time-wrap">
+            <div class="time-label">Tempo restante: <strong id="timeLeftLabel">20s</strong></div>
+            <div class="time-bar"><span id="timeFill"></span></div>
+          </div>
+
+          <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center">
+            <div class="meta" id="explainText"></div>
+            <div class="meta">Pergunta <span id="curIndex">0</span> / <span id="totalQ">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="card side">
+        <div class="score">
+          <div>
+            <div style="font-size:.85rem;color:var(--muted)">Pontuação</div>
+            <div style="font-size:1.4rem;font-weight:800" id="score">0</div>
+          </div>
+          <div style="flex:1">
+            <div class="progress"><span id="progressBar"></span></div>
+            <div style="font-size:.8rem;color:var(--muted);margin-top:.4rem;text-align:right" id="percentText">0%</div>
+          </div>
+        </div>
+        <div style="margin-top:.6rem;color:var(--muted);font-size:.85rem">Tempo por pergunta: <strong id="timePer">20s</strong></div>
+        <div class="controls">
+          <button id="nextBtn" class="btn primary">Próxima</button>
+          <button id="restartBtn" class="btn ghost">Reiniciar</button>
+        </div>
+        <div style="margin-top:.6rem;color:var(--muted);font-size:.85rem">Melhor pontuação: <strong id="bestScore">0</strong></div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const QUESTIONS = [
+{q: 'Quem chegou ao Brasil em 1500?', choices: ['Pedro Álvares Cabral','Cristóvão Colombo','Dom Pedro I','Vasco da Gama'], correct: 0, image: 'https://mega.ibxk.com.br/2018/04/16/cabral-16163936939062.jpg?ims=fit-in/800x500', explain: 'Pedro Álvares Cabral é o navegante que chegou ao que hoje chamamos Brasil em 1500.'},
+      {q: 'Qual desses foi um inventor brasileiro famoso por voos, como o 14-bis?', choices: ['Santos-Dumont','Irmãos Wright','Galileu Galilei','Alberto Silva'], correct: 0, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzQkRm9_DdPe5phLWPrL_j6ioNCrxUQhpn-A&s', explain: 'Alberto Santos-Dumont é um dos pioneiros da aviação e muito lembrado no Brasil.'},
+      {q: 'Quem pintou a famosa obra "Mona Lisa"?', choices: ['Leonardo da Vinci','Pablo Picasso','Michelangelo','Vincent van Gogh'], correct: 0, image: 'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQgAgPpQ3XkIvdohs4895lMgXWc2otUhvFp07duEkuDxrPzZ84uos0qsCyF1PnCS6MY6D7glQrO_smPV5zb9ip5gA', explain: 'Leonardo da Vinci foi um artista do Renascimento que pintou a Mona Lisa.'},
+      {q: 'Quem proclamou a independência do Brasil em 1822?', choices: ['Dom Pedro I','Tiradentes','Getúlio Vargas','Joaquim Nabuco'], correct: 0, image: 'https://upload.wikimedia.org/wikipedia/commons/5/5f/DpedroI-brasil-full.jpg', explain: 'Dom Pedro I proclamou a independência do Brasil em 7 de setembro de 1822.'},
+      {q: 'Quem lutou pela independência do Brasil e é lembrado como mártir?', choices: ['Tiradentes','Dom Pedro I','Getúlio Vargas','Joaquim Nabuco'], correct: 0, image: 'https://static.nationalgeographicbrasil.com/files/styles/image_3200/public/home_tiradentes_-oscar-pereira-da-silva.jpg?w=1600&h=1871&p=top', explain: 'Tiradentes é lembrado por seu papel na Inconfidência Mineira.'},
+      {q: 'Quem assinou a Lei Áurea abolindo a escravidão no Brasil?', choices: ['Princesa Isabel','Rainha Elizabeth','Maria I','Dona Leopoldina'], correct: 0, image: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Isabel_Princess_Imperial_of_Brazil_c_1887.jpg', explain: 'A Princesa Isabel assinou a Lei Áurea em 1888, abolindo a escravidão no Brasil.'},
+      {q: 'Quem foi o primeiro presidente dos Estados Unidos e líder da luta pela independência americana?', choices: ['George Washington','Abraham Lincoln','Thomas Jefferson','Benjamin Franklin'], correct: 0, image: 'https://res.cloudinary.com/aenetworks/image/upload/c_fill,ar_2,w_3840,h_1920,g_auto/dpr_auto/f_auto/q_auto:eco/v1/washington-gettyimages-640483581?_a=BAVAZGDX0', explain: 'George Washington foi comandante e o primeiro presidente dos EUA.'},
+      {q: 'Quem é lembrado por lutar pelos direitos civis e fazer um famoso discurso chamado "I Have a Dream"?', choices: ['Martin Luther King Jr.','Malcolm X','Rosa Parks','Frederick Douglass'], correct: 0, image: 'https://static.todamateria.com.br/upload/ma/rt/martinlutherking-cke.jpg', explain: 'Martin Luther King Jr. foi um líder do movimento pelos direitos civis nos EUA.'},
+      {q: 'Quem foi o primeiro homem a pisar na Lua?', choices: ['Neil Armstrong','Buzz Aldrin','Yuri Gagarin','Alan Shepard'], correct: 0, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Neil_Armstrong_pose_%28cropped_2%29.jpg/1200px-Neil_Armstrong_pose_%28cropped_2%29.jpg', explain: 'Neil Armstrong foi o primeiro humano a caminhar na Lua em 1969.'},
+      {q: 'Qual navegador português liderou a expedição que primeiro contornou o globo?', choices: ['Fernão de Magalhães','Vasco da Gama','Pedro Álvares Cabral','Bartolomeu Dias'], correct: 0, image: 'https://www.worldhistory.org/img/r/p/500x600/14249.png?v=1740618484', explain: 'Fernão de Magalhães liderou a expedição de circum-navegação iniciada em 1519.'},
+      {q: 'Quem era a famosa rainha do Egito antiga, lembrada por sua história com Roma?', choices: ['Cleópatra','Nefertiti','Hatshepsut','Merneith'], correct: 0, image: 'https://hips.hearstapps.com/hmg-prod/images/the-toilette-of-cleopatra-by-benedetto-servolini-and-news-photo-1683642847.jpg?crop=0.413xw:0.336xh;0.197xw,0.0663xh&resize=640:*', explain: 'Cleópatra VII foi a última governante ativa do Egito Ptolemaico.'},
+      {q: 'Quem foi um importante líder romano e ditador que teve grande influência na Roma antiga?', choices: ['Júlio César','Augusto','Nero','Cícero'], correct: 0, image: 'https://www.historiaemcortes.com.br/wp-content/uploads/2024/06/julio-cesar.webp', explain: 'Júlio César foi um general e líder central na transformação de Roma.'},
+      {q: 'Quem ajudou a descobrir a vacina contra a varíola?', choices: ['Edward Jenner','Louis Pasteur','Alexander Fleming','Robert Koch'], correct: 0, image: 'https://www.institutojenner.pt/wp-content/uploads/Edward-Jenner-300x363.jpg', explain: 'Edward Jenner desenvolveu a vacina contra a varíola no século XVIII.'},
+      {q: 'Quem foi a primeira mulher a viajar ao espaço?', choices: ['Valentina Tereshkova','Sally Ride','Mae Jemison','Kalpana Chawla'], correct: 0, image: 'https://www.meteoritos.com.br/wp-content/uploads/2021/06/valentina-1.jpg', explain: 'Valentina Tereshkova foi a primeira mulher no espaço em 1963.'},
+      {q: 'Quem liderou a Índia com campanhas de resistência não-violenta?', choices: ['Mahatma Gandhi','Jawaharlal Nehru','Indira Gandhi','Subhas Chandra Bose'], correct: 0, image: 'https://clebinho.pro.br/wp/wp-content/uploads/2016/01/gandhi_mahatma.jpg', explain: 'Mahatma Gandhi liderou movimentos que contribuíram para a independência da Índia.'},
+      {q: 'Quem é creditado por inventar o telefone?', choices: ['Alexander Graham Bell','Thomas Edison','Nikola Tesla','Guglielmo Marconi'], correct: 0, image: 'https://s3-eu-west-1.amazonaws.com/ngs-mw-prod/3/57/67/176753/176753.jpg', explain: 'Alexander Graham Bell demonstrou um aparelho que transmitia a voz por fio no século XIX.'},
+      {q: 'Quem foi o primeiro presidente do Brasil após a Proclamação da República?', choices: ['Marechal Deodoro da Fonseca','Getúlio Vargas','Juscelino Kubitschek','Floriano Peixoto'], correct: 0, image: 'https://s5.static.brasilescola.uol.com.br/be/2022/08/marechal-deodoro-fonseca.jpg', explain: 'Marechal Deodoro da Fonseca foi o primeiro presidente do Brasil (1889).'},
+      {q: 'Quem escreveu o livro "O Pequeno Príncipe"?', choices: ['Antoine de Saint-Exupéry','J.K. Rowling','Monteiro Lobato','Hans Christian Andersen'], correct: 0, image: 'https://images.prismic.io/maralto/ZzTR7K8jQArT0044_ANTOINEDESAINT-EXUPERY.jpg?auto=format,compress', explain: 'Antoine de Saint-Exupéry é o autor de "O Pequeno Príncipe".'},
+      {q: 'Quem lutou contra o apartheid e se tornou presidente da África do Sul?', choices: ['Nelson Mandela','Desmond Tutu','Oliver Tambo','F. W. de Klerk'], correct: 0, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Nelson_Mandela_1994.jpg/1200px-Nelson_Mandela_1994.jpg', explain: 'Nelson Mandela foi um líder central na luta contra o apartheid e presidente em 1994.'},
+      {q: 'Quem foi um monarca brasileiro que governou por muito tempo no século XIX?', choices: ['Dom Pedro II','Dom Pedro I','Dom João VI','Dom Pedro III'], correct: 0, image: 'https://static.historiadomundo.com.br/2025/04/pintura-representando-o-imperador-do-brasil-dom-pedro-ii-em-trajes-oficiais.JPG', explain: 'Dom Pedro II foi imperador do Brasil por muitos anos durante o século XIX.'}
+    ];
+
+    let shuffled=[]; let cur=0; let score=0; let total=0; let timer=null; let timeLeft=20;
+    const qText=document.getElementById('questionText');
+    const choicesList=document.getElementById('choicesList');
+    const curIndexEl=document.getElementById('curIndex');
+    const totalQEl=document.getElementById('totalQ');
+    const scoreEl=document.getElementById('score');
+    const progressBar=document.getElementById('progressBar');
+    const percentText=document.getElementById('percentText');
+    const explainText=document.getElementById('explainText');
+    const nextBtn=document.getElementById('nextBtn');
+    const restartBtn=document.getElementById('restartBtn');
+    const bestScoreEl=document.getElementById('bestScore');
+    const timePer=document.getElementById('timePer');
+    const timeLeftLabel=document.getElementById('timeLeftLabel');
+    const timeFill=document.getElementById('timeFill');
+
+    function shuffleArray(a){return a.slice().sort(()=>Math.random()-0.5)}
+
+    function startGame(){
+      document.getElementById('startScreen').style.display='none';
+      document.getElementById('gameScreen').style.display='block';
+      shuffled=shuffleArray(QUESTIONS);
+      total=shuffled.length;
+      cur=0; score=0;
+      scoreEl.textContent=score; curIndexEl.textContent=cur+1; totalQEl.textContent=total;
+      explainText.textContent=''; updateProgress(); renderQuestion(); loadBest();
+    }
+
+    function renderQuestion(){
+      if(cur>=total){showResult();return}
+      const item=shuffled[cur];
+      qText.textContent=item.q;
+      choicesList.innerHTML='';
+      curIndexEl.textContent=cur+1;
+      item.choices.forEach((c,i)=>{
+        const btn=document.createElement('button');
+        btn.className='choice';
+        btn.textContent=c;
+        btn.addEventListener('click',()=>selectChoice(btn,i===item.correct,item));
+        choicesList.appendChild(btn);
+      });
+      timeLeft=20; timeLeftLabel.textContent=timeLeft+'s';
+      timeFill.style.transition='none'; timeFill.style.width='100%'; void timeFill.offsetWidth;
+      timeFill.style.transition='width 20s linear'; setTimeout(()=>timeFill.style.width='0%',20);
+      if(timer) clearInterval(timer);
+      timer=setInterval(()=>{timeLeft--; timeLeftLabel.textContent=timeLeft+'s'; if(timeLeft<=0){clearInterval(timer); revealAnswer(item)}},1000);
+    }
+
+    function selectChoice(btn,correct,item){
+      Array.from(choicesList.children).forEach(b=>b.classList.add('disabled'));
+      if(correct){btn.classList.add('correct'); score+=10; scoreEl.textContent=score; explainText.textContent=item.explain}
+      else{btn.classList.add('wrong'); explainText.textContent='Resposta correta: '+item.choices[item.correct]+' — '+item.explain}
+      updateProgress();
+    }
+
+    function revealAnswer(item){
+      Array.from(choicesList.children).forEach((b,i)=>{b.classList.add('disabled'); if(i===item.correct) b.classList.add('correct')});
+      explainText.textContent='Tempo esgotado. Resposta correta: '+item.choices[item.correct]+' — '+item.explain;
+      updateProgress();
+    }
+
+    function updateProgress(){
+      const pct=Math.round((cur/total)*100);
+      progressBar.style.width=pct+'%'; percentText.textContent=pct+'%';
+    }
+
+    nextBtn.addEventListener('click',()=>{cur++; renderQuestion()});
+    restartBtn.addEventListener('click',()=>{location.reload()});
+
+    function showResult(){
+      document.querySelector('#gameScreen .card').innerHTML=`<div class="result"><h2>Fim do jogo</h2><div class="big-score">${score} Pontos</div><button class="btn primary" onclick="location.reload()">Jogar novamente</button></div>`;
+      const best=Number(localStorage.getItem('scalforce_herois_best')||0);
+      if(score>best) localStorage.setItem('scalforce_herois_best',score);
+    }
+
+    function loadBest(){bestScoreEl.textContent=localStorage.getItem('scalforce_herois_best')||0}
+
+    document.getElementById('backBtn').addEventListener('click',()=>{window.location.href='../ScalForce.html#categorias'});
+    document.getElementById('startBtn').addEventListener('click',startGame);
+  </script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Duelo de Baralhos — ScalForce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#100616; --primary:#5E2497; --accent:#ff8a00; --accent-700:#cc6d00; --card:#2b1943; --text:#ffffff; --muted:#bfb1d6; --glass: rgba(255,255,255,.04);
+      --success:#36c38d; --danger:#ff6b6b; --max-width:1100px; --card-w:128px; --gap:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#140a1a);color:var(--text);-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+
+    header{position:sticky;top:0;background:linear-gradient(180deg,rgba(16,6,22,.98),rgba(16,6,22,.85));border-bottom:1px solid var(--glass);z-index:20}
+    .container{width:min(var(--max-width),94%);margin:0 auto;padding:14px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:.6rem;font-weight:800}
+    .brand span{color:var(--accent);font-size:1.05rem}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:999px;border:1px solid transparent;font-weight:700;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#1b0d27}
+    .btn.ghost{background:transparent;border-color:var(--glass)}
+
+    .back-row{display:flex;align-items:center;gap:12px}
+    .back-btn{background:var(--accent);color:#1b0d27;padding:.6rem .9rem;border-radius:12px}
+
+    main{width:min(var(--max-width),94%);margin:28px auto 64px}
+    h1.page-title{font-size:1.5rem;margin:0 0 16px}
+
+    /* layout */
+    .game-shell{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
+
+    .battle{background:linear-gradient(145deg,var(--card),#1a0f2a);border-radius:18px;padding:22px;border:1px solid var(--glass);box-shadow:0 18px 45px rgba(0,0,0,.45);min-height:520px}
+
+    .players{display:flex;justify-content:space-between;gap:18px}
+    .player-card{flex:1;background:linear-gradient(180deg,#1b0f26,#160a20);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,.03);display:flex;flex-direction:column;gap:10px}
+    .player-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .player-header h3{margin:0;font-size:1rem}
+
+    .hp-wrap{display:flex;flex-direction:column;gap:6px;width:58%}
+    .hp{font-size:1.25rem;font-weight:800}
+    .hp-bar{height:12px;background:rgba(255,255,255,.04);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.03)}
+    .hp-bar > span{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--success),#7ee0b2);transition:width .35s ease}
+    .hp-value{font-size:.85rem;color:var(--muted)}
+
+    /* hand: show exactly 3 cards and provide arrows */
+    .hand-wrap{display:flex;align-items:center;gap:8px}
+    .hand-viewport{width:calc(3 * var(--card-w) + 2 * var(--gap));overflow:hidden;border-radius:10px}
+    .hand{display:flex;gap:var(--gap);overflow-x:auto;scroll-behavior:smooth;padding:8px}
+    .hand::-webkit-scrollbar{height:8px}
+    .hand::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);border-radius:999px}
+
+    .card{flex:0 0 var(--card-w);border-radius:12px;padding:12px;background:linear-gradient(135deg,#2a1645,#3a255f);border:3px solid rgba(255,255,255,.03);cursor:pointer;transition:transform .16s ease,box-shadow .16s ease}
+    .card:hover{transform:translateY(-8px) scale(1.03);box-shadow:0 20px 40px rgba(0,0,0,.45)}
+    .card .cat{font-size:.72rem;font-weight:900;color:#f7d6a8}
+    .card .name{font-weight:800;margin:.45rem 0}
+    .card .type{font-size:.78rem;color:var(--muted)}
+
+    .nav-arrow{width:38px;height:38px;border-radius:10px;border:1px solid var(--glass);background:rgba(255,255,255,.02);display:inline-grid;place-items:center;font-weight:800;cursor:pointer}
+    .nav-arrow:active{transform:translateY(1px)}
+
+    .battlefield{margin-top:18px;padding:16px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);border:1px dashed rgba(255,255,255,.03);min-height:200px;display:flex;gap:12px;align-items:center;justify-content:flex-start}
+    .battle-slot{flex:1;background:linear-gradient(180deg,rgba(255,255,255,.01),transparent);border-radius:10px;padding:12px;min-height:120px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
+
+    /* right side */
+    .side{display:flex;flex-direction:column;gap:14px}
+    .panel{background:#170c25;border-radius:12px;padding:14px;border:1px solid var(--glass)}
+    .log{height:220px;overflow:auto;font-size:.95rem;color:var(--muted);display:flex;flex-direction:column;gap:8px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.03);font-weight:700}
+
+    /* modal question */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(3,1,7,.6),rgba(3,1,7,.8));z-index:60;padding:16px}
+    .modal.show{display:flex}
+    .box{background:linear-gradient(145deg,#22112a,#2a1645);padding:18px;border-radius:16px;width:min(820px,100%);border:3px solid rgba(255,255,255,.04);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+    .q{font-size:1.15rem;margin:0 0 8px}
+    .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .opt{padding:12px;border-radius:10px;background:#170c25;border:1px solid rgba(255,255,255,.03);cursor:pointer;text-align:center;font-weight:700;color:var(--text)}
+    .opt:hover{transform:translateY(-4px)}
+    .opt.correct{outline:3px solid rgba(54,195,141,.12)}
+
+    .hint-note{font-size:.85rem;color:var(--muted);margin-top:8px}
+
+    .winner{position:fixed;left:50%;top:18%;transform:translateX(-50%);background:linear-gradient(90deg,#1b0f2d,#26133f);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,.06);z-index:70;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+
+    footer{margin-top:28px;color:var(--muted);text-align:center}
+
+    @media(max-width:980px){.game-shell{grid-template-columns:1fr} .players{flex-direction:column} .player-card{width:100%}.hand-viewport{width:100%}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="back-row">
+        <!-- logo no lugar do botão de voltar -->
+        <a class="brand" href="#">
+          <img src="Logo.png" alt="Logo ScalForce" style="height:42px;display:block;filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))">
+          <span>ScalForce</span>
+        </a>
+      </div>
+      <nav>
+        <!-- botão laranja de voltar no lugar do Home -->
+        <button class="btn back-btn" onclick="window.location.href='../ScalForce.html'">Voltar</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1 class="page-title" style="margin:0">Duelo de Baralhos — Jogo Educacional</h1>
+  </div>
+
+  <main class="container">
+
+    <section class="game-shell">
+      <div class="battle" role="application" aria-label="Área de batalha">
+        <div class="players">
+          <div class="player-card" id="playerPanel" aria-live="polite">
+            <div class="player-header">
+              <h3>Você</h3>
+              <div class="badge">Sabedoria: <strong id="playerHP">50</strong></div>
+            </div>
+            <div class="hp-wrap">
+              <div class="hp">Pontos de Sabedoria</div>
+              <div class="hp-bar" aria-hidden="true"><span id="playerHPbar" style="width:100%"></span></div>
+              <div class="hp-value"><small id="playerDef">Defesa: 0</small></div>
+            </div>
+
+            <div style="margin-top:10px;color:var(--muted);font-size:.95rem">Sua mão</div>
+
+            <!-- hand with arrows: shows only 3 cards visibly, can scroll right/left -->
+            <div class="hand-wrap">
+              <button class="nav-arrow" id="leftArrow" aria-label="Anterior" onclick="scrollHand(-1)">‹</button>
+              <div class="hand-viewport" aria-hidden="false">
+                <div class="hand" id="playerHandInner" aria-label="Mão do jogador"></div>
+              </div>
+              <button class="nav-arrow" id="rightArrow" aria-label="Próxima" onclick="scrollHand(1)">›</button>
+            </div>
+
+          </div>
+
+          <div class="player-card" id="opponentPanel">
+            <div class="player-header">
+              <h3>CPU</h3>
+              <div class="badge">Sabedoria: <strong id="opponentHP">50</strong></div>
+            </div>
+            <div class="hp-wrap">
+              <div class="hp">Pontos de Sabedoria</div>
+              <div class="hp-bar" aria-hidden="true"><span id="opponentHPbar" style="width:100%"></span></div>
+              <div class="hp-value"><small id="opponentDef">Defesa: 0</small></div>
+            </div>
+
+            <div style="margin-top:10px;color:var(--muted);font-size:.95rem">Cartas na mão</div>
+            <div style="margin-top:8px;color:var(--muted);font-size:.95rem">Quantidade: <strong id="opponentCount">4</strong></div>
+          </div>
+        </div>
+
+        <div class="battlefield" id="battlefield" aria-live="polite">
+          <div class="battle-slot" id="battleSlotA">Aguardando jogada...</div>
+        </div>
+
+      </div>
+
+      <aside class="side" aria-label="Controles e log">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Turno:</strong> <span id="turnLabel">Seu</span></div>
+            <div class="controls">
+              <button class="btn primary" id="btnDraw">Comprar</button>
+              <button class="btn primary" id="btnEnd">Terminar Turno</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <strong>Log</strong>
+          <div class="log" id="log" role="log" aria-live="polite"></div>
+        </div>
+
+        <div class="panel">
+          <strong>Instruções rápidas</strong>
+          <ol style="margin:.6rem 0 .2rem;padding-left:1.1rem;color:var(--muted)">
+            <li>Clique numa carta da sua mão para tentar ativá-la respondendo uma pergunta.</li>
+            <li>Acertou → efeito aplicado (dano, defesa, compra, etc.).</li>
+            <li>Errou → carta descartada sem efeito.</li>
+            <li>Quem zerar o oponente vence.</li>
+          </ol>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <!-- modal pergunta -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true">
+    <div class="box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong id="modalTitle">Responder para ativar</strong>
+        <div><button class="btn ghost" id="btnHint">Dica do Mestre</button></div>
+      </div>
+      <p class="q" id="qText">Pergunta aparece aqui</p>
+      <div class="opts" id="opts"></div>
+      <div class="hint-note" id="hintNote"></div>
+      <div style="margin-top:12px;text-align:right;color:var(--muted)"><button class="btn ghost" id="btnClose">Fechar</button></div>
+    </div>
+  </div>
+
+  <div id="winner" class="winner" style="display:none"></div>
+
+  <script>
+    /* ===== data: cartas (amostra) ===== */
+    const CARDS = [
+      {id:1,cat:'Matemática',name:'Somando Ideias',type:'ataque',q:{text:'Quanto é 7 + 8?','opts':['13','14','15','12'],a: '13'},effect:c=>{applyDamage(1,6)}},
+      {id:2,cat:'Matemática',name:'Formas Mágicas',type:'defesa',q:{text:'Qual figura tem 4 lados iguais e ângulos retos?','opts':['Triângulo','Quadrado','Losango','Retângulo'],a:'Quadrado'},effect:c=>{addDefense(c.owner,3)}},
+      {id:3,cat:'Matemática',name:'Divisão Relâmpago',type:'ataque',q:{text:'12 dividido por 3 é igual a...?','opts':['3','4','6','2'],a:'4'},effect:c=>{discardFromHand(1,1)}},
+      {id:4,cat:'Português',name:'Plural das Palavras',type:'ataque',q:{text:'Qual é o plural de "pão"?','opts':['pãos','pães','paos','pãeses'],a:'pães'},effect:c=>{applyDamage(1,4);drawCard(c.owner,1)}},
+      {id:5,cat:'Português',name:'Sílaba Secreta',type:'defesa',q:{text:'Qual é a sílaba inicial da palavra "banana"?','opts':['ba','na','an','ban'],a:'ba'},effect:c=>{blockNext(c.owner)}},
+      {id:6,cat:'Português',name:'Acento Poderoso',type:'cura',q:{text:'Qual destas palavras precisa de acento: "cafe", "bola", "sol"?','opts':['cafe','bola','sol','nenhuma'],a:'cafe'},effect:c=>{heal(c.owner,5)}},
+      {id:7,cat:'Ciências',name:'Planeta Azul',type:'ataque',q:{text:'Qual planeta chamamos de Planeta Azul?','opts':['Marte','Terra','Júpiter','Vênus'],a:'Terra'},effect:c=>{applyDamage(1,5)}},
+      {id:8,cat:'Ciências',name:'O Corpo Humano',type:'defesa',q:{text:'Quantos dedos temos nas mãos juntas?','opts':['8','10','18','20'],a:'10'},effect:c=>{addDefense(c.owner,4)}},
+      {id:9,cat:'Ciências',name:'Animais Vertebrados',type:'ataque',q:{text:'Um peixe é vertebrado ou invertebrado?','opts':['vertebrado','invertebrado','nenhum','ambos'],a:'vertebrado'},effect:c=>{applyDamage(1,2)}},
+      {id:10,cat:'História',name:'Heróis do Brasil',type:'ataque',q:{text:'Quem foi Pedro Álvares Cabral?','opts':['Um jogador','Um navegador','Um cientista','Um rei'],a:'Um navegador'},effect:c=>{applyDamage(1,4);discardFromHand(1,1)}},
+      {id:11,cat:'História',name:'Castelos Antigos',type:'defesa',q:{text:'Onde moravam os reis na Idade Média?','opts':['Casas','Castelos','Apartamentos','Cabanas'],a:'Castelos'},effect:c=>{addDefense(c.owner,3)}},
+      {id:12,cat:'História',name:'Máquinas do Tempo',type:'ataque',q:{text:'O que foi inventado primeiro: a roda ou o avião?','opts':['Avião','Roda','Computador','Relógio'],a:'Roda'},effect:c=>{drawCard(c.owner,1)}},
+      {id:13,cat:'Geografia',name:'Continentes do Mundo',type:'ataque',q:{text:'Quantos continentes existem?','opts':['5','6','7','8'],a:'7'},effect:c=>{applyDamage(1,6)}},
+      {id:14,cat:'Geografia',name:'Pontos Cardeais',type:'buff',q:{text:'Qual é o oposto do Norte?','opts':['Leste','Sul','Oeste','Norte'],a:'Sul'},effect:c=>{heal(c.owner,5)}},
+      {id:15,cat:'Geografia',name:'Rio Gigante',type:'ataque',q:{text:'Qual é o maior rio do Brasil?','opts':['Amazonas','São Francisco','Tocantins','Paraná'],a:'Amazonas'},effect:c=>{discardFromHand(1,1)}},
+      {id:16,cat:'Especial',name:'Curinga da Sabedoria',type:'special',q:{text:'Curinga - permite re-tentar uma pergunta errada.','opts':['Usar'],a:'Usar'},effect:c=>{/* handled */}},
+      {id:17,cat:'Especial',name:'Troca Rápida',type:'special',q:{text:'Troque até 2 cartas da mão por novas.','opts':['Trocar'],a:'Trocar'},effect:c=>{/* handled */}},
+      {id:18,cat:'Especial',name:'Escudo do Conhecimento',type:'special',q:{text:'Escudo: anula o próximo ataque.','opts':['Ativar'],a:'Ativar'},effect:c=>{/* handled */}},
+      { id:19, cat:'Matemática', name:'Multiplicação Mágica', type:'ataque',
+        q:{ text:'Quanto é 6 × 7?', opts:['42','36','48','40'], a:'42' },
+        effect:c=>{ applyDamage(1,5) }
+      },
+      { id:20, cat:'Matemática', name:'Dobro e Metade', type:'buff',
+        q:{ text:'Qual é o dobro de 9?', opts:['18','17','19','20'], a:'18' },
+        effect:c=>{ drawCard(c.owner,1) }
+      },
+      { id:21, cat:'Matemática', name:'Subtração Rápida', type:'ataque',
+        q:{ text:'15 - 7 = ?', opts:['6','8','9','7'], a:'8' },
+        effect:c=>{ applyDamage(1,4) }
+      },
+      { id:22, cat:'Português', name:'Verbo Ação', type:'ataque',
+        q:{ text:'Qual o infinitivo do verbo "fale"?', opts:['Falar','Falando','Falo','Falou'], a:'Falar' },
+        effect:c=>{ applyDamage(1,3) }
+      },
+      { id:23, cat:'Português', name:'Sinônimo Amigo', type:'buff',
+        q:{ text:'Qual é um sinônimo de "feliz"?', opts:['Triste','Contente','Bravo','Calmo'], a:'Contente' },
+        effect:c=>{ drawCard(c.owner,1) }
+      },
+      { id:24, cat:'Português', name:'Ortografia Certa', type:'cura',
+        q:{ text:'Como se escreve corretamente: "exceção" ou "execessão"?', opts:['exceção','execessão','excessao','execassao'], a:'exceção' },
+        effect:c=>{ heal(c.owner,3) }
+      },
+      { id:25, cat:'Ciências', name:'Estados da Água', type:'ataque',
+        q:{ text:'Água no estado sólido é chamada de?', opts:['Gelo','Vapor','Líquido','Neve'], a:'Gelo' },
+        effect:c=>{ applyDamage(1,3) }
+      },
+      { id:26, cat:'Ciências', name:'Fotossíntese', type:'defesa',
+        q:{ text:'Onde ocorre principalmente a fotossíntese nas plantas?', opts:['Raiz','Folha','Flor','Semente'], a:'Folha' },
+        effect:c=>{ addDefense(c.owner,2) }
+      },
+      { id:27, cat:'Ciências', name:'Planeta Vizinho', type:'ataque',
+        q:{ text:'Qual planeta é o mais próximo do Sol?', opts:['Mercúrio','Vênus','Terra','Marte'], a:'Mercúrio' },
+        effect:c=>{ applyDamage(1,4) }
+      },
+      { id:28, cat:'História', name:'Independência do Brasil', type:'ataque',
+        q:{ text:'Em que ano o Brasil declarou sua independência?', opts:['1808','1822','1889','1815'], a:'1822' },
+        effect:c=>{ drawCard(c.owner,1) }
+      },
+      { id:29, cat:'História', name:'Berço Industrial', type:'ataque',
+        q:{ text:'Onde começou a Revolução Industrial?', opts:['China','Inglaterra','França','EUA'], a:'Inglaterra' },
+        effect:c=>{ applyDamage(1,4) }
+      },
+      { id:30, cat:'Geografia', name:'Capital Oficial', type:'defesa',
+        q:{ text:'Qual é a capital do Brasil?', opts:['São Paulo','Brasília','Rio de Janeiro','Salvador'], a:'Brasília' },
+        effect:c=>{ addDefense(c.owner,2) }
+      },
+      { id:31, cat:'Geografia', name:'Clima da Amazônia', type:'cura',
+        q:{ text:'Qual é a zona climática predominante na Amazônia?', opts:['Desértica','Equatorial','Temperada','Polar'], a:'Equatorial' },
+        effect:c=>{ heal(c.owner,4) }
+      },
+      { id:32, cat:'Especial', name:'Dica do Mestre Avançada', type:'special',
+        q:{ text:'Use esta carta para obter 2 dicas em uma pergunta.', opts:['Usar'], a:'Usar' },
+        effect:c=>{/* tratado na lógica do jogo: permita 2 dicas */}
+      },
+      { id:33, cat:'Especial', name:'Roubo Rápido', type:'special',
+        q:{ text:'Ativa e rouba 1 carta da mão do oponente (se houver).', opts:['Ativar'], a:'Ativar' },
+        effect:c=>{
+          try{
+            if(c.owner===0){ if(state.opponentHand.length){ state.playerHand.push(state.opponentHand.shift()); log('Você roubou 1 carta do oponente.'); } }
+            else { if(state.playerHand.length){ state.opponentHand.push(state.playerHand.shift()); log('CPU roubou 1 carta sua.'); } }
+          }catch(e){ console.error(e); }
+        }
+      },
+      { id:34, cat:'Matemática', name:'Frações Fáceis', type:'ataque',
+        q:{ text:'Metade de 18 é?', opts:['8','9','10','11'], a:'9' },
+        effect:c=>{ applyDamage(1,4) }
+      },
+      { id:35, cat:'Português', name:'Sílaba Final', type:'buff',
+        q:{ text:'Qual é a última sílaba da palavra "escola"?', opts:['es','co','la','cola'], a:'la' },
+        effect:c=>{ addDefense(c.owner,2) }
+      }
+    ];
+
+    /* ===== estado do jogo ===== */
+    let state = {deck:[], discard:[], playerHand:[], opponentHand:[], playerHP:50, opponentHP:50, playerDef:0, opponentDef:0, turn:0, pendingRetry:null, lastPlay:null};
+
+    /* util */
+    function randShuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+    function log(msg){const el=document.getElementById('log'); const node = document.createElement('div'); node.innerHTML = msg; el.prepend(node);} // newest on top
+
+    /* setup */
+    function startGame(){
+      state.deck = randShuffle(CARDS.concat(CARDS)); // duplicate to increase size
+      state.discard = [];
+      state.playerHP = 50; state.opponentHP = 50; state.playerDef = 0; state.opponentDef = 0; state.turn=0; state.pendingRetry=null; state.lastPlay=null;
+      state.playerHand = []; state.opponentHand = [];
+      for(let i=0;i<4;i++){ drawCard(0,1); drawCard(1,1); }
+      renderAll(); log('<strong>Jogo iniciado.</strong> Boa sorte!');
+    }
+
+    function drawCard(owner,qty=1){
+      for(let i=0;i<qty;i++){
+        if(state.deck.length===0){state.deck=randShuffle(state.discard); state.discard=[]}
+        const c = state.deck.shift(); if(!c) return;
+        const clone = Object.assign({},c);
+        if(owner===0) state.playerHand.push(clone); else state.opponentHand.push(clone);
+      }
+      updateCounts(); renderHands();
+    }
+
+    function updateCounts(){document.getElementById('opponentCount').textContent = state.opponentHand.length}
+
+    function renderHands(){
+      const ph = document.getElementById('playerHandInner'); ph.innerHTML = '';
+      state.playerHand.forEach((c,i)=>{
+        const d = document.createElement('div'); d.className='card'; d.tabIndex=0;
+        d.innerHTML=`<div class="cat">${c.cat}</div><div class="name">${c.name}</div><div class="type">${c.type}</div>`;
+        d.onclick = ()=> onPlayerPlay(i);
+        ph.appendChild(d);
+      });
+      updateHP();
+      // update arrow visibility
+      setTimeout(updateArrows,120);
+    }
+
+    function updateArrows(){ const inner = document.getElementById('playerHandInner'); const left = document.getElementById('leftArrow'); const right = document.getElementById('rightArrow'); if(!inner) return; left.style.opacity = inner.scrollLeft>5? '1':'0.45'; right.style.opacity = (inner.scrollWidth - inner.clientWidth - inner.scrollLeft)>5? '1':'0.45'; }
+
+    function renderAll(){ renderHands(); updateHP(); updateBattlefield(); document.getElementById('turnLabel').textContent = state.turn===0? 'Seu':'CPU'; }
+
+    function updateHP(){ document.getElementById('playerHP').textContent = state.playerHP; document.getElementById('opponentHP').textContent = state.opponentHP; document.getElementById('playerDef').textContent = 'Defesa: '+state.playerDef; document.getElementById('opponentDef').textContent = 'Defesa: '+state.opponentDef; const pPct = Math.max(0,(state.playerHP/50)*100); const oPct = Math.max(0,(state.opponentHP/50)*100); document.getElementById('playerHPbar').style.width = pPct+'%'; document.getElementById('opponentHPbar').style.width = oPct+'%'; }
+
+    function updateBattlefield(){ const el = document.getElementById('battleSlotA'); el.innerHTML = '';
+      if(state.lastPlay){ el.innerHTML = `<div style="font-weight:800">${state.lastPlay.owner===0?'Você':'CPU'}</div><div style="color:var(--muted);margin-top:6px">${state.lastPlay.name} (${state.lastPlay.cat})</div>`; } else { el.innerHTML = '<div style="text-align:center;color:var(--muted)">Aguardando jogada...</div>' }
+    }
+
+    /* gameplay interactions */
+    function onPlayerPlay(index){ if(state.turn!==0) return; const card = state.playerHand[index]; openQuestion(card,0,index); }
+
+    function openQuestion(card,owner,handIndex){
+      const modal = document.getElementById('modal'); modal.classList.add('show'); document.getElementById('modalTitle').textContent = `Ativar: ${card.name}`; document.getElementById('qText').textContent = card.q && card.q.text ? card.q.text : 'Sem pergunta'; const optsEl = document.getElementById('opts'); optsEl.innerHTML=''; (card.q.opts || ['Ok']).forEach(opt =>{ const o = document.createElement('button'); o.className='opt'; o.textContent = opt; o.onclick = ()=>{ answerQuestion(card, opt, owner, handIndex); }; optsEl.appendChild(o); }); document.getElementById('btnHint').onclick = ()=>{ provideHint(card); };
+      document.getElementById('btnClose').onclick = ()=>{ closeModal(); };
+      document.getElementById('hintNote').textContent = '';
+    }
+
+    function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+
+    function provideHint(card){ if(!card.q || !card.q.a) return; const correct = card.q.a; document.getElementById('hintNote').textContent = `Dica: a resposta começa com \"${String(correct).charAt(0)}\".`; log(`<em>Dica solicitada</em>: começa com \"${String(correct).charAt(0)}\".`); }
+
+    function answerQuestion(card,choice,owner,handIndex){ closeModal(); const correct = (card.q && card.q.a) ? card.q.a : null; if(correct && String(choice).toLowerCase() === String(correct).toLowerCase()){ log(`${owner===0?'Você':'CPU'} acertou: <strong>${card.name}</strong>`); const played = Object.assign({owner},card); state.lastPlay = played; if(card.type==='special'){ if(card.name==='Curinga da Sabedoria'){ state.pendingRetry = {owner,card}; log('Curinga ativado — poderá re-tentar uma pergunta errada.'); } if(card.name==='Troca Rápida'){ swapFromHand(owner,2); } if(card.name==='Escudo do Conhecimento'){ if(owner===0) state.playerDef += 6; else state.opponentDef += 6; } } else { try{ card.effect(played); } catch(e){ console.error(e); } } if(owner===0) state.playerHand.splice(handIndex,1); else state.opponentHand.splice(handIndex,1); state.discard.push(card); renderAll(); checkEnd(); } else { log(`${owner===0?'Você':'CPU'} errou a pergunta: <em>${choice}</em>. Carta descartada.`); if(owner===0) { state.playerHand.splice(handIndex,1); } else { state.opponentHand.splice(handIndex,1); } state.discard.push(card); renderAll(); } if(owner===0){ endTurn(); } }
+
+    function applyDamage(targetIndex,amount){ if(amount<=0) return; if(targetIndex===1){ // target is opponent
+        let dmg = amount - state.opponentDef; if(dmg<0) dmg=0; state.opponentDef = Math.max(0,state.opponentDef-dmg); state.opponentHP = Math.max(0,state.opponentHP - dmg); log(`CPU recebeu ${dmg} de dano.`); } else { let dmg = amount - state.playerDef; if(dmg<0) dmg=0; state.playerDef = Math.max(0,state.playerDef-dmg); state.playerHP = Math.max(0,state.playerHP - dmg); log(`Você recebeu ${dmg} de dano.`); } updateHP(); }
+
+    function addDefense(owner,amt){ if(owner===0){ state.playerDef += amt; log(`Você ganhou +${amt} de defesa.`); } else { state.opponentDef += amt; log(`CPU ganhou +${amt} de defesa.`); } updateHP(); }
+    function heal(owner,amt){ if(owner===0){ state.playerHP = Math.min(50,state.playerHP+amt); log(`Você recuperou +${amt} pontos.`); } else { state.opponentHP = Math.min(50,state.opponentHP+amt); log(`CPU recuperou +${amt} pontos.`); } updateHP(); }
+    function discardFromHand(targetOwner,qty){ if(targetOwner===1){ for(let i=0;i<qty;i++){ if(state.opponentHand.length) state.discard.push(state.opponentHand.splice(0,1)[0]); } log(`CPU perdeu ${qty} carta(s).`); } else { for(let i=0;i<qty;i++){ if(state.playerHand.length) state.discard.push(state.playerHand.splice(0,1)[0]); } log(`Você perdeu ${qty} carta(s).`); } renderHands(); updateCounts(); }
+    function blockNext(owner){ if(owner===0){ state.playerDef += 6; log('Você bloqueou o próximo ataque.'); } else { state.opponentDef += 6; log('CPU bloqueou o próximo ataque.'); } updateHP(); }
+    function swapFromHand(owner,qty){ if(owner===0){ for(let i=0;i<qty;i++){ if(state.playerHand.length) state.discard.push(state.playerHand.shift()); drawCard(0,1); } log('Você trocou cartas.'); } else { for(let i=0;i<qty;i++){ if(state.opponentHand.length) state.discard.push(state.opponentHand.shift()); drawCard(1,1); } log('CPU trocou cartas.'); } renderHands(); }
+
+    function checkEnd(){ if(state.playerHP<=0 || state.opponentHP<=0){ const w = state.playerHP<=0? 'CPU':'Você'; const el = document.getElementById('winner'); el.style.display='block'; el.innerHTML = `<strong style=\"font-size:1.1rem\">${w} venceu o duelo!</strong><div style=\"margin-top:8px\"><button class='btn primary' onclick='restart()'>Jogar novamente</button> <button class='btn ghost' onclick='location.href=\"ScalForce.html\"'>Voltar</button></div>`; log(`<strong>${w} venceu o jogo.</strong>`); } }
+
+    function endTurn(){ state.turn = state.turn===0?1:0; document.getElementById('turnLabel').textContent = state.turn===0? 'Seu':'CPU'; renderAll(); if(state.turn===1) setTimeout(cpuPlay,900); }
+
+    function cpuPlay(){ if(state.opponentHand.length===0){ drawCard(1,1); endTurn(); return; } const i = Math.floor(Math.random()*state.opponentHand.length); const card = state.opponentHand[i]; const success = Math.random()<0.7; if(success){ log('CPU tenta jogar: '+card.name+' (acertou)'); const played = Object.assign({owner:1},card); state.lastPlay = played; if(card.type==='special'){ if(card.name==='Escudo do Conhecimento'){ state.opponentDef += 6; } if(card.name==='Troca Rápida'){ swapFromHand(1,2); } } else { try{ card.effect(played); } catch(e){} } state.discard.push(card); state.opponentHand.splice(i,1); } else { log('CPU errou a carta: '+card.name); state.discard.push(card); state.opponentHand.splice(i,1); } renderAll(); checkEnd(); endTurn(); }
+
+    // scroll hand by one card to left/right
+    function scrollHand(dir){ const inner = document.getElementById('playerHandInner'); if(!inner) return; const card = inner.querySelector('.card'); const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 12; const step = (card? card.offsetWidth : parseInt(getComputedStyle(document.documentElement).getPropertyValue('--card-w'))) + gap; inner.scrollBy({left: dir * step, behavior: 'smooth'}); setTimeout(updateArrows,260); }
+
+    // attach small wheel/drag support for convenience
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const inner = document.getElementById('playerHandInner'); if(!inner) return;
+      let isDown=false, startX, scrollLeft;
+      inner.addEventListener('mousedown', (e)=>{ isDown=true; inner.classList.add('dragging'); startX = e.pageX - inner.offsetLeft; scrollLeft = inner.scrollLeft; });
+      window.addEventListener('mouseleave', ()=>{ isDown=false; inner.classList.remove('dragging'); });
+      window.addEventListener('mouseup', ()=>{ isDown=false; inner.classList.remove('dragging'); updateArrows(); });
+      inner.addEventListener('mousemove', (e)=>{ if(!isDown) return; e.preventDefault(); const x = e.pageX - inner.offsetLeft; const walk = (x - startX) * 1; inner.scrollLeft = scrollLeft - walk; });
+      inner.addEventListener('scroll', updateArrows);
+    });
+
+    document.getElementById('btnDraw').addEventListener('click', ()=>{ if(state.turn!==0) return; drawCard(0,1); });
+    document.getElementById('btnEnd').addEventListener('click', ()=>{ if(state.turn!==0) return; endTurn(); });
+    document.getElementById('modal').addEventListener('click', (e)=>{ if(e.target.id==='modal') closeModal(); });
+
+    function restart(){ document.getElementById('winner').style.display='none'; startGame(); }
+
+    // init
+    startGame();
+  </script>
+</body>
+</html>
