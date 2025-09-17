@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SCALFORCE — Jogos Educacionais</title>
+  <meta name="description" content="SCALFORCE: plataforma de jogos educacionais divertidos para aprender Matemática, História, Ciências, Português, Estratégia, Lógica e Cartas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+      --font-scale: 1;
+    }
+    /* Accessibility theme overrides (applied via body classes) */
+    body.a11y-high-contrast {
+      --bg: #000000;
+      --primary: #ffffff;
+      --accent: #ffff00;
+      --text: #ffffff;
+      --muted: #ffffff;
+      --card: #000000;
+    }
+    body.a11y-protanopia { /* protanopia-friendly palette (blues/yellows) */
+      --primary: #2b63b6;
+      --accent: #ffd54a;
+      --card: #123056;
+    }
+    body.a11y-deuteranopia {
+      --primary: #2b63b6;
+      --accent: #ffb74d;
+      --card: #123042;
+    }
+    body.a11y-tritanopia {
+      --primary: #2b63b6;
+      --accent: #ffb74d;
+      --card: #0f2140;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: linear-gradient(180deg, #1a0f26 100%, var(--bg) 100%);
+      font-size: calc(16px * var(--font-scale));
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1200px, 92%); margin-inline:auto}
+
+    header{
+      position:sticky; top:0; z-index:30; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.6rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.1rem; color:var(--accent)}
+    .nav-actions{display:flex; align-items:center; gap:.6rem}
+
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.55rem .8rem; border-radius:999px; border:1px solid transparent; transition:.15s ease; font-weight:600; cursor:pointer}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.primary:hover{filter:brightness(.95)}
+    .btn.ghost{border-color:  #2c1847; background:#170c25}
+    .btn.ghost:hover{background:#1f0f32}
+    .nav-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-user img.avatar {
+  width: 40px;          /* tamanho final do círculo */
+  height: 40px;         /* mesmo valor que width */
+  border-radius: 50%;   /* transforma em círculo */
+  object-fit: cover;    /* recorta a imagem para preencher o círculo */
+  border: 2px solid rgba(255,255,255,0.08); /* leve contorno opcional */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);    /* sombra sutil */
+}
+
+    /* Accessibility toolbar */
+    .a11y-toolbar{display:flex; gap:.5rem; align-items:center}
+    .a11y-panel{position:fixed; right:16px; top:72px; z-index:60; background:linear-gradient(180deg,#0f0b16,#1a0f26); border:1px solid rgba(255,255,255,.06); padding:12px; border-radius:12px; min-width:260px; box-shadow:0 20px 40px rgba(0,0,0,.5); display:none}
+    .a11y-panel.open{display:block}
+    .a11y-panel h4{margin:0 0 8px 0; font-size:0.95rem}
+    .a11y-row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:6px 0}
+    .a11y-controls{display:flex; flex-direction:column; gap:6px}
+
+    .hero{display:grid; grid-template-columns:1.25fr 1fr; gap:2rem; align-items:center; padding:1.6rem 0 1rem}
+    .hero h1{font-size:clamp(1.6rem, 3.6vw, 2.4rem); line-height:1.1; margin:0 0 .6rem; font-weight:800}
+    .hero p{margin:.2rem 0 1.4rem; color:var(--muted)}
+    .hero-card{background:linear-gradient(145deg, var(--card), #1a0f2a); border:3px solid rgba(255,255,255,.04); padding:1.25rem; border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.35)}
+    .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:1rem}
+    .stat{background:#170c25; border:1px solid #2c1847; border-radius:10px; padding:.9rem; text-align:center}
+    .stat b{display:block; font-size:1.05rem}
+
+    .searchbar{display:flex; gap:.6rem; margin-top:1rem}
+    .searchbar input{flex:1; background:#160c23; border:1px solid #2a1645; color:var(--text); padding:.7rem .9rem; border-radius:12px; outline:none}
+
+    .section{padding:1.2rem 0}
+    .section h2{font-size:1.2rem; margin:0 0 .8rem}
+    .chips{display:flex; gap:.6rem; flex-wrap:wrap}
+    .chip{padding:.45rem .7rem; border-radius:999px; background:#ff8800; border:1px solid #6d36b0; cursor:pointer; font-weight:700}
+    .chip.active, .chip:hover{background:var(--primary); border-color:#6d36b0}
+
+    .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1rem}
+    .card{
+      position:relative; overflow:hidden; border-radius:12px; background:#301b52; border:3px solid rgba(255, 255, 255, 0.04);
+      transition:.15s ease; box-shadow:0 10px 30px rgba(0,0,0,.25); display:flex; flex-direction:column;
+    }
+    .card:focus-within { outline:3px solid var(--accent); }
+    .card:hover{transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,.35)}
+    .thumb{aspect-ratio:16/9; background:linear-gradient(135deg, var(--primary), #2a1645); display:grid; place-items:center}
+    .thumb img{width:100%;height:100%;object-fit:cover;}
+    .content{padding:0.9rem; flex:1; display:flex; flex-direction:column; justify-content:space-between}
+    .tag{font-size:.72rem; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:#f7d6a8}
+    .title{margin:.4rem 0 .6rem; font-weight:700; font-size:1rem}
+    .meta{display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:.85rem}
+    .play{position:absolute; right:.8rem; top:.8rem; background:var(--accent); color:#1b0d27; border-radius:999px; padding:.45rem .7rem; font-weight:800}
+
+    .card-actions{display:flex; gap:8px; margin-top:8px}
+    .icon-btn{padding:.45rem .6rem; border-radius:10px; border:1px solid rgba(255,255,255,.06); background:transparent; cursor:pointer; font-weight:700}
+
+    .cta{margin:1.6rem 0; text-align:center; padding:1rem; background:linear-gradient(90deg, #1b0f2d, #26133f); border:1px solid rgba(255,255,255,.06); border-radius:12px}
+
+    footer{padding:1.6rem 0 2rem; color:var(--muted)}
+    footer .brand span{color:var(--accent)}
+    .footgrid{display:grid; grid-template-columns:2fr 1fr 1fr; gap:1rem}
+    .footgrid a{display:block; padding:.25rem 0; color:var(--muted)}
+
+    @media (max-width: 960px){
+      .hero{grid-template-columns:1fr;}
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .footgrid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width: 560px){
+      .grid{grid-template-columns:1fr}
+      .nav-actions{display:none}
+      .a11y-panel{right:8px; left:8px}
+    }
+
+    /* focus visible */
+    :focus{outline:none}
+    :focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:6px}
+
+    /* Libras modal */
+    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; z-index:80; align-items:center; justify-content:center}
+    .modal-backdrop.open{display:flex}
+    .modal{background:var(--card); padding:14px; border-radius:12px; max-width:880px; width:96%; color:var(--text); box-shadow:0 20px 40px rgba(0,0,0,.5)}
+    .modal header{display:flex; justify-content:space-between; align-items:center; gap:12px}
+    .modal .body{margin-top:8px; display:grid; gap:10px}
+    .modal iframe{width:100%; height:360px; border-radius:8px; border:0}
+
+    /* small helpers */
+    .sr-only{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap;border:0;padding:0;margin:-1px}
+
+    /* Estilo para o botão Ler nos cards */
+.card-actions .icon-btn {
+  background: #ff8a00; /* fundo laranja */
+  color: #1b0d27;      /* texto branco */
+  font-weight: 700;
+  border: none;        /* remove borda */
+  border-radius: 8px;
+}
+
+.card-actions .icon-btn:hover {
+  background: #ff8a00; /* tom mais escuro no hover */
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav" role="banner">
+      <a class="brand" href="ScalForce.html" aria-label="Ir para página inicial">
+        <img src="Logo.png" alt="Logo SCALFORCE" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+
+      <nav class="nav-actions" aria-label="Ações principais">
+        <a class="btn ghost" href="sobre.html">Sobre</a>
+        <a class="btn ghost" href="contato.html">Contato</a>
+
+        <!-- Accessibility toolbar toggle -->
+        <div class="a11y-toolbar" role="region" aria-label="Acessibilidade">
+          <button id="a11yToggle" class="btn" aria-expanded="false" aria-controls="a11yPanel" title="Abrir opções de acessibilidade">Acessibilidade</button>
+        </div>
+
+        <!-- Login area will be injected here -->
+        <div id="loginArea"></div>
+      </nav>
+      
+    </div>
+  </header>
+
+  <!-- Accessibility panel -->
+  <div id="a11yPanel" class="a11y-panel" role="dialog" aria-modal="false" aria-label="Painel de acessibilidade">
+    <h4>Configurações de Acessibilidade</h4>
+    <div class="a11y-controls">
+      <div class="a11y-row">
+        <label for="readAllBtn">Leitura em voz alta</label>
+        <div>
+          <button id="readAllBtn" class="btn">Ler página</button>
+          <button id="stopReadBtn" class="btn">Parar</button>
+        </div>
+      </div>
+
+      <div class="a11y-row">
+        <label for="fontSize">Tamanho da fonte</label>
+        <select id="fontSize" aria-label="Tamanho da fonte" class="btn">
+          <option value="0.9">Pequena</option>
+          <option value="1" selected>Média</option>
+          <option value="1.15">Grande</option>
+          <option value="1.3">Muito grande</option>
+        </select>
+      </div>
+
+      <div class="a11y-row">
+        <label for="highContrast">Alto contraste</label>
+        <input id="highContrast" type="checkbox" />
+      </div>
+
+      <div>
+        <label>Paleta para daltônicos</label>
+        <div style="display:flex; gap:6px; margin-top:6px;">
+          <button class="btn" data-theme="none">Padrão</button>
+          <button class="btn" data-theme="protanopia">Protanopia</button>
+          <button class="btn" data-theme="deuteranopia">Deuteranopia</button>
+          <button class="btn" data-theme="tritanopia">Tritanopia</button>
+        </div>
+      </div>
+
+      <hr style="opacity:.08;border:none;height:1px;margin:8px 0;background:linear-gradient(90deg,#fff2,#0002)" />
+
+      <div>
+       
+        </div>
+      </div>
+
+      <div style="font-size:.85rem; color:var(--muted); margin-top:8px;">
+        Preferências salvas localmente no seu navegador.
+      </div>
+    </div>
+  </div>
+
+  <!-- Libras / Vídeos modal -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <header>
+        <strong>Vídeos em Libras e Áudio Simplificado</strong>
+        <div>
+          <button id="closeModal" class="btn">Fechar</button>
+        </div>
+      </header>
+      <div class="body" id="modalBody">
+        <p style="margin:0;color:var(--muted)">Aqui você pode incorporar vídeos explicativos em Libras (substitua os links abaixo pelos seus vídeos).</p>
+        <!-- Example placeholders — substitua os src pelos seus vídeos -->
+        <div>
+          <label style="font-weight:700;margin-top:6px">Exemplo: Introdução ao jogo "Tetris"</label>
+          <iframe src="https://www.youtube.com/embed/VIDEO_ID_1" title="Vídeo Libras - Tetris" allowfullscreen aria-hidden="false"></iframe>
+          <div style="display:flex; gap:8px; margin-top:6px">
+            <button class="btn icon-btn" data-simplified-text="Este jogo se chama Tetris. O objetivo é encaixar as peças para completar linhas.">Ouvir áudio simplificado</button>
+            <button class="btn icon-btn" data-caption="O jogo Tetris: encaixe peças para completar linhas." aria-label="Mostrar legenda">Mostrar legenda</button>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-weight:700;margin-top:6px">Exemplo: Como jogar "Quebra-Cabeça com números"</label>
+          <iframe src="https://www.youtube.com/embed/VIDEO_ID_2" title="Vídeo Libras - Quebra-Cabeça" allowfullscreen></iframe>
+          <div style="display:flex; gap:8px; margin-top:6px">
+            <button class="btn icon-btn" data-simplified-text="Resolva os números para liberar as peças. Toque nos botões para responder.">Ouvir áudio simplificado</button>
+            <button class="btn icon-btn" data-caption="Resolva os números para mover peças." aria-label="Mostrar legenda">Mostrar legenda</button>
+          </div>
+        </div>
+
+        <div id="modalCaptionArea" style="background:#0f0b16;padding:8px;border-radius:8px;color:var(--muted);display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <main class="container" id="mainContent">
+    <section class="hero" id="inicio">
+      <div>
+        <h1>Aprender jogando ficou <span style="color:var(--accent)">muito mais divertido</span>!</h1>
+        <p id="instrucao-principal">Explore jogos educativos alinhados às matérias da escola. Desafios rápidos, trilhas de conhecimento e placares para motivar os estudos.</p>
+        <div class="searchbar">
+          <input id="busca" type="search" placeholder="Buscar por jogo, tema ou matéria" aria-label="Buscar jogos" />
+          <button class="btn primary" onclick="filtrar()">Buscar</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="cont-jogos">28</b><small>Jogos</small></div>
+          <div class="stat"><b>8</b><small>Categorias</small></div>
+          <div class="stat"><b>+120k</b><small>Vizualizações</small></div>
+        </div>
+      </div>
+      <div class="hero-card" aria-hidden="false">
+        <h3 style="margin:0 0 6px">Acessibilidade rápida</h3>
+        <p style="margin:0 0 8px;color:var(--muted)">Use o botão <strong>Acessibilidade</strong> no canto superior direito para ler em voz alta, ajustar fontes e ativar temas para daltônicos.</p>
+        <div style="display:flex; gap:8px">
+          <button id="quickReadBtn" class="btn">Ler instruções</button>
+        
+        </div>
+      </div>
+    </section>
+
+    <section id="categorias" class="section" aria-label="Categorias de jogos">
+      <h2>Categorias</h2>
+      <div class="chips" id="chips" role="tablist" aria-label="Filtrar por categoria">
+        <button class="chip active" data-categoria="todas" onclick="setCategoria(this)">Todas</button>
+        <button class="chip" data-categoria="Matemática" onclick="setCategoria(this)">Matemática</button>
+        <button class="chip" data-categoria="Português" onclick="setCategoria(this)">Português</button>
+        <button class="chip" data-categoria="História" onclick="setCategoria(this)">História</button>
+        <button class="chip" data-categoria="Geografia" onclick="setCategoria(this)">Geografia</button>
+        <button class="chip" data-categoria="Ciências" onclick="setCategoria(this)">Ciências</button>
+        <button class="chip" data-categoria="Inglês" onclick="setCategoria(this)">Inglês</button>
+        <button class="chip" data-categoria="Estratégia" onclick="setCategoria(this)">Estratégia</button>
+        <button class="chip" data-categoria="Lógica" onclick="setCategoria(this)">Lógica</button>
+        <button class="chip" data-categoria="Cartas" onclick="setCategoria(this)">Cartas</button>
+        <button class="chip" data-categoria="Arcade" onclick="setCategoria(this)">Arcade</button>
+      </div>
+    </section>
+
+    <section id="jogos" class="section" aria-label="Lista de jogos">
+      <h2>JOGOS</h2>
+      <div class="grid" id="lista-jogos" aria-live="polite" aria-relevant="additions"></div>
+      <div class="cta">
+        <a href="ScalForce.html" class="btn primary">Voltar para o Início</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footgrid">
+      <div>
+        <a class="brand" href="#"><img src="Logo SCALFORCE.png" alt="Logo" onerror="this.style.display='none'"><span>SCALFORCE</span></a>
+        <p style="margin:.8rem 0 0">Jogos que transformam estudo em diversão. Aprenda, pratique e compartilhe suas conquistas!</p>
+      </div>
+      <div>
+        <h4>Informações do Site</h4>
+        <a href="BrandBook.html">Brand Book do ScalForce</a>
+        <a href="privacidade.html">Política de Privacidade</a>
+        <a href="termo.html">Termos de Uso</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+   /* ------------------------
+      Dados dos jogos
+      ------------------------ */
+   const JOGOS = [
+  {titulo:'Quebra-Cabeça com números', categoria:'Matemática', dificuldade:'Intermediário', imagem:'imagens/JG1.png',link:'Jogos/JG1-quebra_cabeca.html'},
+  {titulo:'Tabuleiro com Cálculos', categoria:'Matemática', dificuldade:'Iniciante', imagem:'imagens/JG2.png ',link:'Jogos/JG2-Tabuleiro com cálculos.html '},
+  {titulo:'Formas e Figuras', categoria:'Matemática', dificuldade:'Iniciante', imagem:'imagens/JG3.png ',link:'Jogos/JG3-formas_e_figuras.html '},
+  {titulo:'Caça-Palavras', categoria:'Português', dificuldade:'Avançado', imagem:'imagens/JG4.png ',link:'Jogos/JG4-Caça palavras.html ',controle:true},
+  {titulo:'Palavras Cruzadas', categoria:'Português', dificuldade:'Avançado', imagem:'imagens/JG5.png ',link:'Jogos/JG5-Palavras Cruzadas.html '},
+  {titulo:'Desafio Gramatical', categoria:'Português', dificuldade:'Intermediário', imagem:'imagens/JG6.png ',link:'Jogos/JG6-Desafio_gramatical.html '},
+  {titulo:'Viagem Medieval', categoria:'História', dificuldade:'Intermediário', imagem:'imagens/JG7.png ',link:'Jogos/JG7-Viagem_Medieval.html '},
+  {titulo:'Heróis do Passado', categoria:'História', dificuldade:'Avançado', imagem:'imagens/JG8.png ',link:'Jogos/JG8-herois-do-passado.html '},
+  {titulo:'Linha do Tempo', categoria:'História', dificuldade:'Avançado', imagem:'imagens/JG9.png ',link:'Jogos/JG9-linha_do_tempo.html'},
+  {titulo:'Caça ao Tesouro dos Continentes', categoria:'Geografia', dificuldade:'Avançado', imagem:'imagens/JG10.png',link:'Jogos/JG10-Caça ao Tesouro dos Continentes.html '},
+  {titulo:'Quiz das Curiosidades', categoria:'Geografia', dificuldade:'Avançado', imagem:'imagens/JG11.png',link:'Jogos/JG11-Quiz das curiosidades.html '},
+  {titulo:'Quiz de Bandeiras', categoria:'Geografia', dificuldade:'Avançado', imagem:'imagens/JG12.png',link:'Jogos/JG12-Quiz de bandeiras.html '},
+  {titulo:'Planetas e Estrelas', categoria:'Ciências', dificuldade:'Iniciante', imagem:'imagens/JG13.png ',link:'Jogos/JG13-planetas_estrelas.html ',controle:true},
+  {titulo:'Pequenos Experimentos', categoria:'Ciências', dificuldade:'Intermediário', imagem:'imagens/JG14.png ',link:'Jogos/JG14-Pequenos_Experimentos.html '},
+  {titulo:'Ecossistemas', categoria:'Ciências', dificuldade:'Intermediário', imagem:'imagens/JG15.png ',link:'Jogos/JG15-Ecossistema.html '},
+  {titulo:'Caça-Palavras em Inglês', categoria:'Inglês', dificuldade:'Avançado', imagem:'imagens/JG16.png ',link:'Jogos/JG16-Caça-Palavras em Inglês.html',controle:true},
+  {titulo:'Jogo da Memória em Inglês', categoria:'Inglês', dificuldade:'Iniciante', imagem:'imagens/JG17.png ',link:'Jogos/JG17-Jogo da memória inglês.html ',controle:true},
+  {titulo:'Complete a frase', categoria:'Inglês', dificuldade:'Intermediário', imagem:'imagens/JG18.png ',link:'Jogos/JG18-Complete a frase.html '},
+  {titulo:'Pico Checkmate', categoria:['Estratégia','Lógica'], dificuldade:'Avançado', imagem:'imagens/JG19.png ',link:'Jogos/JG19-pico-checkmate.html '},
+  {titulo:'Tower defence', categoria:['Estratégia','Matemática','Português','Ciências','História','Geografia'], dificuldade:'Intermediário', imagem:'imagens/JG20.png ',link:'Jogos/JG20-Torres-e-defesas.html ',controle:true},
+  {titulo:'Jogo da Fazenda', categoria:'Estratégia', dificuldade:'Iniciante', imagem:'imagens/JG21.png ',link:'Jogos/JG21-Jogo_da_Fazenda.html '},
+  {titulo:'Campo Minado', categoria:'Lógica', dificuldade:'Intermediário', imagem:'imagens/JG22.png ',link:'Jogos/JG22-campo_minado.html ',controle:true},
+  {titulo:'Snake Game', categoria:'Lógica', dificuldade:'Iniciante', imagem:'imagens/JG23.png ',link:'Jogos/JG23-Snake_game.html ',controle:true},
+  {titulo:'Sudoku', categoria:['Lógica','Estratégia'], dificuldade:'Intermediário', imagem:'imagens/JG24.png ',link:'Jogos/JG24-Sudoku.html '},
+  {titulo:'Conexo', categoria:['Cartas','Lógica'], dificuldade:'Intermediário', imagem:'imagens/JG25.png ',link:'Jogos/JG22-Conexo.html '},
+  {titulo:'Duelo de Baralhoes', categoria:'Cartas', dificuldade:'Iniciante', imagem:'imagens/JG26.png ',link:'Jogos/JG26-Duelo-de-baralhos.html '},
+  {titulo:'Memória matemática', categoria:['Cartas','Matemática'], difficulty:'Intermediário', imagem:'imagens/JG27.png ',link:'Jogos/JG27-Mémoria matemática.html ',controle:true},
+  {titulo:'Pac-Man', categoria:'Arcade', dificuldade:'Super avançado', imagem:'imagens/JG28.png',link:'Jogos/JG28-Menu.html',controle:true},
+  {titulo:'Tetris', categoria:'Arcade', dificuldade:'Avançado', imagem:'imagens/JG29.png',link:'Jogos/JG29-Tetris.html',controle:true},
+  {titulo:'Torre De Hanói',categoria:['Arcade','Matemática','Português','Ciências','História','Geografia'],dificuldade:'Avançado',imagem:'imagens/JG30.png',link:'Jogos/JG30-Torre De Hanoi.html'},
+  {titulo:'Flappy Bird', categoria:'Arcade', dificuldade:'Super Avançado', imagem:'imagens/JG31.png',link:'Jogos/JG31-Menu.html ',controle:true}
+];
+    const lista = document.getElementById('lista-jogos');
+    const busca = document.getElementById('busca');
+    const contJogos = document.getElementById('cont-jogos');
+
+    let categoriaAtiva = 'todas';
+
+    /* ------------------------
+       Accessibility & Speech
+       ------------------------ */
+    const synth = window.speechSynthesis;
+    let currentUtterance = null;
+
+    function speak(text, opts = {}) {
+      if (!('speechSynthesis' in window)) {
+        alert('Leitura em voz alta não suportada neste navegador.');
+        return;
+      }
+      stopSpeech();
+      const utter = new SpeechSynthesisUtterance(text);
+      if (opts.lang) utter.lang = opts.lang;
+      if (opts.rate) utter.rate = opts.rate;
+      currentUtterance = utter;
+      synth.speak(utter);
+    }
+    function stopSpeech() {
+      if (synth.speaking) synth.cancel();
+      currentUtterance = null;
+    }
+
+    // Read all important visible texts (short)
+    function readAllVisible() {
+      const title = document.querySelector('.hero h1')?.innerText || '';
+      const instr = document.getElementById('instrucao-principal')?.innerText || '';
+      const jogos = Array.from(document.querySelectorAll('#lista-jogos .card .title')).slice(0,6).map(el => el.innerText).join('. ');
+      const text = `${title}. ${instr}. Jogos: ${jogos}. Para mais, abra a lista de jogos e pressione o botão de leitura em cada jogo.`;
+      speak(text, {lang:'pt-BR', rate:1});
+    }
+
+    // Simplify text in a very simple way (naive)
+    function simplifiedText(text) {
+      if (!text) return '';
+      // Remove parentheses, multiple spaces, and very long clauses — keep first 2 sentences
+      const cleaned = text.replace(/\(.*?\)/g,'').replace(/\s+/g,' ').trim();
+      const sentences = cleaned.split(/(?<=[.!?])\s+/);
+      return sentences.slice(0,2).join(' ');
+    }
+
+    /* ------------------------
+       Render cards with read button & libras button
+       ------------------------ */
+    function cardTemplate(j){
+      const categorias = Array.isArray(j.categoria) ? j.categoria.join(', ') : j.categoria;
+      const link = j.link ? j.link.trim() : '#';
+      const img = j.imagem ? j.imagem.trim() : 'imagens/padrao.png';
+      // each card has a read button and a Libras button (which opens modal with relevant video)
+      return `
+      <article class="card" data-categoria="${categorias}" tabindex="0" role="article" aria-label="${escapeHtml(j.titulo)} - ${escapeHtml(categorias)}">
+        <a href="${link}" class="thumb" aria-hidden="false">
+          <img src="${img}" alt="${escapeHtml(j.titulo)}">
+        </a>
+        <div class="content">
+          <div>
+            <div class="tag">${escapeHtml(categorias)}</div>
+            <h3 class="title">${escapeHtml(j.titulo)}</h3>
+              <span>${j.dificuldade || 'Iniciante'}</span>
+            </div>
+              ` + (j.controle ? `<p style="font-size:.8rem; color:var(--muted); margin-top:4px;">
+              Compatibilidade com controle
+              </p>` : '') + `
+
+          <div class="card-actions" role="group" aria-label="Ações do jogo ${escapeHtml(j.titulo)}">
+            <button class="icon-btn" onclick="readCard('${escapeHtml(j.titulo)}', '${escapeHtml(categorias)}')" aria-label="Ler informações do jogo">🔊 Ler</button>
+            <a class="btn primary" href="${link}" aria-label="Abrir jogo ${escapeHtml(j.titulo)}">Jogar</a>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    function render(){
+      const termo = (busca.value || '').toLowerCase().trim();
+      const filtrados = JOGOS.filter(j => {
+        const cats = Array.isArray(j.categoria) ? j.categoria : [j.categoria];
+        const okCat = categoriaAtiva === 'todas' || cats.includes(categoriaAtiva);
+        const okBusca = !termo || j.titulo.toLowerCase().includes(termo) || cats.some(c => c.toLowerCase().includes(termo));
+        return okCat && okBusca;
+      });
+      lista.innerHTML = filtrados.map(cardTemplate).join('');
+      contJogos.textContent = filtrados.length.toString().padStart(2,'0');
+    }
+
+    function setCategoria(btn){
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      btn.classList.add('active');
+      categoriaAtiva = btn.dataset.categoria;
+      render();
+    }
+
+    function filtrar(){ render(); }
+    busca.addEventListener('input', render);
+
+    render();
+
+    /* ------------------------------
+       Login / user UI helpers
+       ------------------------------ */
+    function getCurrentUser(){ 
+      try { return JSON.parse(localStorage.getItem('scalforce_currentUser') || 'null'); } 
+      catch(e){ return null; } 
+    }
+
+    function logout(){
+      localStorage.removeItem('scalforce_currentUser');
+      updateLoginArea();
+      const tmp = document.createElement('div');
+      tmp.textContent = 'Você saiu da conta.';
+      tmp.style.position = 'fixed';
+      tmp.style.right = '16px';
+      tmp.style.top = '72px';
+      tmp.style.padding = '10px 12px';
+      tmp.style.background = 'rgba(0,0,0,0.6)';
+      tmp.style.borderRadius = '8px';
+      tmp.style.zIndex = 9999;
+      document.body.appendChild(tmp);
+      setTimeout(()=> tmp.remove(), 1600);
+    }
+
+    function updateLoginArea(){
+      const area = document.getElementById('loginArea');
+      const user = getCurrentUser();
+      if(user){
+        const avatarUrl = user.avatar || "imagens/avatar-padrao.png";
+        area.innerHTML = `
+          <div class="nav-user" role="navigation" aria-label="Usuário">
+            <div class="nav-user-info">
+              <a class="name-link" href="conta.html" title="Abrir painel de usuário">
+                ${escapeHtml(user.name.split(' ')[0])}
+              </a>
+              <button class="btn primary" onclick="logout()">Sair</button>
+            </div>
+            <img src="${avatarUrl}" alt="Avatar" class="avatar">
+          </div>
+        `;
+      } else {
+        area.innerHTML = `<a class="btn primary" href="login.html">Logar</a>`;
+      }
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
+    }
+
+    updateLoginArea();
+    window.addEventListener('storage', ()=> updateLoginArea());
+
+    /* ------------------------
+       Card read & Libras modal handling
+       ------------------------ */
+    function readCard(titulo, categorias) {
+      const text = `Jogo ${titulo}. Categoria: ${categorias}. Abra o jogo para ver instruções completas.`;
+      speak(text, {lang:'pt-BR', rate:1});
+    }
+
+    // Modal open for Libras - here we simply open the library. For production, map specific games to specific video URLs.
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalBody = document.getElementById('modalBody');
+    function openLibrasModal(jogoTitulo) {
+      // Could filter modal content by jogoTitulo. For now, open library and focus
+      modalBackdrop.classList.add('open');
+      modalBackdrop.setAttribute('aria-hidden','false');
+      document.getElementById('closeModal').focus();
+    }
+    document.getElementById('closeModal').addEventListener('click', ()=> {
+      modalBackdrop.classList.remove('open');
+      modalBackdrop.setAttribute('aria-hidden','true');
+    });
+
+    // Modal caption / simplified audio buttons
+    modalBody.addEventListener('click', (e)=> {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const sim = btn.dataset['simplifiedText'];
+      const cap = btn.dataset['caption'];
+      if (sim) {
+        const simple = simplifiedText(sim);
+        speak(simple, {lang:'pt-BR', rate:0.95});
+      }
+      if (cap) {
+        const captionArea = document.getElementById('modalCaptionArea');
+        captionArea.style.display = 'block';
+        captionArea.textContent = cap;
+        // also announce for screen reader
+        captionArea.setAttribute('role','status');
+        setTimeout(()=> captionArea.removeAttribute('role'),1500);
+      }
+    });
+
+    /* ------------------------
+       Accessibility panel behaviours
+       ------------------------ */
+    const a11yToggle = document.getElementById('a11yToggle');
+    const a11yPanel = document.getElementById('a11yPanel');
+    a11yToggle.addEventListener('click', ()=> {
+      const open = !a11yPanel.classList.contains('open');
+      a11yPanel.classList.toggle('open', open);
+      a11yToggle.setAttribute('aria-expanded', String(open));
+      if (open) {
+        // focus first element
+        a11yPanel.querySelector('button,select,input')?.focus();
+      }
+    });
+
+    document.getElementById('readAllBtn').addEventListener('click', ()=> readAllVisible());
+    document.getElementById('stopReadBtn').addEventListener('click', ()=> stopSpeech());
+
+    document.getElementById('quickReadBtn').addEventListener('click', ()=> {
+      const instr = document.getElementById('instrucao-principal')?.innerText || '';
+      speak(instr, {lang:'pt-BR', rate:0.95});
+    });
+    
+
+    // font size control
+    const fontSizeSel = document.getElementById('fontSize');
+    fontSizeSel.addEventListener('change', (e)=> {
+      const v = e.target.value;
+      document.documentElement.style.setProperty('--font-scale', v);
+      saveA11yPrefs();
+    });
+
+    // high contrast
+    const highContrastChk = document.getElementById('highContrast');
+    highContrastChk.addEventListener('change', (e)=> {
+      document.body.classList.toggle('a11y-high-contrast', e.target.checked);
+      saveA11yPrefs();
+    });
+
+    // theme buttons for daltônicos
+    a11yPanel.querySelectorAll('button[data-theme]').forEach(btn=>{
+      btn.addEventListener('click', ()=> {
+        const t = btn.dataset.theme;
+        document.body.classList.remove('a11y-protanopia','a11y-deuteranopia','a11y-tritanopia');
+        if (t === 'protanopia') document.body.classList.add('a11y-protanopia');
+        if (t === 'deuteranopia') document.body.classList.add('a11y-deuteranopia');
+        if (t === 'tritanopia') document.body.classList.add('a11y-tritanopia');
+        saveA11yPrefs();
+      });
+    });
+
+    // Persist preferences
+    function saveA11yPrefs() {
+      const prefs = {
+        fontScale: document.documentElement.style.getPropertyValue('--font-scale') || '1',
+        highContrast: highContrastChk.checked,
+        theme: document.body.classList.contains('a11y-protanopia') ? 'protanopia' : (document.body.classList.contains('a11y-deuteranopia') ? 'deuteranopia' : (document.body.classList.contains('a11y-tritanopia') ? 'tritanopia' : 'none'))
+      };
+      localStorage.setItem('scalforce_a11y', JSON.stringify(prefs));
+    }
+    function loadA11yPrefs() {
+      try {
+        const prefs = JSON.parse(localStorage.getItem('scalforce_a11y') || '{}');
+        if (prefs.fontScale) {
+          document.documentElement.style.setProperty('--font-scale', prefs.fontScale);
+          fontSizeSel.value = prefs.fontScale;
+        }
+        if (prefs.highContrast) {
+          highContrastChk.checked = true;
+          document.body.classList.add('a11y-high-contrast');
+        }
+        if (prefs.theme) {
+          if (prefs.theme === 'protanopia') document.body.classList.add('a11y-protanopia');
+          if (prefs.theme === 'deuteranopia') document.body.classList.add('a11y-deuteranopia');
+          if (prefs.theme === 'tritanopia') document.body.classList.add('a11y-tritanopia');
+        }
+      } catch(e) { /* ignore */ }
+    }
+    loadA11yPrefs();
+
+    /* Keyboard shortcuts for accessibility (optional) */
+    window.addEventListener('keydown', (e)=>{
+      // Alt+R -> read page; Alt+S -> stop
+      if (e.altKey && e.key.toLowerCase() === 'r') { e.preventDefault(); readAllVisible(); }
+      if (e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); stopSpeech(); }
+      if (e.altKey && e.key.toLowerCase() === 'a') { e.preventDefault(); a11yToggle.click(); }
+      // Esc closes modals/panels
+      if (e.key === 'Escape') {
+        a11yPanel.classList.remove('open');
+        a11yToggle.setAttribute('aria-expanded','false');
+        modalBackdrop.classList.remove('open');
+      }
+    });
+
+    /* Make cards focusable via keyboard and expose read action on Enter */
+    document.addEventListener('keydown', (e)=> {
+      if ((e.key === 'Enter' || e.key === ' ') && document.activeElement?.classList?.contains('card')) {
+        // read focused card
+        const titleEl = document.activeElement.querySelector('.title');
+        const tagEl = document.activeElement.querySelector('.tag');
+        if (titleEl) {
+          readCard(titleEl.innerText, tagEl?.innerText || '');
+          e.preventDefault();
+        }
+      }
+    });
+
+    /* Release speech when navigating away */
+    window.addEventListener('beforeunload', ()=> stopSpeech());
+
+    /* Accessibility: announce when new content loaded */
+    const live = document.getElementById('lista-jogos');
+    function announce(msg) {
+      const v = document.createElement('div');
+      v.className = 'sr-only';
+      v.setAttribute('role','status');
+      v.textContent = msg;
+      document.body.appendChild(v);
+      setTimeout(()=> v.remove(), 1500);
+    }
+
+    // announce number of jogos after render
+    const origRender = render;
+    render = function() {
+      origRender();
+      announce(`${contJogos.textContent} jogos listados`);
+    };
+    // re-run initial render (wrapped)
+    render();
+
+    /* ------------------------
+       Small helpers for progressive enhancement
+       ------------------------ */
+    // If user clicks a Libras button from a card, optionally we can pre-filter modal to show relevant videos.
+    // For now open library (openLibrasModal) is used.
+
+    /* ------------------------
+       End
+       ------------------------ */
+  </script>
+</body>
+<script src="GamepadAPI.js"></script>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SCALFORCE — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0711;
+      --card:#1d1130;
+      --muted:#aca0c0;
+      --accent:#ff7a18;
+      --accent-2:#ff8f3a;
+      --white:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;
+      background:linear-gradient(180deg,var(--bg) 0%, #10061a 60%);
+      color:var(--white);
+      font-family:'Poppins',system-ui,Arial;
+      display:flex;align-items:center;justify-content:center;
+    }
+
+    .auth-wrapper{max-width:880px;width:95%;margin:40px auto}
+    .auth-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:16px;padding:28px;
+      display:grid;grid-template-columns:1fr 380px;gap:20px
+    }
+    .auth-left{padding-right:8px}
+    .auth-right{background:var(--card);border-radius:12px;padding:18px}
+
+    .form-group{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    .form-group label{font-weight:600}
+    .form-group input{
+      padding:12px;border-radius:10px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:transparent;color:var(--white)
+    }
+    .primary{
+      background:var(--accent);color:#14070a;
+      padding:12px 16px;border-radius:10px;
+      border:none;font-weight:700;cursor:pointer
+    }
+    
+    .link-like{
+      background:transparent;border:none;
+      color:var(--accent);font-weight:700;cursor:pointer
+    }
+    .btn-back{
+      margin-top:16px;
+      display:block;
+      width:100%;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.2);
+      color:var(--muted);
+      padding:10px 14px;
+      border-radius:10px;
+      font-weight:600;
+      cursor:pointer;
+      text-align:center;
+    }
+    .btn-back:hover{
+      background:rgba(255,255,255,0.05);
+      color:var(--white);
+    }
+
+    .msg{padding:10px;border-radius:8px;margin-bottom:10px}
+    .msg.success{background:rgba(40,200,120,0.12);color:#9ff0b6}
+    .msg.error{background:rgba(255,80,80,0.08);color:#ffb6b6}
+
+    @media (max-width:980px){
+      .auth-card{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-left">
+        <h2>Entrar ou criar conta</h2>
+        <p class="lead">Crie uma conta para salvar progresso, acompanhar relatórios e continuar de onde parou. Tudo é armazenado apenas no seu navegador.</p>
+        <div style="margin-top:18px" id="authMessage"></div>
+      </div>
+
+      <div class="auth-right">
+        <div id="forms">
+          <!-- Login Form -->
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="loginEmail">Email</label>
+              <input id="loginEmail" type="email" required />
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Senha</label>
+              <input id="loginPassword" type="password" required />
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+              <button type="submit" class="primary">Entrar</button>
+              <button type="button" id="showRegister" class="link-like">Criar conta</button>
+            </div>
+            <div id="loginError" class="msg error" style="display:none"></div>
+          </form>
+
+          <!-- Register Form -->
+          <form id="registerForm" style="display:none">
+            <div class="form-group">
+              <label for="regName">Nome</label>
+              <input id="regName" type="text" required />
+            </div>
+            <div class="form-group">
+              <label for="regEmail">Email</label>
+              <input id="regEmail" type="email" required />
+            </div>
+            <div class="form-group">
+              <label for="regPassword">Senha</label>
+              <input id="regPassword" type="password" required />
+            </div>
+            <div class="form-group">
+              <label for="regPassword2">Confirme a senha</label>
+              <input id="regPassword2" type="password" required />
+            <div class="form-group">
+              <label for="regAvatar">Foto de perfil</label>
+              <input id="regAvatar" type="file" accept="image/*" hidden>
+              <label for="regAvatar" class="primary" style="display:inline-block; cursor:pointer;">
+                  Escolha a Imagem para o Perfil
+              </label>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+              <button type="submit" class="primary">Criar conta</button>
+              <button type="button" id="showLogin" class="link-like">Já tenho conta</button>
+            </div>
+            <div id="regError" class="msg error" style="display:none"></div>
+            <div id="regSuccess" class="msg success" style="display:none"></div>
+          </form>
+        </div>
+
+        <!-- Botão Voltar -->
+        <a href="ScalForce.html" class="btn-back">⬅ Voltar para a página inicial</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function getUsers(){ try{ return JSON.parse(localStorage.getItem('scalforce_users')||'[]'); }catch(e){ return []; } }
+    function saveUsers(users){ localStorage.setItem('scalforce_users', JSON.stringify(users)); }
+    function setCurrentUser(user){ localStorage.setItem('scalforce_currentUser', JSON.stringify(user)); }
+    function getCurrentUser(){ try{return JSON.parse(localStorage.getItem('scalforce_currentUser')||'null');}catch(e){return null;} }
+
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const showRegisterBtn = document.getElementById('showRegister');
+    const showLoginBtn = document.getElementById('showLogin');
+    const loginError = document.getElementById('loginError');
+    const regError = document.getElementById('regError');
+    const regSuccess = document.getElementById('regSuccess');
+    const authMessage = document.getElementById('authMessage');
+    const regAvatarInput = document.getElementById('regAvatar');
+
+    let avatarBase64 = null;
+    if(regAvatarInput){
+      regAvatarInput.addEventListener('change', function(e){
+        const file = e.target.files[0];
+        if(file){
+          const reader = new FileReader();
+          reader.onload = function(){
+            avatarBase64 = reader.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    showRegisterBtn.addEventListener('click', ()=>{ 
+      loginForm.style.display = 'none'; 
+      registerForm.style.display = ''; 
+      clearMessages(); 
+    });
+    showLoginBtn.addEventListener('click', ()=>{ 
+      registerForm.style.display = 'none'; 
+      loginForm.style.display = ''; 
+      clearMessages(); 
+    });
+
+    function redirectWithFallback(user){
+      try{ setCurrentUser(user); }catch(e){}
+      const q = encodeURIComponent(JSON.stringify(user));
+      window.location.href = `ScalForce.html?user=${q}`;
+    }
+
+    loginForm.addEventListener('submit', (e)=>{
+      e.preventDefault(); clearMessages();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const pass = document.getElementById('loginPassword').value; 
+      const users = getUsers();
+      const found = users.find(u => u.email === email && u.password === pass);
+      if(found){ 
+        showFlash('Login realizado com sucesso!', 'success'); 
+        setTimeout(()=>{ redirectWithFallback({name: found.name, email: found.email, avatar: found.avatar || null}); }, 600);
+      } else { 
+        showLoginError('Email ou senha incorretos.'); 
+      }
+    });
+
+    registerForm.addEventListener('submit', (e)=>{
+      e.preventDefault(); clearMessages();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const pass = document.getElementById('regPassword').value;
+      const pass2 = document.getElementById('regPassword2').value;
+      if(pass.length < 6){ showRegError('A senha precisa ter pelo menos 6 caracteres.'); return; }
+      if(pass !== pass2){ showRegError('As senhas não coincidem.'); return; }
+      const users = getUsers(); 
+      if(users.find(u=>u.email===email)){ showRegError('Já existe uma conta com esse email.'); return; }
+      const newUser = { name: name || email.split('@')[0], email, password: pass, avatar: avatarBase64 };
+      users.push(newUser); 
+      saveUsers(users); 
+      showRegSuccess('Conta criada com sucesso! Você já está logado.'); 
+      setTimeout(()=>{ redirectWithFallback({name: newUser.name, email: newUser.email, avatar: newUser.avatar}); }, 700);
+    });
+
+    function showLoginError(msg){ loginError.textContent = msg; loginError.style.display = ''; }
+    function showRegError(msg){ regError.textContent = msg; regError.style.display = ''; }
+    function showRegSuccess(msg){ regSuccess.textContent = msg; regSuccess.style.display = ''; }
+    function clearMessages(){ loginError.style.display = 'none'; regError.style.display = 'none'; regSuccess.style.display = 'none'; authMessage.innerHTML = ''; }
+
+    function showFlash(message, type='success'){
+      authMessage.innerHTML = `<div class="msg ${type==='success'?'success':'error'}">${message}</div>`;
+      setTimeout(()=> authMessage.innerHTML = '', 2500);
+    }
+  </script>
+</body>
+<script src="GamepadAPI.js"></script>
+</html>

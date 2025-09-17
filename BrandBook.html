@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ScalForce — Brand Book</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+  --bg:#140a1a;
+  --primary:#5E2497;
+  --primary-700:#43186c;
+  --accent:#ff8a00;
+  --accent-700:#cc6d00;
+  --text:#ffffff;
+  --muted:#cfc6d9;
+  --card:#2b1943;
+  --success:#36c38d;
+  --container-max:1200px;
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:linear-gradient(180deg,var(--bg), #100616);color:var(--text);}
+
+.container{max-width:var(--container-max);margin:0 auto;padding:1rem}
+
+.site-header{position:sticky;top:0;background:rgba(20,10,26,0.6);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.03)}
+.header-inner{display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:.8rem}
+.brand-logo{width:56px;height:56px}
+.brand-text h1{margin:0;font-size:1.2rem}
+.brand-text .tag{margin:0;font-size:.85rem;color:var(--muted)}
+
+.nav a{color:var(--muted);text-decoration:none;margin-left:1rem;font-weight:600}
+.nav a:hover{color:var(--accent)}
+
+.hero{padding:3rem 0}
+.hero-inner{display:flex;gap:2rem;align-items:center;flex-wrap:wrap}
+.hero-logo{width:220px;height:220px}
+.hero-copy h2{margin:0 0 .6rem;font-size:2rem}
+.hero-copy p{margin:0 0 1rem;color:var(--muted)}
+
+.section{padding:2rem 0;border-top:1px solid rgba(255,255,255,0.03)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.card{background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.25)}
+
+.swatches{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1rem}
+.swatch{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,0.02);padding:.5rem;border-radius:10px}
+.chip{width:56px;height:56px;border-radius:8px}
+
+.type-samples h1{font-weight:800;font-size:2rem;margin:0}
+.muted{color:var(--muted)}
+
+.examples{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem}
+.btn{padding:.6rem 1rem;border-radius:999px;border:0;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--accent);color:#1b0d27}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04)}
+
+.sample-card{width:220px}
+.badge{background:var(--success);color:#042d1f;padding:.4rem .8rem;border-radius:999px;font-weight:700;}
+
+.site-footer{padding:2rem 0;color:var(--muted);border-top:1px solid rgba(255,255,255,0.03);margin-top:2rem;text-align:center}
+
+@media (max-width:720px){
+  .hero-inner{flex-direction:column;align-items:flex-start}
+  .nav{display:none}
+}
+
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="Logo.png" alt="ScalForce logo" class="brand-logo">
+        <div class="brand-text">
+          <h1>SCALFORCE</h1>
+          <p class="tag">Jogos que transformam estudo em diversão</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#palette">Paleta</a>
+        <a href="#typography">Tipografia</a>
+        <a href="#components">Componentes</a>
+        <a href="#accessibility">Acessibilidade</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <img src="Logo.png" alt="ScalForce logo large" class="hero-logo">
+        <div class="hero-copy">
+          <h2>Brand Book — ScalForce</h2>
+          <p>Guia prático de identidade visual, paleta, tipografia, componentes e diretrizes de aplicação para a marca ScalForce.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="overview" class="section container">
+      <h3>Visão, Missão e Valores</h3>
+      <div class="card-grid">
+        <div class="card">
+          <h4>Visão</h4>
+          <p>Ser a plataforma de referência que traz aprendizagem baseada em jogos com acessibilidade e diversidade.</p>
+        </div>
+        <div class="card">
+          <h4>Missão</h4>
+          <p>Desenvolver jogos educativos que motivem o estudo, respeitando a inclusão e proporcionando experiências seguras e lúdicas.</p>
+        </div>
+        <div class="card">
+          <h4>Valores</h4>
+          <ul>
+            <li>Inclusão</li>
+            <li>Acessibilidade</li>
+            <li>Qualidade pedagógica</li>
+            <li>Diversão</li>
+            <li>Transparência</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="palette" class="section container">
+      <h3>Paleta de cores</h3>
+      <div class="swatches">
+        <div class="swatch"><div class="chip" style="background:var(--primary)"></div><code>--primary: #5E2497</code></div>
+        <div class="swatch"><div class="chip" style="background:var(--primary-700)"></div><code>--primary-700: #43186c</code></div>
+        <div class="swatch"><div class="chip" style="background:var(--accent)"></div><code>--accent: #ff8a00</code></div>
+        <div class="swatch"><div class="chip" style="background:var(--accent-700)"></div><code>--accent-700: #cc6d00</code></div>
+        <div class="swatch"><div class="chip" style="background:var(--card)"></div><code>--card: #2b1943</code></div>
+        <div class="swatch"><div class="chip" style="background:var(--bg)"></div><code>--bg: #140a1a</code></div>
+      </div>
+    </section>
+
+    <section id="typography" class="section container">
+      <h3>Tipografia</h3>
+      <p>Fonte principal: <strong>Poppins</strong> — pesos: 400, 600, 800.</p>
+      <div class="type-samples">
+        <div>
+          <h1>Poppins 800 — H1</h1>
+          <p class="muted">Exemplo de texto em corpo. Poppins 400 — corpo de texto padrão.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="components" class="section container">
+      <h3>Componentes</h3>
+      <div class="examples">
+        <button class="btn primary">Primary</button>
+        <button class="btn ghost">Ghost</button>
+        <div class="card sample-card"><h4>Card</h4><p>Fundo card com borda sutil e sombra.</p></div>
+        <div class="badge">Success</div>
+      </div>
+    </section>
+
+    <section id="accessibility" class="section container">
+      <h3>Acessibilidade (A11y)</h3>
+      <ul>
+        <li>Contraste: garantir AA para texto normal.</li>
+        <li>Foco visível com cor de destaque.</li>
+        <li>Aria landmarks para leitores de tela.</li>
+        <li>Preferências persistentes no localStorage.</li>
+      </ul>
+    </section>
+
+    <section id="assets" class="section container">
+     
+    <footer class="site-footer">
+      <div class="container">
+        <p>ScalForce — Brand Book</p>
+      </div>
+      <div style="text-align:center; margin-top:20px;">
+    <a href="scalforce.html" 
+       style="display:inline-block; background:#ff8a00; color:#fff; 
+              padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">
+      Voltar para ScalForce
+    </a>
+  </div>
+    </footer>
+  </main>
+</body>
+<script src="GamepadAPI.js"></script>
+</html>

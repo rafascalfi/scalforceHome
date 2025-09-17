@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ScalForce — Plataforma de Jogos Educativos</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#120616;
+    --panel:#1a0f26;
+    --card:#241433;
+    --accent:#ff8a00;
+    --accent-2:#ffd27a;
+    --purple:#5E2497;
+    --muted:#cfc6d9;
+    --glass:rgba(255,255,255,0.03);
+    --maxw:1100px;
+    --radius:14px;
+    --ease: cubic-bezier(.2,.9,.3,1);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:'Poppins',system-ui,Arial,sans-serif;background:
+    linear-gradient(180deg,var(--bg) 0%, #0f0712 100%);color:#fff;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+  a{color:inherit}
+  .wrap{max-width:var(--maxw);margin:18px auto;padding:20px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{width:56px;height:56px;border-radius:10px;object-fit:cover;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+  .nav{display:flex;gap:14px;align-items:center}
+  .nav a{font-weight:600;color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px}
+  .nav a.cta{background:var(--accent);color:#1b0d27}
+
+  /* HERO */
+  .hero{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center;margin-top:18px;padding:34px;border-radius:18px;background:
+    linear-gradient(135deg, rgba(94,36,151,0.12), rgba(255,138,0,0.04));
+    border:1px solid rgba(255,255,255,0.03)}
+  @media(max-width:980px){ .hero{grid-template-columns:1fr; text-align:center} .hero-right{order:-1} }
+  .eyebrow{color:var(--muted);font-weight:600;margin-bottom:10px}
+  .hero h1{font-size:2.0rem;margin:0;color:var(--accent);line-height:1.02}
+  .hero p.lead{color:var(--muted);margin-top:12px;font-size:1rem}
+  .hero .ctas{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap}
+  /* BUTTONS: transitions + ripple */
+  .btn{
+    background:var(--accent);
+    color:#1b0d27;
+    border:none;
+    padding:12px 18px;
+    border-radius:999px;
+    font-weight:800;
+    cursor:pointer;
+    position:relative; /* needed for ripple */
+    overflow:hidden; /* clip ripple */
+    transition: transform .18s var(--ease), box-shadow .18s var(--ease), opacity .18s var(--ease);
+    will-change: transform, box-shadow;
+    box-shadow: 0 6px 18px rgba(94,36,151,0.12);
+  }
+  .btn.ghost{
+    background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--muted);
+    box-shadow:none;
+  }
+  .btn:hover{
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 18px 40px rgba(94,36,151,0.12);
+    opacity: 0.98;
+  }
+  .btn:active{
+    transform: translateY(0) scale(.98);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  }
+  /* ripple element */
+  .ripple{
+    position:absolute;
+    border-radius:50%;
+    transform: scale(0);
+    animation: ripple 600ms cubic-bezier(.2,.9,.3,1);
+    background: rgba(255,255,255,0.18);
+    pointer-events:none;
+    mix-blend-mode: overlay;
+  }
+  @keyframes ripple{
+    to{ transform: scale(4); opacity: 0; }
+  }
+
+  .hero-right{display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
+  .blob{width:100%;height:320px;border-radius:12px; background:
+    radial-gradient(ellipse at 35% 20%, rgba(255,138,0,0.12) 0%, transparent 20%),
+    linear-gradient(135deg, var(--purple), #2d0a5d); box-shadow:0 20px 60px rgba(0,0,0,.6); position:relative; overflow:hidden}
+  .blob .call{position:absolute;right:16px;bottom:18px;background:rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;font-weight:700}
+  .hero-attr{display:flex;gap:10px;justify-content:center;margin-top:6px}
+  .badge{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:999px;font-weight:700;color:var(--muted)}
+
+  /* Sections */
+  section{margin-top:28px}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media(max-width:1100px){ .cards{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:600px){ .cards{grid-template-columns:1fr} }
+
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,.04)}
+  .card h3{margin:0 0 8px 0;color:var(--accent)}
+  .card p{color:var(--muted);margin:0}
+
+  .two-col{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+  @media(max-width:980px){ .two-col{grid-template-columns:1fr} }
+
+  /* Testimonial */
+  .testimonials{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .quote{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,.04);width:320px}
+  .quote p{color:var(--muted);margin:0}
+  .avatar{width:44px;height:44px;border-radius:999px;object-fit:cover;border:2px solid rgba(255,255,255,.04)}
+
+  /* CTA strip */
+  .cta-strip{margin-top:28px;padding:22px;border-radius:12px;background:linear-gradient(90deg, rgba(94,36,151,0.12), rgba(255,138,0,0.06));display:flex;align-items:center;justify-content:space-between;gap:18px}
+  @media(max-width:720px){ .cta-strip{flex-direction:column;text-align:center} }
+
+  footer{margin-top:34px;padding:18px;border-top:1px solid rgba(255,255,255,.03);display:flex;justify-content:space-between;align-items:center;color:var(--muted);flex-wrap:wrap;gap:12px}
+
+  /* small */
+  .muted{color:var(--muted)}
+  .small{font-size:.95rem}
+  .swatches{display:flex;gap:8px;margin-top:8px}
+  .swatch{height:48px;width:84px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  .swatch.lightText{color:#fff}
+  .lead-strong{font-weight:700;color:#fff}
+</style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <header>
+      <div class="brand">
+        <img src="Logo.png" alt="Logo ScalForce">
+        <div>
+          <div style="font-weight:800;color:var(--accent)">SCALFORCE</div>
+          <div class="muted small">Jogos educativos — Ensino Fundamental</div>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Principal">
+        <a href="#sobre">Sobre</a>
+        <a href="#pesquisa">Pesquisa</a>
+        <a href="#jogos">Jogos</a>
+        <a href="#acessibilidade">Acessibilidade</a>
+      </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" aria-label="Apresentação">
+      <div>
+        <div class="eyebrow">Plataforma educativa</div>
+        <h1>Ajudamos crianças a aprender jogando — conteúdo seguro, acessível e divertido</h1>
+        <p class="lead">ScalForce combina identidade gamer (fundo escuro, CTAs vibrantes) com recursos de acessibilidade — modos para daltonismo e leitura em voz alta.</p>
+        <br>
+        <div class="ctas" role="toolbar">
+          <!-- buttons use data-target instead of inline onclick to be handled by central function -->
+          <a style="text-decoration: none;" class="btn" href="Tela inicial.html">Entrar no Site</a>
+          <button class="btn ghost" data-target="#pesquisa">Ver pesquisa</button>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap">
+        </div>
+      </div>
+
+      <div class="hero-right" aria-hidden="false">
+        <div class="blob" role="img" aria-label="Arte ScalForce">
+          <div style="position:absolute;left:18px;top:18px;color:var(--accent);font-weight:800">SCALFORCE</div>
+          <div style="position:absolute;left:18px;top:64px;color:#fff;font-weight:700;font-size:1.1rem">Educação gamificada</div>
+          <div class="call">Jogos • Acessível • Seguro</div>
+        </div>
+        <div class="hero-attr">
+          <div class="small muted">Baseado em pesquisa de portais educacionais</div>
+          <div style="display:flex;gap:8px">
+            <div class="swatch" style="background:var(--purple)">#5E2497</div>
+            <div class="swatch" style="background:var(--accent);color:#1b0d27">#ff8a00</div>
+            <div class="swatch" style="background:#ffffff;color:#1b0d27">#ffffff</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DISCOVER -->
+    <section id="sobre">
+      <div class="two-col">
+        <div>
+          <h2 style="color:var(--accent)">Descubra e atenda às necessidades do aluno</h2>
+          <p class="muted">ScalForce nasceu para tornar o reforço escolar mais envolvente. Com 31 jogos distribuídos por matérias.</p>
+
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px">
+            <div class="card">
+              <h3>Fundadores</h3>
+              <p class="muted">Equipe de desenvolvedores e educadores voltados à aprendizagem ativa e acessível.</p>
+            </div>
+            <div class="card">
+              <h3>Equipe de produto</h3>
+              <p class="muted">Designers, pedagogos e especialistas em acessibilidade formando conteúdo confiável.</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="card" aria-label="Estatísticas">
+          <br>
+          <strong>Conteúdo</strong>
+          <p class="muted" style="margin-top:8px">31 jogos • 10 categorias</p>
+          <div style="margin-top:12px">
+            <div style="font-weight:800;font-size:1.4rem;color:var(--accent)">Diferenciais</div>
+            <ul class="muted" style="margin-top:8px">
+              <li>Fundo escuro com CTAs vibrantes</li>
+              <li>Acessibilidade avançada</li>
+              <li>Busca por nome, matéria e nível</li>
+              <br>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- CARDS CATEGORIES -->
+<section id="jogos" aria-label="Categorias de jogos">
+  <h2 style="color:var(--accent)">Categorias</h2>
+  <div class="cards" style="margin-top:12px">
+
+    <div class="card">
+      <h3>Matemática</h3>
+      <p class="muted">Operações básicas, álgebra, frações, porcentagem, geometria e raciocínio lógico.</p>
+    </div>
+
+    <div class="card">
+      <h3>Português</h3>
+      <p class="muted">Gramática, ortografia, leitura, interpretação de texto e literatura.</p>
+    </div>
+
+    <div class="card">
+      <h3>História</h3>
+      <p class="muted">Fatos históricos, linhas do tempo, civilizações e personalidades importantes.</p>
+    </div>
+
+    <div class="card">
+      <h3>Geografia</h3>
+      <p class="muted">Mapas, capitais, bandeiras, clima, relevo e recursos naturais.</p>
+    </div>
+
+    <div class="card">
+      <h3>Ciências</h3>
+      <p class="muted">Biologia, física, química, corpo humano, meio ambiente e experimentos simples.</p>
+    </div>
+
+    <div class="card">
+      <h3>Inglês</h3>
+      <p class="muted">Vocabulário, tradução, gramática, frases do dia a dia e interpretação de textos.</p>
+    </div>
+
+    <div class="card">
+      <h3>Estratégia</h3>
+      <p class="muted">Planejamento, tomada de decisão, jogos táticos e gerenciamento de recursos.</p>
+    </div>
+
+    <div class="card">
+      <h3>Lógica</h3>
+      <p class="muted">Quebra-cabeças, dedução, enigmas, sequências e problemas de raciocínio.</p>
+    </div>
+
+    <div class="card">
+      <h3>Cartas</h3>
+      <p class="muted">Jogos de memória, combinações, desafios educativos e cartas estratégicas.</p>
+    </div>
+
+    <div class="card">
+      <h3>Arcade</h3>
+      <p class="muted">Jogos rápidos, reflexos, coordenação motora, ação imediata e pontuação alta.</p>
+    </div>
+
+  </div>
+</section>
+
+
+    <!-- PESQUISA -->
+    <section id="pesquisa">
+      <h2 style="color:var(--accent)">Pesquisa — Portais de jogos educativos</h2>
+      <div class="card" style="margin-top:12px">
+        <p class="muted">
+          Ao analisar os principais portais (ABCya, SmartKids, Mundo Primária, CoolMathGames e Escola Games) identificamos padrões:
+        </p>
+        <ul class="muted" style="margin-top:8px">
+          <li>Fundos claros e botões vibrantes (amarelo/laranja) para chamar atenção.</li>
+          <li>Tipografia simples sans-serif (Poppins, Roboto, Arial).</li>
+          <li>Grade estática para apresentar jogos; pouca atenção à acessibilidade.</li>
+        </ul>
+        <p class="muted" style="margin-top:8px">ScalForce diferencia-se ao usar fundo escuro + CTAs laranja e, principalmente, integrar recursos de acessibilidade completos (temas para daltonismo e leitura em voz alta).</p>
+      </div>
+    </section>
+
+    <!-- DESIGN & TIPOGRAFIA -->
+    <section style="margin-top:22px">
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start">
+        <div class="card">
+          <h2 style="color:var(--accent)">Design e Tipografia</h2>
+          <p class="muted">Tipografia: Poppins. Títulos em negrito para hierarquia; corpo em pesos médios para leitura clara. Layout baseado em cards interativos com micro-ânimações e header fixo.</p>
+          <p class="muted" style="margin-top:10px">Decisões: balancear elementos chamativos com clareza — evitar poluição visual que confunde crianças.</p>
+        </div>
+
+        <aside class="card">
+          <strong>Paleta</strong>
+          <div class="swatches" style="margin-top:10px">
+            <div class="swatch" style="background:var(--purple)">#5E2497</div>
+            <div class="swatch" style="background:var(--accent);color:#1b0d27">#ff8a00</div>
+            <div class="swatch" style="background:#ffffff;color:#1b0d27">#ffffff</div>
+          </div>
+
+          <div style="margin-top:12px">
+            <strong>Tipografia</strong>
+            <div class="muted" style="margin-top:6px">Poppins — Títulos: 700/800 • Corpo: 400/600 • Escala adaptável para acessibilidade</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Acessibilidade -->
+       <!-- Acessibilidade -->
+    <section id="acessibilidade">
+      <h2 style="color:var(--accent)">Acessibilidade</h2>
+      <div class="card" style="margin-top:12px">
+        <ul class="muted">
+          <li>Leitura em voz alta para instruções e cards (SpeechSynthesis).</li>
+          <li>Temas para daltonismo (protanopia/deuteranopia/tritanopia).</li>
+          <li>Contraste mínimo recomendado, ajuste de tamanho de fonte e navegação por teclado.</li>
+          <li>Sistema de GamepadAPI (Compatibilidade com controle no site.)</li>
+        </ul>
+      </div>
+
+      <!-- Gamepad API Explicação -->
+
+        <h3 style="color:var(--accent)">Por que usamos o sistema de Gamepad API?</h3>
+        <ul class="muted">
+          <li><strong>Acessibilidade e inclusão:</strong> algumas crianças (por exemplo, com dificuldades motoras) têm mais facilidade em usar um controle do que teclado/mouse.</li>
+          <li><strong>Familiaridade:</strong> muitas crianças já estão acostumadas a jogar videogame, então usar o mesmo tipo de controle torna o aprendizado mais natural.</li>
+          <li><strong>Experiência imersiva:</strong> o controle dá a sensação de “jogo de verdade”, aumentando o interesse em jogos educativos.</li>
+        </ul>
+      
+
+   
+        <h3 style="color:var(--accent)">Função em relação à criança</h3>
+        <ul class="muted">
+          <li><strong>Coordenação motora fina:</strong> usar botões, analógicos e gatilhos melhora reflexos e controle motor.</li>
+          <li><strong>Aprendizado lúdico:</strong> a criança associa a experiência escolar com diversão, o que aumenta a motivação para estudar.</li>
+          <li><strong>Autonomia:</strong> navegar pelos jogos do site sem depender do mouse facilita o uso em casa, na escola ou em ambientes com poucos recursos (ex.: TV conectada).</li>
+          <li><strong>Inclusão digital:</strong> crianças que não dominam teclado/mouse ainda conseguem interagir e aprender.</li>
+        </ul>
+   
+
+
+        <h3 style="color:var(--accent)">Desempenho que pode causar</h3>
+        <ul class="muted">
+          <li><strong>Mais fluidez:</strong> a Gamepad API se comunica direto com o navegador, então os comandos são detectados com baixa latência.</li>
+          <li><strong>Menos fadiga:</strong> segurar um controle por longos períodos é mais confortável do que usar teclado e mouse, especialmente para crianças pequenas.</li>
+          <li><strong>Maior engajamento:</strong> quando a criança sente que está “jogando um game real”, ela passa mais tempo aprendendo sem perceber.</li>
+          <li><strong>Adaptação multiplataforma:</strong> funciona bem em computadores, notebooks e até TVs conectadas, ampliando o alcance do site.</li>
+        </ul>
+    
+    </section>
+
+
+  <script>
+    // setupButtonTransitions: ripple + smooth scroll + keyboard accessible activation
+    (function setupButtonTransitions(){
+      const EASE = 'cubic-bezier(.2,.9,.3,1)';
+
+      // create ripple element when clicked
+      function createRipple(e, el){
+        // remove old ripple if any
+        const old = el.querySelector('.ripple');
+        if(old) old.remove();
+
+        const rect = el.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height) * 1.2;
+        const x = e.clientX - rect.left - size/2;
+        const y = e.clientY - rect.top - size/2;
+
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.style.opacity = '0.9';
+        el.appendChild(ripple);
+
+        // remove after animation
+        ripple.addEventListener('animationend', ()=> ripple.remove());
+      }
+
+      // smooth navigation to target
+      function smoothNavigateTo(selector, sourceEl){
+        if(!selector) return;
+        const target = document.querySelector(selector);
+        if(!target) {
+          // if it's an anchor to a non-existent ID, fallback to normal navigation
+          window.location.hash = selector;
+          return;
+        }
+
+        // prefer scrollIntoView with smooth behavior
+        // offset header if necessary (if you have a fixed header, adjust)
+        const headerOffset = 16; // small offset from top
+        const rect = target.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetY = rect.top + scrollTop - headerOffset;
+
+        // animate scroll (smooth)
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+
+        // set focus for accessibility after scroll finishes (~duration)
+        // approximate wait time using distance (but safe fallback 600ms)
+        const wait = 700;
+        setTimeout(()=> {
+          target.setAttribute('tabindex','-1');
+          target.focus({preventScroll:true});
+        }, wait);
+      }
+
+      // handle button/anchor activation (click or keyboard "Enter"/"Space")
+      function handleActivation(e){
+        const el = e.currentTarget;
+        const tag = el.tagName.toLowerCase();
+        // create ripple if pointer event
+        if(e.type === 'click' && e.clientX !== 0 && e.clientY !== 0) {
+          createRipple(e, el);
+        }
+
+        // find target: data-target or href
+        const target = el.dataset.target || el.getAttribute('href');
+        if(target && (target.startsWith('#') || target.startsWith('.'))){
+          e.preventDefault();
+          smoothNavigateTo(target, el);
+        }
+      }
+
+      // attach to all .btn and nav anchors
+      const controls = Array.from(document.querySelectorAll('.btn, .nav a'));
+      controls.forEach(el => {
+        // ensure focus outline for keyboard
+        el.addEventListener('keydown', (e)=>{
+          if(e.key === 'Enter' || e.key === ' '){
+            e.preventDefault();
+            el.click();
+          }
+        });
+        // click
+        el.addEventListener('click', handleActivation);
+
+        // visual micro-feedback on pointerdown for fast response
+        el.addEventListener('pointerdown', (ev)=>{
+          el.style.transition = 'transform .12s ' + EASE;
+          el.style.transform = 'scale(.985)';
+        });
+        el.addEventListener('pointerup', ()=>{
+          el.style.transform = '';
+        });
+        el.addEventListener('pointerleave', ()=>{
+          el.style.transform = '';
+        });
+      });
+
+      // Optional: intercept buttons that have inline onclick="location.href='#id'"
+      // Normalize them: move href to data-target to avoid instant navigation
+      document.querySelectorAll('[onclick]').forEach(el=>{
+        const onclick = el.getAttribute('onclick') || '';
+        // simple pattern detection: location.href='#id' or location='#id'
+        const match = onclick.match(/location(?:\.href)?\s*=\s*['"](#.+?)['"]/);
+        if(match){
+          el.dataset.target = match[1];
+          // prevent double navigation by removing onclick (optional, safer)
+          el.removeAttribute('onclick');
+        }
+      });
+
+    })();
+  </script>
+
+  <script>
+/* ============================
+  Gamepad — navegação 2D estável (sem pular itens)
+  Melhor detecção de direção + lock até o stick voltar ao centro
+  ============================ */
+
+const DEADZONE = 0.42;
+const RELEASE_THRESHOLD = 0.18;
+const MOVE_DELAY = 120; // ms
+let focusables = [], selectedIndex = 0, lastMoveTime = 0;
+let insideCard = false, cardButtons = [], cardIndex = 0;
+let prevButtons = [], rafId = null;
+let axisReleased = true;   // somente permite novo movimento quando stick voltar ao centro
+let lastDirection = null;   // 'up'|'down'|'left'|'right' or null
+let scrollVelocity = 0;
+
+function isVisible(el){ return el && el.offsetParent !== null; }
+function isInsideCard(el){ return !!el.closest('.card'); }
+
+function updateFocusables(){
+  const all = Array.from(document.querySelectorAll('a, button, input, select, [role="button"], .card'));
+  focusables = all.filter(el => isVisible(el) && (el.classList.contains('card') || !isInsideCard(el)));
+  if (selectedIndex >= focusables.length) selectedIndex = Math.max(0, focusables.length-1);
+}
+
+function getRectCenter(r){ return { x: r.left + r.width/2, y: r.top + r.height/2 }; }
+function vecLen(ax, ay){ return Math.sqrt(ax*ax + ay*ay); }
+function vecDot(ax, ay, bx, by){ return ax*bx + ay*by; }
+
+/* Encontra vizinho na direção usando preferência por alinhamento (menor perp distance),
+   e entre os alinhados escolhe o mais próximo na projeção da direção */
+function findNeighborInDirection(currentEl, direction){
+  if (!currentEl) return null;
+  const curRect = currentEl.getBoundingClientRect();
+  const curC = getRectCenter(curRect);
+  const dirVec = {
+    up: {x:0, y:-1},
+    down: {x:0, y:1},
+    left: {x:-1, y:0},
+    right: {x:1, y:0}
+  }[direction];
+
+  let best = null;
+  // loop candidatos
+  for (let i=0;i<focusables.length;i++){
+    const cand = focusables[i];
+    if (cand === currentEl) continue;
+    const r = cand.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) continue;
+    const c = getRectCenter(r);
+    const vx = c.x - curC.x;
+    const vy = c.y - curC.y;
+    const dist = vecLen(vx, vy);
+    if (dist === 0) continue;
+    // projeção na direção
+    const proj = (vx*dirVec.x + vy*dirVec.y);
+    if (proj <= 6) continue; // ignora candidatos atrás ou quase no mesmo centro (tolerância)
+    // componente perpendicular = magnitude * sin(angle) = sqrt(dist^2 - proj^2)
+    const perpSq = Math.max(0, dist*dist - proj*proj);
+    const perp = Math.sqrt(perpSq);
+    // score: primeiro prioriza menor perpendicular (mais alinhado), depois menor proj (mais próximo na frente)
+    const score = perp * 1000 + proj; // perp tem mais peso
+    if (!best || score < best.score) best = {el: cand, idx: i, score, proj, perp, dist};
+  }
+
+  // fallback linear neighbor if nothing encontrado
+  if (!best) {
+    const curIdx = focusables.indexOf(currentEl);
+    if (direction === 'left' || direction === 'up') {
+      const idx = Math.max(0, curIdx - 1);
+      return { el: focusables[idx], idx };
+    } else {
+      const idx = Math.min(focusables.length-1, curIdx + 1);
+      return { el: focusables[idx], idx };
+    }
+  }
+  return best;
+}
+
+/* outlines helpers */
+function clearOutlines(){ document.querySelectorAll('[data-gamepad-outline]').forEach(e=>{ e.style.outline=''; e.removeAttribute('data-gamepad-outline'); }); }
+function outline(el, style="3px solid white"){ if(!el) return; clearOutlines(); el.style.outline = style; el.setAttribute('data-gamepad-outline','1'); }
+
+/* highlights */
+function updateGlobalHighlight(){
+  if (!focusables || focusables.length === 0) return;
+  const el = focusables[selectedIndex];
+  outline(el, "3px solid white");
+  try { el.focus({preventScroll:true}); } catch(e){ el.focus(); }
+  el.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+function updateCardHighlight(){
+  const card = focusables[selectedIndex];
+  if (card) { card.style.outline = "2px solid rgba(255,255,255,0.28)"; card.setAttribute('data-gamepad-outline','1'); card.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+  if (cardButtons && cardButtons.length > 0) {
+    const btn = cardButtons[cardIndex];
+    if (btn) { outline(btn, "3px solid white"); try{ btn.focus({preventScroll:true}); }catch(e){btn.focus();} btn.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+  }
+}
+
+/* card mode */
+function enterCardMode(cardEl){
+  cardButtons = Array.from(cardEl.querySelectorAll('button, a.btn, a.icon-btn')).filter(isVisible);
+  if (cardButtons.length === 0) return false;
+  insideCard = true; cardIndex = 0; updateCardHighlight(); return true;
+}
+function exitCardMode(){
+  cardButtons.forEach(b=>{ b.style.outline=''; b.removeAttribute('data-gamepad-outline'); });
+  const card = focusables[selectedIndex]; if (card) { card.style.outline=''; card.removeAttribute('data-gamepad-outline'); }
+  cardButtons = []; insideCard = false; updateGlobalHighlight();
+}
+
+/* convert axes to discrete direction: returns 'up'|'down'|'left'|'right' or null */
+function axesToDirection(lx, ly){
+  if (Math.abs(lx) < DEADZONE && Math.abs(ly) < DEADZONE) return null;
+  if (Math.abs(ly) > Math.abs(lx)){
+    return ly < 0 ? 'up' : 'down';
+  } else {
+    return lx < 0 ? 'left' : 'right';
+  }
+}
+
+/* main poll loop */
+function pollGamepad(){
+  const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+  const gp = gps[0];
+  if (!gp) { rafId = requestAnimationFrame(pollGamepad); return; }
+
+  if (!Array.isArray(prevButtons) || prevButtons.length !== gp.buttons.length) prevButtons = gp.buttons.map(b=>b.pressed);
+
+  const lx = gp.axes[0] ?? 0;
+  const ly = gp.axes[1] ?? 0;
+  const ry = gp.axes[3] ?? 0;
+  const now = Date.now();
+
+  // se stick estiver perto do centro, marca como liberado
+  if (Math.abs(lx) < RELEASE_THRESHOLD && Math.abs(ly) < RELEASE_THRESHOLD) {
+    axisReleased = true;
+    lastDirection = null;
+  }
+
+  // calcular direção discreta
+  const dir = axesToDirection(lx, ly);
+
+  // somente mover se axisReleased ou direção mudou (mas proteger contra repeats com MOVE_DELAY)
+  if (dir && axisReleased && (now - lastMoveTime > MOVE_DELAY)) {
+    let moved = false;
+    const cur = focusables[selectedIndex];
+    if (!insideCard) {
+      const nb = findNeighborInDirection(cur, dir);
+      if (nb) { selectedIndex = nb.idx; moved = true; }
+      if (moved) {
+        axisReleased = false;
+        lastDirection = dir;
+        updateGlobalHighlight();
+        lastMoveTime = now;
+      }
+    } else {
+      // modo card: navegação linear entre botões internos (tanto eixo x quanto y movem)
+      if (dir === 'left' || dir === 'up') {
+        cardIndex = Math.max(0, cardIndex - 1); moved = true;
+      } else if (dir === 'right' || dir === 'down') {
+        cardIndex = Math.min(cardButtons.length - 1, cardIndex + 1); moved = true;
+      }
+      if (moved) {
+        axisReleased = false;
+        lastDirection = dir;
+        updateCardHighlight();
+        lastMoveTime = now;
+      }
+    }
+  }
+
+  // scroll com right stick (suavizado)
+  if (Math.abs(ry) > 0.02) {
+    scrollVelocity = scrollVelocity * 0.86 + (ry * 18) * 0.14;
+  } else {
+    scrollVelocity = scrollVelocity * 0.86;
+  }
+  if (Math.abs(scrollVelocity) > 0.6) window.scrollBy(0, scrollVelocity);
+
+  // borda de A/B
+  const aNow = gp.buttons[0]?.pressed, bNow = gp.buttons[1]?.pressed;
+  const aPrev = prevButtons[0] || false, bPrev = prevButtons[1] || false;
+
+  if (aNow && !aPrev) {
+    if (!insideCard) {
+      const cur = focusables[selectedIndex];
+      if (cur && cur.classList && cur.classList.contains('card')) {
+        const entered = enterCardMode(cur);
+        if (!entered) { const link = cur.querySelector('a.thumb, a.btn.primary'); if (link) link.click(); }
+      } else if (cur) {
+        try { cur.click(); } catch(e){}
+      }
+    } else {
+      const btn = cardButtons[cardIndex];
+      if (btn) try { btn.click(); } catch(e){}
+    }
+  }
+
+  if (bNow && !bPrev) {
+    if (insideCard) exitCardMode();
+    else window.history.back();
+  }
+
+  // atualizar prev
+  for (let i=0;i<gp.buttons.length;i++) prevButtons[i] = gp.buttons[i].pressed;
+
+  rafId = requestAnimationFrame(pollGamepad);
+}
+
+/* inicialização */
+window.addEventListener('gamepadconnected', () => {
+  updateFocusables();
+  selectedIndex = 0; lastMoveTime = 0; insideCard = false; cardButtons=[]; cardIndex=0;
+  axisReleased = true; lastDirection = null; scrollVelocity = 0;
+  updateGlobalHighlight();
+  if (rafId === null) rafId = requestAnimationFrame(pollGamepad);
+});
+
+/* recomputar quando DOM muda */
+const mo = new MutationObserver(()=> {
+  const prev = focusables[selectedIndex];
+  updateFocusables();
+  if (prev) {
+    const newIdx = focusables.indexOf(prev);
+    if (newIdx >= 0) selectedIndex = newIdx;
+    else selectedIndex = Math.min(selectedIndex, focusables.length-1);
+  }
+});
+mo.observe(document.body, { childList:true, subtree:true });
+
+/* caso gamepad já conectado */
+if (navigator.getGamepads && navigator.getGamepads()[0]) {
+  updateFocusables(); updateGlobalHighlight(); if (rafId === null) rafId = requestAnimationFrame(pollGamepad);
+}
+
+/* limpar outlines quando usuário usa mouse/teclado */
+window.addEventListener('pointerdown', () => { clearOutlines(); });
+window.addEventListener('keydown', (e) => { if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Tab','Enter'].includes(e.key)) clearOutlines(); });
+
+</script>
+
+</body>
+</html>
+
+

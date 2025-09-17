@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minha Conta — ScalForce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+      --danger:#d9534f;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Poppins, sans-serif;
+      background:linear-gradient(180deg,#1a0f26 100%,#140a1a 100%);
+      color:var(--text);
+    }
+    a{color:inherit;text-decoration:none}
+
+    header{
+      position:sticky; top:0; z-index:10;
+      background:linear-gradient(180deg, rgba(20,10,26,.95), rgba(20,10,26,.6));
+      border-bottom:1px solid rgba(255,255,255,.06);
+      padding:.8rem 1rem;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex;align-items:center;gap:.6rem;font-weight:800}
+    .brand img{height:38px}
+    .brand span{color:var(--accent);font-size:1.2rem}
+    nav a{margin-left:1rem;font-weight:600;color:var(--muted)}
+    nav a:hover{color:var(--accent)}
+
+    main{display:flex; min-height:calc(100vh - 60px)}
+
+    .sidebar{
+      width:220px;
+      background:#1a0f26;
+      border-right:1px solid rgba(255,255,255,.08);
+      padding:1rem;
+      display:flex;flex-direction:column;gap:.8rem;
+    }
+    .sidebar a{
+      padding:.6rem .9rem;
+      border-radius:12px;
+      color:var(--muted);
+      font-weight:600;
+      transition:.2s;
+    }
+    .sidebar a.active,
+    .sidebar a:hover{background:var(--primary);color:#fff}
+
+    .content{flex:1; padding:2rem; overflow-y:auto}
+    section{background:var(--card); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem; box-shadow:0 6px 20px rgba(0,0,0,.3)}
+    section h2{margin-top:0;color:var(--accent)}
+
+    .user-info{display:flex;align-items:center;gap:1.5rem}
+    .user-info img{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)}
+    .user-info input{margin-top:.5rem}
+
+    .field{margin:.8rem 0}
+    .field label{display:block;margin-bottom:.3rem;font-weight:600}
+    .field input{width:100%;padding:.6rem;border-radius:8px;border:1px solid #2c1847;background:#170c25;color:#fff}
+
+    button{
+      background:var(--accent);
+      border:none;
+      border-radius:10px;
+      padding:.6rem 1.2rem;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:.6rem;
+    }
+    button:hover{background:var(--accent-700)}
+
+    .danger-btn{background:var(--danger)!important;color:#fff}
+    .progress-bar{background:#170c25;border-radius:10px;overflow:hidden;height:18px;margin:.5rem 0}
+    .progress-bar div{height:100%;background:var(--success)}
+
+    .activity{padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.08);color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="ScalForce.html">
+      <img src="Logo.png" alt="Logo ScalForce">
+      <span>ScalForce</span>
+    </a>
+    <nav>
+      <a href="ScalForce.html">Voltar</a>
+    </nav>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <a href="#perfil" class="active">Perfil</a>
+      <a href="#conteudo">Conteúdo Pessoal</a>
+      <a href="#seguranca">Segurança</a>
+    </aside>
+
+    <div class="content">
+      <section id="perfil">
+        <h2>Informações do Usuário</h2>
+        <div class="user-info">
+          <img id="userAvatar" src="imagens/avatar-padrao.png" alt="Avatar">
+          <div>
+            <label for="avatarUpload">Alterar avatar:</label>
+            <input type="file" id="avatarUpload" accept="image/*">
+          </div>
+        </div>
+        <div class="field">
+          <label>Nome de exibição</label>
+          <input id="userName" type="text" value="Usuário Teste">
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input id="userEmail" type="email" value="usuario@email.com">
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="editPass" placeholder="Digite nova senha">
+        </div>
+        <button id="saveBtn"> Salvar Alterações </button>
+      </section>
+
+      <section id="conteudo">
+        <h2>Conteúdo Pessoal</h2>
+        <h3>Histórico de Jogos mais jogados</h3>
+        <div id="activityList">
+          <div class="activity">Quebra Cabeça</div>
+          <div class="activity">Viagem Medieval</div>
+          <div class="activity">Pico Checkmate</div>
+        </div>
+        <h3>Progresso</h3>
+        <p>Nível: 5</p>
+        <div class="progress-bar"><div style="width:60%"></div></div>
+        <p>Conquistas: 8</p>
+      </section>
+
+      <section id="seguranca">
+        <h2>Segurança e Privacidade</h2>
+        <p>Excluir sua conta permanentemente.</p>
+        <button class="danger-btn" onclick="deleteAccount()">Excluir Conta</button>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    function getUser(){
+      return JSON.parse(localStorage.getItem('scalforce_currentUser') || '{"name":"Usuário Teste","email":"usuario@email.com","avatar":"imagens/avatar-padrao.png"}');
+    }
+    function saveUser(user){
+      localStorage.setItem('scalforce_currentUser', JSON.stringify(user));
+    }
+    function updateUsersList(user){
+      let users = JSON.parse(localStorage.getItem('scalforce_users') || '[]');
+      users = users.map(u => u.email === user.email ? {...u, ...user} : u);
+      localStorage.setItem('scalforce_users', JSON.stringify(users));
+    }
+    function loadUser(){
+      const user = getUser();
+      document.getElementById('userName').value = user.name;
+      document.getElementById('userEmail').value = user.email;
+      document.getElementById('userAvatar').src = user.avatar;
+    }
+
+    function showToast(message, type = "success") {
+      let container = document.getElementById("toastContainer");
+      if(!container){
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        container.style.position = "fixed";
+        container.style.top = "20px";
+        container.style.right = "20px";
+        container.style.display = "flex";
+        container.style.flexDirection = "column";
+        container.style.gap = "10px";
+        container.style.zIndex = "9999";
+        document.body.appendChild(container);
+      }
+      const toast = document.createElement("div");
+      toast.textContent = message;
+      toast.style.padding = "12px 18px";
+      toast.style.borderRadius = "10px";
+      toast.style.fontWeight = "600";
+      toast.style.color = "#fff";
+      toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(-10px)";
+      toast.style.transition = "all 0.3s ease";
+      if(type === "success") toast.style.background = "#36c38d";
+      if(type === "error") toast.style.background = "#d9534f";
+      if(type === "info") toast.style.background = "#5E2497";
+      container.appendChild(toast);
+      setTimeout(()=>{
+        toast.style.opacity = "1";
+        toast.style.transform = "translateY(0)";
+      }, 50);
+      setTimeout(()=>{
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px)";
+        setTimeout(()=> toast.remove(), 300);
+      }, 3000);
+    }
+
+    document.getElementById('avatarUpload').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(file){
+        const reader = new FileReader();
+        reader.onload = function(ev){
+          const user = getUser();
+          user.avatar = ev.target.result;
+          saveUser(user);
+          updateUsersList(user);
+          loadUser();
+          showToast("Avatar atualizado!", "success");
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('userName').addEventListener('blur', function(){
+      const user = getUser();
+      if(this.value.trim()){
+        user.name = this.value.trim();
+        saveUser(user);
+        updateUsersList(user);
+        showToast("Nome atualizado!", "success");
+      }
+    });
+
+    document.getElementById('userEmail').addEventListener('blur', function(){
+      const user = getUser();
+      if(this.value.trim()){
+        user.email = this.value.trim();
+        saveUser(user);
+        updateUsersList(user);
+        showToast("E-mail atualizado!", "success");
+      }
+    });
+
+    document.getElementById('editPass').addEventListener('blur', function(){
+      if(this.value.trim()){
+        const user = getUser();
+        user.password = this.value.trim();
+        saveUser(user);
+        updateUsersList(user);
+        this.value = "";
+        showToast("Senha atualizada!", "info");
+      }
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', function(){
+      const user = getUser();
+      const newName = document.getElementById('userName').value.trim();
+      const newEmail = document.getElementById('userEmail').value.trim();
+      const newPass = document.getElementById('editPass').value.trim();
+
+      if(newName) user.name = newName;
+      if(newEmail) user.email = newEmail;
+      if(newPass){
+        user.password = newPass;
+        document.getElementById('editPass').value = "";
+      }
+
+      saveUser(user);
+      updateUsersList(user);
+      loadUser();
+      showToast("Alterações salvas com sucesso!", "success");
+    });
+
+    function deleteAccount(){
+      if(confirm("Tem certeza que deseja excluir sua conta?")){
+        const user = getUser();
+        let users = JSON.parse(localStorage.getItem('scalforce_users') || '[]');
+        users = users.filter(u => u.email !== user.email);
+        localStorage.setItem('scalforce_users', JSON.stringify(users));
+        localStorage.removeItem('scalforce_currentUser');
+        showToast("Conta excluída!", "error");
+        setTimeout(()=> window.location.href = "ScalForce.html", 1200);
+      }
+    }
+
+    loadUser();
+  </script>
+</body>
+<script src="GamepadAPI.js"></script>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contato — SCALFORCE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;font-family:Poppins,sans-serif;color:#fff;background:linear-gradient(180deg,#1a0f26 100%,#140a1a 100%)}
+    .container{width:min(1200px,92%);margin:auto}
+    header{position:sticky;top:0;background:rgba(20,10,26,.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.06);z-index:10}
+    .nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 0}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800}
+    .brand span{color:#ff8a00}
+    .btn{padding:.6rem 1rem;border-radius:999px;font-weight:600}
+    .btn.ghost{background:#170c25;border:1px solid #2c1847;color:#fff;transition:.2s}
+    .btn.ghost:hover{background:#1f0f32}
+    h1,h2,h3{color:#ff8a00}
+    .section{padding:2rem 0}
+    form{display:grid;gap:1rem;max-width:600px;margin:auto}
+    input,textarea{padding:1rem;border-radius:12px;border:1px solid #2a1645;background:#160c23;color:#fff;font-size:1rem}
+    button{padding:1rem;background:#ff8a00;border:none;border-radius:12px;font-weight:700;cursor:pointer}
+    button:hover{background:#cc6d00}
+    .grid{display:grid;gap:1.5rem}
+    .grid-2{grid-template-columns:repeat(2,1fr)}
+    .card{background:#1e1130;padding:1.5rem;border-radius:18px;border:1px solid rgba(255,255,255,.08);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+    footer{padding:2rem 0;text-align:center;color:#cfc6d9;border-top:1px solid rgba(255,255,255,.08);margin-top:3rem}
+    ul{list-style:none;padding:0}
+    ul li::before{content:"✔ ";color:#36c38d;font-weight:bold}
+    iframe{width:100%;border:0;border-radius:12px;height:300px}
+    /* Equipe */
+    .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;text-align:center}
+    @media(max-width:960px){.team-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){.team-grid{grid-template-columns:1fr}}
+    .team-card{background:#170c25;padding:1.5rem;border-radius:16px;border:1px solid rgba(255,255,255,.06);
+               transition: transform 0.3s ease, box-shadow 0.3s ease;cursor:pointer}
+    .team-card img{width:100px;height:100px;border-radius:50%;margin-bottom:1rem;transition: transform 0.3s ease}
+    .team-card:hover{transform: translateY(-8px) scale(1.05);
+                     box-shadow: 0 12px 30px rgba(0,0,0,.45), 0 0 12px rgba(255,138,0,.4)}
+    .team-card:hover img{transform: scale(1.15) rotate(-2deg)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="./imagens/Logo.png" alt="Logo" style="height:40px"><span>SCALFORCE</span>
+      </a>
+      <nav>
+        <a style=" text-decoration: none;" class="btn ghost" href="ScalForce.html">Início</a>
+        <a style=" text-decoration: none;" class="btn ghost" href="sobre.html">Sobre</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Formulário de contato -->
+    <section class="section">
+      <h1>Fale Conosco</h1>
+      <p>Estamos prontos para ajudar! Preencha o formulário abaixo e nossa equipe entrará em contato com você.</p>
+
+      <form onsubmit="enviarMensagem(event)">
+        <input type="text" id="nome" placeholder="Seu nome" required />
+        <input type="email" id="email" placeholder="Seu e-mail" required />
+        <textarea id="mensagem" rows="5" placeholder="Escreva sua mensagem..." required></textarea>
+        <button type="submit">Enviar Mensagem</button>
+      </form>
+    </section>
+
+    <!-- Canais de contato -->
+    <section class="section">
+      <h2>Outros Canais</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>📧 E-mail</h3>
+          <p><a href="mailto:suporteScalForce@gmail.com" style="color:#ff8a00">suporteScalForce@gmail.com</a></p>
+        </div>
+        <div class="card">
+          <h3>📱 WhatsApp</h3>
+          <p>(+55) 17 99669 6458</p>
+        </div>
+        <div class="card">
+          <h3>📍 Endereço</h3>
+          <p>R. Leôncio da Silva, 503 - Conj. Hab. Emilio Mininel, Fernandópolis - SP, 15600-000</p>
+        </div>
+        <div class="card">
+          <h3>⏰ Horário de Atendimento</h3>
+          <p>Segunda a Sexta, das 8h às 18h</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mapa -->
+    <section class="section">
+      <h2>Onde Estamos</h2>
+      <iframe 
+        src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d500!2d-50.238379043133065!3d-20.302441633566218!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f17!5e0!3m2!1spt-BR!2sbr!4v1703360000000"
+        allowfullscreen="" loading="lazy">
+      </iframe>
+    </section>
+
+    <!-- Equipe -->
+    <section class="section">
+      <h2>Nossa Equipe</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <img src="./imagens/João.png" alt="Foto">
+          <h3>João</h3>
+          <p>Pedagogo responsável pelos conteúdos educacionais.</p>
+        </div>
+        <div class="team-card">
+          <img src="./imagens/Vitor.png" alt="Foto">
+          <h3>Vitor</h3>
+          <p>Desenvolvedor front-end e designer dos jogos.</p>
+        </div>
+        <div class="team-card">
+          <img src="./imagens/Pescador bonitão.png" alt="Foto">
+          <h3>Lucas</h3>
+          <p>Especialista em gamificação e UX infantil.</p>
+        </div>
+        <div class="team-card">
+          <img src="./imagens/Pedro.png" alt="Foto">
+          <h3>Pedro</h3>
+          <p>Ilustrador e artista digital, responsável pelo visual dos jogos.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section">
+      <h2>Perguntas Frequentes</h2>
+      <ul>
+        <li><strong>Os jogos são gratuitos?</strong> Sim, todos os jogos são gratuitos para estudantes.</li>
+        <li><strong>Preciso criar conta?</strong> Sim é obrigatório, quando cria a conta pode salvar o progresso. </li>
+        <li><strong>Funciona no celular?</strong> Sim, o site é responsivo e funciona bem em computadores, tablets e celulares.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <div style="text-align:center; margin-top:20px;">
+    <a href="scalforce.html" 
+       style="display:inline-block; background:#ff8a00; color:#fff; 
+              padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">
+      Voltar para ScalForce
+    </a>
+  </div>
+    <p>© 2025 SCALFORCE — Jogos Educacionais</p>
+  </footer>
+  
+
+  <script>
+  function enviarMensagem(e){
+    e.preventDefault();
+
+    // Mensagem de agradecimento (só aparece após enviar)
+    const msg = document.createElement("div");
+    msg.textContent = "🎉 Obrigado por entrar em contato! Logo nossa equipe retornará para você.";
+    msg.style.position = "fixed";
+    msg.style.bottom = "20px";
+    msg.style.left = "50%";
+    msg.style.transform = "translateX(-50%)";
+    msg.style.padding = "12px 18px";
+    msg.style.background = "rgba(20,10,26,0.95)";
+    msg.style.color = "#ff8a00";
+    msg.style.fontWeight = "700";
+    msg.style.border = "1px solid #ff8a00";
+    msg.style.borderRadius = "10px";
+    msg.style.zIndex = "9999";
+    msg.style.pointerEvents = "none"; // não bloqueia cliques
+    document.body.appendChild(msg);
+
+    // Limpa formulário
+    e.target.reset();
+
+    // Remove a mensagem após 2s e redireciona
+    setTimeout(()=>{
+      msg.remove();
+      window.location.href = "ScalForce.html";
+    }, 2000);
+  }
+</script>
+
+</body>
+<script src="GamepadAPI.js"></script>
+</html>
+

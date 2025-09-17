@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SCALFORCE — Jogos Educacionais</title>
+  <meta name="description" content="SCALFORCE: plataforma de jogos educacionais divertidos para aprender Matemática, História, Ciências, Português, Estratégia, Lógica e Cartas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#140a1a;
+      --primary:#5E2497;
+      --primary-700:#43186c;
+      --accent:#ff8a00;
+      --accent-700:#cc6d00;
+      --text:#ffffff;
+      --muted:#cfc6d9;
+      --card:#2b1943;
+      --success:#36c38d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+    
+  margin:0;
+  font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--text);
+  background: linear-gradient(180deg, #1a0f26 100%, #140a1a 100%);
+}
+    
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1200px, 92%); margin-inline:auto}
+
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg, rgba(20,10,26,.9), rgba(20,10,26,.6) 80%, rgba(20,10,26,0));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 0}
+    .brand{display:flex; align-items:center; gap:.8rem; font-weight:800; letter-spacing:.5px}
+    .brand img{height:42px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(255,138,0,.2))}
+    .brand span{font-size:1.3rem; color:var(--accent)}
+    .nav-actions{display:flex; align-items:center; gap:.6rem}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.75rem 1rem; border-radius:999px; border:1px solid transparent; transition:.2s ease; font-weight:600}
+    .btn.primary{background:var(--accent); color:#1b0d27}
+    .btn.primary:hover{background:var(--accent-700)}
+    .btn.ghost{border-color:#2c1847; background:#170c25}
+    .btn.ghost:hover{background:#1f0f32}
+
+    .hero{display:grid; grid-template-columns:1.25fr 1fr; gap:2rem; align-items:center; padding:3rem 0 2rem}
+    .hero h1{font-size:clamp(2rem, 3.6vw, 3.2rem); line-height:1.1; margin:0 0 .6rem; font-weight:800}
+    .hero p{margin:.2rem 0 1.4rem; color:var(--muted)}
+    .hero-card{background:linear-gradient(145deg, var(--card), #1a0f2a); border:3px solid rgba(255,255,255,.06); padding:1.25rem; border-radius:22px; box-shadow:0 20px 50px rgba(0,0,0,.35)}
+    .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:1rem}
+    .stat{background:#170c25; border:1px solid #2c1847; border-radius:14px; padding:.9rem; text-align:center}
+    .stat b{display:block; font-size:1.2rem}
+
+    .searchbar{display:flex; gap:.6rem; margin-top:1rem}
+    .searchbar input{flex:1; background:#160c23; border:1px solid #2a1645; color:var(--text); padding:.9rem 1rem; border-radius:12px; outline:none}
+
+    .section{padding:2rem 0}
+    .section h2{font-size:1.6rem; margin:0 0 1rem}
+    .chips{display:fixed; ; gap:.6rem}
+    .chip{padding:.55rem .9rem; border-radius:999px; background:#ff8800; border:1px solid #6d36b0; cursor:pointer; font-weight:700}
+    .chip.active, .chip:hover{background:var(--primary); border-color:#6d36b0}
+
+    .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1rem}
+    .card{
+      position:relative; overflow:hidden; border-radius:18px; background:#301b52; border:5px solid rgba(255, 255, 255, 0.06);
+      transition:.2s ease; box-shadow:0 10px 30px rgba(0,0,0,.25)
+    }
+    .card:hover{transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,.35)}
+    .thumb{aspect-ratio:16/9; background:linear-gradient(135deg, var(--primary), #2a1645); display:grid; place-items:center}
+    .thumb span{font-size:2.2rem}
+    .content{padding:1rem}
+    .tag{font-size:.75rem; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:#f7d6a8}
+    .title{margin:.4rem 0 .8rem; font-weight:700}
+    .meta{display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:.9rem}
+    .play{position:absolute; right:.8rem; top:.8rem; background:var(--accent); color:#1b0d27; border-radius:999px; padding:.45rem .7rem; font-weight:800}
+
+    .cta{margin:2rem 0; text-align:center; padding:1.5rem; background:linear-gradient(90deg, #1b0f2d, #26133f); border:1px solid rgba(255,255,255,.08); border-radius:18px}
+
+    footer{padding:2.5rem 0 3rem; color:var(--muted)}
+    footer .brand span{color:var(--accent)}
+    .footgrid{display:grid; grid-template-columns:2fr 1fr 1fr; gap:1.5rem}
+    .footgrid a{display:block; padding:.25rem 0; color:var(--muted)}
+
+    @media (max-width: 960px){
+      .hero{grid-template-columns:1fr;}
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .footgrid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width: 560px){
+      .grid{grid-template-columns:1fr}
+      .nav-actions{display:none}
+    }
+
+    /* small header user area */
+    .nav-user{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    .nav-user .name-link{font-weight:800;color:var(--accent);padding:.5rem .75rem;border-radius:999px;border:1px solid rgba(255,255,255,.03);background:transparent}
+    .nav-user .logout-btn{padding:.45rem .65rem;border-radius:999px;border:1px solid rgba(255,255,255,.06);background:#170c25;color:var(--muted);font-weight:700;cursor:pointer}
+    .nav-user{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+}
+.nav-user{
+  display:flex;
+  flex-direction:row;       /* nome+botão de um lado, avatar do outro */
+  align-items:center;       /* centraliza o avatar na altura do conjunto */
+  gap:10px;
+}
+
+.nav-user-info{
+  display:flex;
+  flex-direction:column;    /* nome em cima, botão embaixo */
+  align-items:flex-start;   /* alinhado à esquerda */
+  gap:6px;
+}
+
+.nav-user .avatar{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid var(--accent);
+}
+
+.nav-user .name-link{
+  font-weight:800;
+  color:var(--accent);
+  padding:.3rem .75rem;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.03);
+  background:transparent;
+}
+
+.nav-user .logout-btn{
+  padding:.45rem .9rem;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.06);
+  background:#170c25;
+  color:var(--muted);
+  font-weight:700;
+  cursor:pointer;
+}
+
+
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand">
+        <img src="Logo.png" alt="Logo SCALFORCE" onerror="this.style.display='none'">
+        <span>ScalForce</span>
+      </a>
+      <nav class="nav-actions">
+        <a class="btn ghost" href="sobre.html">Sobre</a>
+        <a class="btn ghost" href="contato.html">Contato</a>
+        <!-- Login area will be injected here -->
+        <div id="loginArea"></div>
+      </nav>
+      
+    </div>
+    
+  </header>
+
+  <main class="container">
+    <section class="hero" id="inicio">
+      <div>
+        <h1>Aprender jogando ficou <span style="color:var(--accent)">muito mais divertido</span>!</h1>
+        <p>Explore jogos educativos alinhados às matérias da escola. Desafios rápidos, trilhas de conhecimento e placares para motivar os estudos.</p>
+        <div class="searchbar">
+          <input id="busca" type="search" placeholder="Buscar por jogo, tema ou matéria" aria-label="Buscar jogos" />
+          <button class="btn primary" onclick="filtrar()">Buscar</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="cont-jogos">28</b><small>Jogos</small></div>
+          <div class="stat"><b>8</b><small>Categorias</small></div>
+          <div class="stat"><b>+120k</b><small>Vizualizações</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="categorias" class="section">
+      <h2>Categorias</h2>
+      <div class="chips" id="chips">
+        <button class="chip active" data-categoria="todas" onclick="setCategoria(this)">Todas</button>
+        <button class="chip" data-categoria="Matemática" onclick="setCategoria(this)">Matemática</button>
+        <button class="chip" data-categoria="História" onclick="setCategoria(this)">História</button>
+        <button class="chip" data-categoria="Ciências" onclick="setCategoria(this)">Ciências</button>
+        <button class="chip" data-categoria="Português" onclick="setCategoria(this)">Português</button>
+        <button class="chip" data-categoria="Artes" onclick="setCategoria(this)">Artes</button>
+        <button class="chip" data-categoria="Estratégia" onclick="setCategoria(this)">Estratégia</button>
+        <button class="chip" data-categoria="Lógica" onclick="setCategoria(this)">Lógica</button>
+        <button class="chip" data-categoria="Cartas" onclick="setCategoria(this)">Cartas</button>
+         <button class="chip" data-categoria="Arcade" onclick="setCategoria(this)">Arcade</button>
+      </div>
+    </section>
+
+    <section id="jogos" class="section">
+      <h2>JOGOS</h2>
+      <div class="grid" id="lista-jogos" aria-live="polite"></div>
+      <div class="cta">
+        <a href="ScalForce.html" class="btn primary">Voltar para o Início</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footgrid">
+      <div>
+        <a class="brand" href="#"><img src="Logo SCALFORCE.png" alt="Logo" onerror="this.style.display='none'"><span>SCALFORCE</span></a>
+        <p style="margin:.8rem 0 0">Jogos que transformam estudo em diversão. Aprenda, pratique e compartilhe suas conquistas!</p>
+      </div>
+      <div>
+        <h4>Contato</h4>
+        <a href="#">suporte@scalforce.edu</a>
+        <a href="#">Política de Privacidade</a>
+        <a href="#">Termos de Uso</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+   const JOGOS = [
+  {titulo:'Quebra-Cabeça com números', categoria:'Matemática', dificuldade:'Avançado', imagem:'imagens/JG1.png',link:'Jogos/JG1-quebra_cabeca.html'},
+  {titulo:'Corrida com Cálculos', categoria:'Matemática', dificuldade:'Intermediário', imagem:'imagens/JG2.png ',link:'Jogos/JG2-Corrida_com_cálculos.html '},
+  {titulo:'Formas e Figuras', categoria:'Matemática', dificuldade:'Iniciante', imagem:'imagens/JG3.png ',link:'Jogos/JG3-formas_e_figuras.html '},
+  {titulo:'Viagem Medieval', categoria:'História', dificuldade:'Intermediário', imagem:'imagens/JG4.png ',link:'Jogos/JG4-Viagem_Medieval.html '},
+  {titulo:'Heróis do Passado', categoria:'História', dificuldade:'Avançado', imagem:'imagens/JG5.png ',link:'Jogos/JG5-herois-do-passado.html '},
+  {titulo:'Linha do Tempo', categoria:'História', dificuldade:'Avançado', imagem:'imagens/JG6.png ',link:'Jogos/JG6-linha_do_tempo.html'},
+  {titulo:'Planetas e Estrelas', categoria:'Ciências', dificuldade:'Iniciante', imagem:'imagens/JG7.png ',link:'Jogos/JG7-planetas_estrelas.html '},
+  {titulo:'Pequenos Experimentos', categoria:'Ciências', dificuldade:'Intermediário', imagem:'imagens/JG8.png ',link:'Jogos/ '},
+  {titulo:'Ecossistemas', categoria:'Ciências', dificuldade:'Intermediário', imagem:'imagens/JG9.png ',link:'Jogos/JG9-Ecossistema.html '},
+  {titulo:'Caça-Palavras', categoria:'Português', dificuldade:'Iniciante', imagem:'imagens/JG10.png ',link:'Jogos/JG10-Caça palavras.html '},
+  {titulo:'Palavras Cruzadas', categoria:'Português', dificuldade:'Intermediário', imagem:'imagens/JG11.png ',link:'Jogos/JG11-Palavras Cruzadas.html '},
+  {titulo:'Desafio Gramatical', categoria:'Português', dificuldade:'Intermediário', imagem:'imagens/JG12.png ',link:'Jogos/JG12-Desafio_gramatical.html '},
+  {titulo:'Pinte com Criatividade', categoria:'Artes', dificuldade:'Intermediário', imagem:'imagens/JG13.png ',link:'Jogos/JG13-pico-checkmate-styled.html '},
+  {titulo:'Quebra-Cabeça', categoria:'Artes', dificuldade:'Avançado', imagem:'imagens/JG14.png ',link:'Jogos/ '},
+  {titulo:'Qual Obra é?', categoria:'Artes', dificuldade:'Intermediário', imagem:'imagens/JG15.png ',link:'Jogos/ '},
+  {titulo:'Pico Checkmate', categoria:'Estratégia', dificuldade:'Intermediário', imagem:'imagens/JG16.png ',link:'Jogos/JG16-pico-checkmate.html '},
+  {titulo:'Torres e Defesas', categoria:'Estratégia', dificuldade:'Intermediário', imagem:'imagens/JG17.png ',link:'Jogos/JG17-Torres-e-defesas.html '},
+  {titulo:'Jogo da Fazenda', categoria:'Estratégia', dificuldade:'Iniciante', imagem:'imagens/JG18.png ',link:'Jogos/JG18-Jogo_da_Fazenda.html '},
+  {titulo:'Campo Minado', categoria:'Lógica', dificuldade:'Intermediário', imagem:'imagens/JG19.png ',link:'Jogos/JG19-campo_minado.html '},
+  {titulo:'Snake Game', categoria:'Lógica', dificuldade:'Iniciante', imagem:'imagens/JG20.png ',link:'Jogos/JG20-Snake_game.html '},
+  {titulo:'Sudoku', categoria:['Lógica','Estratégia'], dificuldade:'Intermediário', imagem:'imagens/JG21.png ',link:'Jogos/JG21-Sudoku.html '},
+  {titulo:'Conexo', categoria:['Cartas','Lógica'], dificuldade:'Iniciante', imagem:'imagens/JG22.png ',link:'Jogos/JG22-Conexo.html '},
+  {titulo:'Duelo de Baralhoes', categoria:'Cartas', dificuldade:'Intermediário', imagem:'imagens/JG23.png ',link:'Jogos/JG23-Duelo-de-baralhos.html '},
+  {titulo:'Memória com Cartas', categoria:'Cartas', difficulty:'Intermediário', imagem:'imagens/JG24.png ',link:'Jogos/JG24-Mémoria_com_cartas.html '},
+  {titulo:'Pac-Man', categoria:'Arcade', dificuldade:'Avançado', imagem:'imagens/JG25.png',link:'Jogos/JG25-Pacman.html'},
+  {titulo:'Tetris', categoria:'Arcade', dificuldade:'Avançado', imagem:'imagens/JG26.png',link:'Jogos/JG26-Tetris.html'},
+  {titulo:'Torre De Hanói',categoria:['Arcade','Matemática','Português','Ciências','História'],dificuldade:'Avançado',imagem:'imagens/JG27.png',link:'Jogos/JG27-Torre De Hanoi.html'},
+  {titulo:'Shooter vertical', categoria:'Arcade', dificuldade:'Avançado', imagem:'imagens/JG28.png',link:'Jogos/ '}
+];
+
+
+    const lista = document.getElementById('lista-jogos');
+    const busca = document.getElementById('busca');
+    const contJogos = document.getElementById('cont-jogos');
+
+    let categoriaAtiva = 'todas';
+
+function cardTemplate(j){
+  const categorias = Array.isArray(j.categoria) ? j.categoria.join(', ') : j.categoria;
+  return `
+  <a href="${j.link || '#'}" class="card" data-categoria="${categorias}">
+    <div class="thumb">
+      <img src="${j.imagem || 'imagens/padrao.png'}" alt="${j.titulo}" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="content">
+      <div class="tag">${categorias}</div>
+      <h3 class="title">${j.titulo}</h3>
+      <div class="meta"><span>${j.dificuldade || 'Iniciante'}</span></div>
+    </div>
+  </a>`;
+}
+     function render(){
+  const termo = (busca.value || '').toLowerCase().trim();
+  const filtrados = JOGOS.filter(j => {
+    const cats = Array.isArray(j.categoria) ? j.categoria : [j.categoria];
+    const okCat = categoriaAtiva === 'todas' || cats.includes(categoriaAtiva);
+    const okBusca = !termo || j.titulo.toLowerCase().includes(termo) || cats.some(c => c.toLowerCase().includes(termo));
+    return okCat && okBusca;
+  });
+  lista.innerHTML = filtrados.map(cardTemplate).join('');
+  contJogos.textContent = filtrados.length.toString().padStart(2,'0');
+}
+
+    function setCategoria(btn){
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      btn.classList.add('active');
+      categoriaAtiva = btn.dataset.categoria;
+      render();
+      // scrollIntoView removido para não descer a página automaticamente
+    }
+
+    function filtrar(){ render(); }
+    busca.addEventListener('input', render);
+
+    render();
+
+    /* ------------------------------
+       Login / user UI helpers
+       ------------------------------ */
+    function getCurrentUser(){ 
+      try { return JSON.parse(localStorage.getItem('scalforce_currentUser') || 'null'); } 
+      catch(e){ return null; } 
+    }
+
+    function logout(){
+      localStorage.removeItem('scalforce_currentUser');
+      // refresh UI
+      updateLoginArea();
+      // optional: show a small temporary message
+      const tmp = document.createElement('div');
+      tmp.textContent = 'Você saiu da conta.';
+      tmp.style.position = 'fixed';
+      tmp.style.right = '16px';
+      tmp.style.top = '72px';
+      tmp.style.padding = '10px 12px';
+      tmp.style.background = 'rgba(0,0,0,0.6)';
+      tmp.style.borderRadius = '8px';
+      tmp.style.zIndex = 9999;
+      document.body.appendChild(tmp);
+      setTimeout(()=> tmp.remove(), 1600);
+    }
+
+function updateLoginArea(){
+  const area = document.getElementById('loginArea');
+  const user = getCurrentUser();
+  if(user){
+    const avatarUrl = user.avatar || "imagens/avatar-padrao.png";
+    area.innerHTML = `
+      <div class="nav-user" role="navigation" aria-label="Usuário">
+        <div class="nav-user-info">
+          <a class="name-link" href="conta.html" title="Abrir painel de usuário">
+            ${escapeHtml(user.name.split(' ')[0])}
+          </a>
+          <button class="logout-btn" onclick="logout()">Deslogar</button>
+        </div>
+        <img src="${avatarUrl}" alt="Avatar" class="avatar">
+      </div>
+    `;
+  } else {
+    area.innerHTML = `<a class="btn primary" href="login.html">Logar</a>`;
+  }
+}
+
+    // simple HTML escape to avoid injection if name is weird
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
+    }
+
+    // run once on load
+    updateLoginArea();
+
+    // keep UI updated if another tab changes auth state
+    window.addEventListener('storage', ()=> updateLoginArea());
+  </script>
+</body>
+</html>

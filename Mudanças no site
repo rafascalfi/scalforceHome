@@ -1,0 +1,99 @@
+ <!--  BOX DE COMANDOS (LADO ESQUERDO) -->
+      <aside class="commands-box" aria-label="Comandos do jogo">
+        <h3>Comandos</h3>
+        <div class="smallmuted" style="margin-bottom:8px">Controle (Gamepad / Xbox)</div>
+        <ul class="cmd-list">
+          <li class="cmd-item"><span class="kbd">Analógico esquerdo</span><div>— Move o cursor selecionável (contorno laranja)</div></li>
+          <li class="cmd-item"><span class="kbd">Analógico direito</span><div>— Scroll do mouse (rola o tabuleiro)</div></li>
+          <li class="cmd-item"><span class="kbd">A</span><div>— Revelar célula</div></li>
+          <li class="cmd-item"><span class="kbd">LB</span><div>— Revelar célula (atalho)</div></li>
+          <li class="cmd-item"><span class="kbd">RB</span><div>— Marcar/Desmarcar bandeira</div></li>
+          <li class="cmd-item"><span class="kbd">B</span><div>— Abrir/Confirmar seletor de nível</div></li>
+          <li class="cmd-item"><span class="kbd">Setas</span><div>— Navegar no seletor de nível / alternativa ao analógico</div></li>
+          <li class="cmd-item"><span class="kbd">Start</span><div>— Novo jogo</div></li>
+          <li class="cmd-item"><span class="kbd">X</span><div>— Revelar tudo</div></li>
+          <li class="cmd-item"><span class="kbd">Y</span><div>— Dica (revela uma célula segura)</div></li>
+        </ul>        
+      </aside>
+
+
+
+      //📍 Fase 1
+
+Andorinha
+
+Golfinho
+
+Gato-do-mato
+
+📍 Fase 2
+
+Floresta
+
+Cacto
+
+Doce
+
+📍 Fase 3
+
+Asas longas
+
+Caules suculentos
+
+Para esquentar o corpo
+
+📍 Fase 4
+
+Fungo
+
+Anfíbio
+
+Ave
+
+📍 Fase 5
+
+Herbívoro
+
+Pequenos mamíferos
+
+Quebrar restos e devolver ao solo
+
+📍 Fase 6
+
+Para perder calor
+
+Viagem de animais por estação
+
+Esconder-se dos outros
+
+📍 Fase 7
+
+Panthera
+
+Nomenclatura binomial
+
+Gênero e espécie
+
+📍 Fase 8
+
+Só vive num lugar
+
+Floresta tropical
+
+Isolamento que cria espécies novas
+
+📍 Fase 9
+
+Habilidades úteis
+
+Ser do qual dois grupos vieram
+
+Relações entre espécies
+
+📍 Fase 10
+
+Buscar invertebrados na lama
+
+Usando genética e comportamento
+
+Fazer amostras em pontos//

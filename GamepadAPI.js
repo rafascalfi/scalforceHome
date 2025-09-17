@@ -1,0 +1,258 @@
+const DEADZONE = 0.42;
+const RELEASE_THRESHOLD = 0.18;
+const MOVE_DELAY = 120; // ms
+let focusables = [], selectedIndex = 0, lastMoveTime = 0;
+let insideCard = false, cardButtons = [], cardIndex = 0;
+let prevButtons = [], rafId = null;
+let axisReleased = true;   // somente permite novo movimento quando stick voltar ao centro
+let lastDirection = null;   // 'up'|'down'|'left'|'right' or null
+let scrollVelocity = 0;
+
+function isVisible(el){ return el && el.offsetParent !== null; }
+function isInsideCard(el){ return !!el.closest('.card'); }
+
+/* Updated updateFocusables: includes #loginArea a.name-link explicitly,
+   ensures tabindex on anchors, removes duplicates and preserves DOM order. */
+function updateFocusables(){
+  // pega todos os elementos relevantes (cards + elementos fora dos cards)
+  const all = Array.from(document.querySelectorAll('a, button, input, select, [role="button"], .card'));
+
+  // incluir explicitamente o link do nome do usuário (quando existir)
+  const loginName = document.querySelector('#loginArea a.name-link');
+  if (loginName && !all.includes(loginName)) all.push(loginName);
+
+  // filtrar visíveis e excluir elementos dentro de .card (apenas os próprios .card são permitidos)
+  let list = all.filter(el => el && el.offsetParent !== null && (el.classList.contains('card') || !el.closest('.card')));
+
+  // garantir ordem DOM e remover duplicatas
+  list = Array.from(new Set(list)).sort((a,b) => {
+    if (a === b) return 0;
+    return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) ? 1 : -1;
+  });
+
+  focusables = list;
+
+  // garantir que anchors tenham tabindex para serem corretamente focáveis
+  focusables.forEach(el => {
+    if (el.tagName === 'A' && !el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+  });
+
+  // ajustar índice se necessário
+  if (selectedIndex >= focusables.length) selectedIndex = Math.max(0, focusables.length-1);
+}
+
+function getRectCenter(r){ return { x: r.left + r.width/2, y: r.top + r.height/2 }; }
+function vecLen(ax, ay){ return Math.sqrt(ax*ax + ay*ay); }
+function vecDot(ax, ay, bx, by){ return ax*bx + ay*by; }
+
+/* Encontra vizinho na direção usando preferência por alinhamento (menor perp distance),
+   e entre os alinhados escolhe o mais próximo na projeção da direção */
+function findNeighborInDirection(currentEl, direction){
+  if (!currentEl) return null;
+  const curRect = currentEl.getBoundingClientRect();
+  const curC = getRectCenter(curRect);
+  const dirVec = {
+    up: {x:0, y:-1},
+    down: {x:0, y:1},
+    left: {x:-1, y:0},
+    right: {x:1, y:0}
+  }[direction];
+
+  let best = null;
+  // loop candidatos
+  for (let i=0;i<focusables.length;i++){
+    const cand = focusables[i];
+    if (cand === currentEl) continue;
+    const r = cand.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) continue;
+    const c = getRectCenter(r);
+    const vx = c.x - curC.x;
+    const vy = c.y - curC.y;
+    const dist = vecLen(vx, vy);
+    if (dist === 0) continue;
+    // projeção na direção
+    const proj = (vx*dirVec.x + vy*dirVec.y);
+    if (proj <= 6) continue; // ignora candidatos atrás ou quase no mesmo centro (tolerância)
+    // componente perpendicular = magnitude * sin(angle) = sqrt(dist^2 - proj^2)
+    const perpSq = Math.max(0, dist*dist - proj*proj);
+    const perp = Math.sqrt(perpSq);
+    // score: primeiro prioriza menor perpendicular (mais alinhado), depois menor proj (mais próximo na frente)
+    const score = perp * 1000 + proj; // perp tem mais peso
+    if (!best || score < best.score) best = {el: cand, idx: i, score, proj, perp, dist};
+  }
+
+  // fallback linear neighbor if nothing encontrado
+  if (!best) {
+    const curIdx = focusables.indexOf(currentEl);
+    if (direction === 'left' || direction === 'up') {
+      const idx = Math.max(0, curIdx - 1);
+      return { el: focusables[idx], idx };
+    } else {
+      const idx = Math.min(focusables.length-1, curIdx + 1);
+      return { el: focusables[idx], idx };
+    }
+  }
+  return best;
+}
+
+/* outlines helpers */
+function clearOutlines(){ document.querySelectorAll('[data-gamepad-outline]').forEach(e=>{ e.style.outline=''; e.removeAttribute('data-gamepad-outline'); }); }
+function outline(el, style="3px solid white"){ if(!el) return; clearOutlines(); el.style.outline = style; el.setAttribute('data-gamepad-outline','1'); }
+
+/* highlights */
+function updateGlobalHighlight(){
+  if (!focusables || focusables.length === 0) return;
+  const el = focusables[selectedIndex];
+  outline(el, "3px solid white");
+  try { el.focus({preventScroll:true}); } catch(e){ el.focus(); }
+  el.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+function updateCardHighlight(){
+  const card = focusables[selectedIndex];
+  if (card) { card.style.outline = "2px solid rgba(255,255,255,0.28)"; card.setAttribute('data-gamepad-outline','1'); card.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+  if (cardButtons && cardButtons.length > 0) {
+    const btn = cardButtons[cardIndex];
+    if (btn) { outline(btn, "3px solid white"); try{ btn.focus({preventScroll:true}); }catch(e){btn.focus();} btn.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+  }
+}
+
+/* card mode */
+function enterCardMode(cardEl){
+  cardButtons = Array.from(cardEl.querySelectorAll('button, a.btn, a.icon-btn')).filter(isVisible);
+  if (cardButtons.length === 0) return false;
+  insideCard = true; cardIndex = 0; updateCardHighlight(); return true;
+}
+function exitCardMode(){
+  cardButtons.forEach(b=>{ b.style.outline=''; b.removeAttribute('data-gamepad-outline'); });
+  const card = focusables[selectedIndex]; if (card) { card.style.outline=''; card.removeAttribute('data-gamepad-outline'); }
+  cardButtons = []; insideCard = false; updateGlobalHighlight();
+}
+
+/* convert axes to discrete direction: returns 'up'|'down'|'left'|'right' or null */
+function axesToDirection(lx, ly){
+  if (Math.abs(lx) < DEADZONE && Math.abs(ly) < DEADZONE) return null;
+  if (Math.abs(ly) > Math.abs(lx)){
+    return ly < 0 ? 'up' : 'down';
+  } else {
+    return lx < 0 ? 'left' : 'right';
+  }
+}
+
+/* main poll loop */
+function pollGamepad(){
+  const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+  const gp = gps[0];
+  if (!gp) { rafId = requestAnimationFrame(pollGamepad); return; }
+
+  if (!Array.isArray(prevButtons) || prevButtons.length !== gp.buttons.length) prevButtons = gp.buttons.map(b=>b.pressed);
+
+  const lx = gp.axes[0] ?? 0;
+  const ly = gp.axes[1] ?? 0;
+  const ry = gp.axes[3] ?? 0;
+  const now = Date.now();
+
+  // se stick estiver perto do centro, marca como liberado
+  if (Math.abs(lx) < RELEASE_THRESHOLD && Math.abs(ly) < RELEASE_THRESHOLD) {
+    axisReleased = true;
+    lastDirection = null;
+  }
+
+  // calcular direção discreta
+  const dir = axesToDirection(lx, ly);
+
+  // somente mover se axisReleased ou direção mudou (mas proteger contra repeats com MOVE_DELAY)
+  if (dir && axisReleased && (now - lastMoveTime > MOVE_DELAY)) {
+    let moved = false;
+    const cur = focusables[selectedIndex];
+    if (!insideCard) {
+      const nb = findNeighborInDirection(cur, dir);
+      if (nb) { selectedIndex = nb.idx; moved = true; }
+      if (moved) {
+        axisReleased = false;
+        lastDirection = dir;
+        updateGlobalHighlight();
+        lastMoveTime = now;
+      }
+    } else {
+      // modo card: navegação linear entre botões internos (tanto eixo x quanto y movem)
+      if (dir === 'left' || dir === 'up') {
+        cardIndex = Math.max(0, cardIndex - 1); moved = true;
+      } else if (dir === 'right' || dir === 'down') {
+        cardIndex = Math.min(cardButtons.length - 1, cardIndex + 1); moved = true;
+      }
+      if (moved) {
+        axisReleased = false;
+        lastDirection = dir;
+        updateCardHighlight();
+        lastMoveTime = now;
+      }
+    }
+  }
+
+  // scroll com right stick (suavizado)
+  if (Math.abs(ry) > 0.02) {
+    scrollVelocity = scrollVelocity * 0.86 + (ry * 18) * 0.14;
+  } else {
+    scrollVelocity = scrollVelocity * 0.86;
+  }
+  if (Math.abs(scrollVelocity) > 0.6) window.scrollBy(0, scrollVelocity);
+
+  // borda de A/B
+  const aNow = gp.buttons[0]?.pressed, bNow = gp.buttons[1]?.pressed;
+  const aPrev = prevButtons[0] || false, bPrev = prevButtons[1] || false;
+
+  if (aNow && !aPrev) {
+    if (!insideCard) {
+      const cur = focusables[selectedIndex];
+      if (cur && cur.classList && cur.classList.contains('card')) {
+        const entered = enterCardMode(cur);
+        if (!entered) { const link = cur.querySelector('a.thumb, a.btn.primary'); if (link) link.click(); }
+      } else if (cur) {
+        try { cur.click(); } catch(e){}
+      }
+    } else {
+      const btn = cardButtons[cardIndex];
+      if (btn) try { btn.click(); } catch(e){}
+    }
+  }
+
+  if (bNow && !bPrev) {
+    if (insideCard) exitCardMode();
+    else window.history.back();
+  }
+
+  // atualizar prev
+  for (let i=0;i<gp.buttons.length;i++) prevButtons[i] = gp.buttons[i].pressed;
+
+  rafId = requestAnimationFrame(pollGamepad);
+}
+
+/* inicialização */
+window.addEventListener('gamepadconnected', () => {
+  updateFocusables();
+  selectedIndex = 0; lastMoveTime = 0; insideCard = false; cardButtons=[]; cardIndex=0;
+  axisReleased = true; lastDirection = null; scrollVelocity = 0;
+  updateGlobalHighlight();
+  if (rafId === null) rafId = requestAnimationFrame(pollGamepad);
+});
+
+/* recomputar quando DOM muda */
+const mo = new MutationObserver(()=> {
+  const prev = focusables[selectedIndex];
+  updateFocusables();
+  if (prev) {
+    const newIdx = focusables.indexOf(prev);
+    if (newIdx >= 0) selectedIndex = newIdx;
+    else selectedIndex = Math.min(selectedIndex, focusables.length-1);
+  }
+});
+mo.observe(document.body, { childList:true, subtree:true });
+
+/* caso gamepad já conectado */
+if (navigator.getGamepads && navigator.getGamepads()[0]) {
+  updateFocusables(); updateGlobalHighlight(); if (rafId === null) rafId = requestAnimationFrame(pollGamepad);
+}
+
+/* limpar outlines quando usuário usa mouse/teclado */
+window.addEventListener('pointerdown', () => { clearOutlines(); });
+window.addEventListener('keydown', (e) => { if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Tab','Enter'].includes(e.key)) clearOutlines(); });
