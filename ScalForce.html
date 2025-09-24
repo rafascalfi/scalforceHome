@@ -142,15 +142,82 @@
     .footgrid{display:grid; grid-template-columns:2fr 1fr 1fr; gap:1rem}
     .footgrid a{display:block; padding:.25rem 0; color:var(--muted)}
 
-    @media (max-width: 960px){
-      .hero{grid-template-columns:1fr;}
-      .grid{grid-template-columns:repeat(2,1fr)}
-      .footgrid{grid-template-columns:1fr 1fr}
+    /* ===================================
+       REGRAS DE RESPONSIVIDADE (Aprimoradas)
+       =================================== */
+
+    /* Telas de tablets e desktops menores (até 960px) */
+    @media (max-width: 960px) {
+      .hero {
+        grid-template-columns: 1fr; /* Hero vira coluna única */
+        gap: 1.5rem;
+        text-align: center; /* Centraliza o texto do hero */
+      }
+      .searchbar {
+        justify-content: center; /* Centraliza a barra de busca */
+      }
+      .stats {
+        max-width: 480px;
+        margin-inline: auto; /* Centraliza as estatísticas */
+      }
+      .grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Grid mais flexível */
+      }
+      .footgrid {
+        grid-template-columns: 1fr 1fr; /* Footer com duas colunas */
+      }
     }
-    @media (max-width: 560px){
-      .grid{grid-template-columns:1fr}
-      .nav-actions{display:none}
-      .a11y-panel{right:8px; left:8px}
+
+    /* Telas de celulares (até 768px) */
+    @media (max-width: 768px) {
+      /* Ajusta a navegação para telas menores */
+      .nav {
+        flex-wrap: wrap; /* Permite que a navegação quebre a linha */
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      .nav-actions {
+        order: 3; /* Move as ações para baixo do brand */
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* Ajusta fontes e espaçamentos */
+      .section h2 {
+        font-size: 1.1rem; /* Diminui um pouco o título das seções */
+      }
+      main.container {
+        width: min(100% - 2rem, 1200px); /* Reduz margens laterais */
+      }
+      .hero {
+        padding: 1rem 0;
+      }
+
+      /* Estatísticas em duas colunas */
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* Telas pequenas de celulares (até 560px) */
+    @media (max-width: 560px) {
+      .grid {
+        grid-template-columns: 1fr; /* Grid de jogos vira coluna única */
+      }
+      .footgrid {
+        grid-template-columns: 1fr; /* Footer vira coluna única */
+        text-align: center;
+      }
+      .a11y-panel {
+        right: 8px;
+        left: 8px;
+        min-width: unset;
+      }
+
+      /* Simplifica a navegação principal, escondendo os links */
+      .nav-actions .btn.ghost {
+        display: none;
+      }
     }
 
     /* focus visible */
@@ -381,7 +448,7 @@
   {titulo:'Caça-Palavras em Inglês', categoria:'Inglês', dificuldade:'Avançado', imagem:'imagens/JG16.png ',link:'Jogos/JG16-Caça-Palavras em Inglês.html',controle:true},
   {titulo:'Jogo da Memória em Inglês', categoria:'Inglês', dificuldade:'Iniciante', imagem:'imagens/JG17.png ',link:'Jogos/JG17-Jogo da memória inglês.html ',controle:true},
   {titulo:'Complete a frase', categoria:'Inglês', dificuldade:'Intermediário', imagem:'imagens/JG18.png ',link:'Jogos/JG18-Complete a frase.html '},
-  {titulo:'Pico Checkmate', categoria:['Estratégia','Lógica'], dificuldade:'Avançado', imagem:'imagens/JG19.png ',link:'Jogos/JG19-pico-checkmate.html '},
+  {titulo:'Pico Checkmate', categoria:['Estratégia','Lógica'], dificuldade:'Avançado', imagem:'imagens/JG19.png ',link:'Jogos/JG19-pico-checkmate.html',controle:true},
   {titulo:'Tower defence', categoria:['Estratégia','Matemática','Português','Ciências','História','Geografia'], dificuldade:'Intermediário', imagem:'imagens/JG20.png ',link:'Jogos/JG20-Torres-e-defesas.html ',controle:true},
   {titulo:'Jogo da Fazenda', categoria:'Estratégia', dificuldade:'Iniciante', imagem:'imagens/JG21.png ',link:'Jogos/JG21-Jogo_da_Fazenda.html '},
   {titulo:'Campo Minado', categoria:'Lógica', dificuldade:'Intermediário', imagem:'imagens/JG22.png ',link:'Jogos/JG22-campo_minado.html ',controle:true},
